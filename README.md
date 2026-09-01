@@ -2,7 +2,14 @@
 
 # KIE.ai Nodes Next for ComfyUI
 
-**Version 0.3.0 — Individual Model Library**
+**Current version: 0.3.5 — Schema-Driven Catalog + Cache Repair**
+
+The repository includes the current source, the complete change history from v0.3.1 through v0.3.5, and ready-to-download Windows installers and historical packages in [`dist/`](dist/).
+
+- Latest package: [`ComfyUI-KIE-Nodes-Next-v0.3.5-CACHE-REPAIR.zip`](dist/ComfyUI-KIE-Nodes-Next-v0.3.5-CACHE-REPAIR.zip)
+- Windows one-click installer: [`KIE-Nodes-Next-OneClick-Windows-v0.3.2.vbs`](dist/KIE-Nodes-Next-OneClick-Windows-v0.3.2.vbs)
+- Full uninstaller: [`KIE-Nodes-Next-Full-Uninstall.vbs`](dist/KIE-Nodes-Next-Full-Uninstall.vbs)
+- Release history: [`RELEASE_NOTES.md`](RELEASE_NOTES.md)
 
 KIE.ai Nodes Next turns KIE's API catalog into a native ComfyUI model library. The normal workflow is no longer a generic API node: each KIE model/API is exposed as its own node, organized by media type, provider, and model family.
 
