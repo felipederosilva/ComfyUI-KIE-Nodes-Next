@@ -1,3 +1,10 @@
+# v0.3.6 Result Delivery Repair
+
+- Keeps polling briefly when KIE reports `state=success` before its generated URL has been persisted.
+- Supports `response`, direct result URL fields, and double-encoded JSON in addition to the unified `resultJson` response shape.
+- Ignores echoed request/input media URLs so an uploaded source is never mistaken for generated output.
+- Adds regression coverage for delayed results and provider-specific response envelopes.
+
 # v0.3.5 Catalog Cache Repair
 
 - Merges live catalog discoveries with bundled schemas instead of letting a stale user cache replace them.

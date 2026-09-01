@@ -24,6 +24,30 @@ class TestResultParsing(unittest.TestCase):
             ["https://a.test/result.jpg"],
         )
 
+    def test_double_encoded_result_json(self):
+        value = json.dumps(json.dumps({"resultUrls": ["https://a.test/result.png"]}))
+        self.assertEqual(KIEClient.extract_result_urls({"resultJson": value}), ["https://a.test/result.png"])
+
+    def test_response_style_result(self):
+        data = {"response": {"resultVideoUrl": "https://a.test/result.mp4"}}
+        self.assertEqual(KIEClient.extract_result_urls(data), ["https://a.test/result.mp4"])
+
+    def test_ignores_echoed_input_url(self):
+        data = {"paramJson": json.dumps({"imageUrl": "https://a.test/input.png"}), "response": {}}
+        self.assertEqual(KIEClient.extract_result_urls(data), [])
+
+    def test_success_waits_for_delayed_result(self):
+        from kie.client import KIEConfig
+
+        client = KIEClient(KIEConfig(api_key="x", max_retries=0))
+        responses = iter([
+            {"taskId": "t", "state": "success", "resultJson": ""},
+            {"taskId": "t", "state": "success", "resultJson": json.dumps({"resultUrls": ["https://a.test/final.mp4"]})},
+        ])
+        client.get_task = lambda _task_id: next(responses)
+        result = client.wait_for_task("t", timeout_seconds=2, initial_interval=0.01, success_grace_seconds=1)
+        self.assertEqual(result.urls, ["https://a.test/final.mp4"])
+
 
 if __name__ == "__main__":
     unittest.main()

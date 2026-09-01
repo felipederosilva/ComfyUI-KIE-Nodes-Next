@@ -266,16 +266,31 @@ class KIEClient:
         timeout_seconds: float = 900.0,
         initial_interval: float = 2.5,
         max_interval: float = 15.0,
+        success_grace_seconds: float = 30.0,
     ) -> KIEResult:
         deadline = time.monotonic() + float(timeout_seconds)
         interval = max(float(initial_interval), 0.5)
         last: dict[str, Any] = {}
+        success_seen_at: float | None = None
 
         while time.monotonic() < deadline:
             last = self.get_task(task_id)
             state = str(last.get("state") or "").lower()
             if state == "success":
-                return self.normalize_result(last)
+                result = self.normalize_result(last)
+                if result.urls:
+                    return result
+                # Some Market providers mark the task successful shortly before
+                # resultJson/response is persisted. Keep polling for a short grace
+                # period instead of turning a successful generation into a false
+                # "no URL" error.
+                now = time.monotonic()
+                if success_seen_at is None:
+                    success_seen_at = now
+                if now - success_seen_at >= max(float(success_grace_seconds), 0.0):
+                    return result
+                time.sleep(min(interval, 2.5))
+                continue
             if state == "fail":
                 reason = last.get("failMsg") or last.get("failCode") or "Generation failed"
                 raise KIEAPIError(f"KIE task {task_id} failed: {reason}", payload=last)
@@ -301,38 +316,50 @@ class KIEClient:
 
     @classmethod
     def extract_result_urls(cls, data: dict[str, Any]) -> list[str]:
-        value: Any = data.get("resultJson")
-        if isinstance(value, str):
-            try:
-                value = json.loads(value)
-            except json.JSONDecodeError:
-                value = {"resultUrl": value} if value.startswith(("http://", "https://")) else {}
-
         urls: list[str] = []
 
-        def walk(obj: Any) -> None:
+        def walk(obj: Any, depth: int = 0) -> None:
+            if depth > 12:
+                return
             if isinstance(obj, str):
-                if obj.startswith(("http://", "https://")):
-                    urls.append(obj)
+                text = obj.strip()
+                if text.startswith(("http://", "https://", "oss://")):
+                    urls.append(text)
+                    return
+                # resultJson is occasionally returned as JSON inside another JSON
+                # string. Decode recursively while keeping malformed text harmless.
+                if text.startswith(("{", "[", '"')):
+                    try:
+                        decoded = json.loads(text)
+                    except (json.JSONDecodeError, TypeError):
+                        decoded = None
+                    if decoded is not None and decoded != obj:
+                        walk(decoded, depth + 1)
             elif isinstance(obj, list):
                 for item in obj:
-                    walk(item)
+                    walk(item, depth + 1)
             elif isinstance(obj, dict):
                 # Prefer common result fields first, then recursively inspect the remainder.
                 priority = (
-                    "resultUrls", "resultUrl", "urls", "url", "images", "videos", "audio",
-                    "imageUrls", "videoUrls", "audioUrls", "files", "outputs",
+                    "resultJson", "response", "result", "output", "outputs",
+                    "resultUrls", "resultUrl", "fullResultUrls",
+                    "resultImageUrl", "resultVideoUrl", "resultAudioUrl",
+                    "urls", "url", "images", "videos", "audio",
+                    "imageUrls", "videoUrls", "audioUrls", "imageUrl", "videoUrl", "audioUrl",
+                    "files",
                 )
                 seen = set()
                 for key in priority:
                     if key in obj:
                         seen.add(key)
-                        walk(obj[key])
+                        walk(obj[key], depth + 1)
                 for key, item in obj.items():
-                    if key not in seen:
-                        walk(item)
+                    # Do not mistake source media echoed in request parameters for
+                    # generated output when falling back to a whole-record scan.
+                    if key not in seen and key not in {"param", "paramJson", "input", "request"}:
+                        walk(item, depth + 1)
 
-        walk(value)
+        walk(data)
         # Stable de-duplication.
         return list(dict.fromkeys(urls))
 

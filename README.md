@@ -2,11 +2,11 @@
 
 # KIE.ai Nodes Next for ComfyUI
 
-**Current version: 0.3.5 — Schema-Driven Catalog + Cache Repair**
+**Current version: 0.3.6 — Result Delivery Repair**
 
-The repository includes the current source, the complete change history from v0.3.1 through v0.3.5, and ready-to-download Windows installers and historical packages in [`dist/`](dist/).
+The repository includes the current source, the complete change history from v0.3.1 through v0.3.6, and ready-to-download Windows installers and historical packages in [`dist/`](dist/).
 
-- Latest package: [`ComfyUI-KIE-Nodes-Next-v0.3.5-CACHE-REPAIR.zip`](dist/ComfyUI-KIE-Nodes-Next-v0.3.5-CACHE-REPAIR.zip)
+- Latest package: [`ComfyUI-KIE-Nodes-Next-v0.3.6-RESULT-REPAIR.zip`](dist/ComfyUI-KIE-Nodes-Next-v0.3.6-RESULT-REPAIR.zip)
 - Windows one-click installer: [`KIE-Nodes-Next-OneClick-Windows-v0.3.2.vbs`](dist/KIE-Nodes-Next-OneClick-Windows-v0.3.2.vbs)
 - Full uninstaller: [`KIE-Nodes-Next-Full-Uninstall.vbs`](dist/KIE-Nodes-Next-Full-Uninstall.vbs)
 - Release history: [`RELEASE_NOTES.md`](RELEASE_NOTES.md)
