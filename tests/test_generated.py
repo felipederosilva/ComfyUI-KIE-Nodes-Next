@@ -71,6 +71,27 @@ class TestGeneratedNodes(unittest.TestCase):
         # 15 utility/advanced nodes + individual model/version nodes.
         self.assertGreaterEqual(len(self.plugin.NODE_CLASS_MAPPINGS), 29)
 
+    def test_studio_nodes_are_registered(self):
+        names = set(self.plugin.NODE_DISPLAY_NAME_MAPPINGS.values())
+        self.assertIn("KIE • Camera Director", names)
+        self.assertIn("KIE • Shot Sequence", names)
+        self.assertIn("KIE • Kling 3.0 Omni Studio", names)
+        self.assertIn("KIE • Seedance Studio", names)
+
+    def test_kling_studio_has_director_controls(self):
+        node = self.find("KIE • Kling 3.0 Omni Studio")
+        self.assertEqual(node.CATEGORY, "KIE Next/Studio/Kling")
+        inputs = node.INPUT_TYPES()
+        self.assertIn("shot_mode", inputs["required"])
+        self.assertIn("camera_direction", inputs["optional"])
+        self.assertIn("shot_sequence_json", inputs["optional"])
+
+    def test_seedance_studio_has_explicit_modes(self):
+        node = self.find("KIE • Seedance Studio")
+        modes = node.INPUT_TYPES()["required"]["generation_mode"][0]
+        self.assertIn("first + last frame", modes)
+        self.assertIn("multimodal reference", modes)
+
 
 if __name__ == "__main__":
     unittest.main()

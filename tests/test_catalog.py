@@ -5,10 +5,17 @@ import os
 import tempfile
 from unittest.mock import patch
 
-from kie.catalog import _extract_endpoint, _extract_models, _extract_example_query, _extract_path_params, _parse_llms_index, load_catalog, sync_catalog
+from kie.catalog import _extract_endpoint, _extract_models, _extract_example_query, _extract_path_params, _parse_llms_index, generated_catalog_path, load_catalog, sync_catalog
 
 
 class TestCatalog(unittest.TestCase):
+    def test_kling_omni_docs_override_stale_model_fixture(self):
+        from kie.catalog import _authoritative_models
+        entry = {"url": "https://docs.kie.ai/market/kling/v3-omni-text-to-video.md"}
+        self.assertEqual(
+            _authoritative_models(entry, ["kling-2.6/text-to-video"]),
+            ["kling-3.0-omni/text-to-video"],
+        )
 
     def test_index_only_keeps_every_api_page_without_fetching_each_doc(self):
         llms = """# docs\n## API Docs\n- Image Models > Demo [One](https://docs.kie.ai/market/demo/one.md): docs\n- Suno API [Two](https://docs.kie.ai/suno-api/two.md): docs\n- CN [三](https://docs.kie.ai/cn/demo/three.md): docs\n"""
@@ -26,7 +33,7 @@ class TestCatalog(unittest.TestCase):
 
         with tempfile.TemporaryDirectory() as tmp, patch.dict(os.environ, {"KIE_NODES_NEXT_CONFIG_DIR": tmp}, clear=False), patch("kie.catalog.requests.Session", return_value=Session()):
             result = sync_catalog(index_only=True)
-            catalog = load_catalog()
+            catalog = json.loads(generated_catalog_path().read_text(encoding="utf-8"))
             self.assertTrue(result["ok"])
             self.assertFalse(result["deep_sync_complete"])
             self.assertEqual(len(catalog["operations"]), 2)

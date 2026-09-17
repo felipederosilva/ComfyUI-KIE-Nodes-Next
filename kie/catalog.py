@@ -392,6 +392,26 @@ def _extract_models(text: str) -> list[str]:
     return cleaned
 
 
+def _authoritative_models(entry: dict[str, str], extracted: list[str]) -> list[str]:
+    """Repair model IDs when a docs page contains stale generated examples.
+
+    A few KIE pages currently describe Kling 3.0 Omni while an embedded response
+    fixture still mentions Kling 2.6. The URL identifies the callable product
+    more reliably than that stale fixture.
+    """
+    url = str(entry.get("url") or "").lower()
+    overrides = {
+        "v3-omni-text-to-video": "kling-3.0-omni/text-to-video",
+        "v3-omni-image-to-video": "kling-3.0-omni/image-to-video",
+        "v3-omni-reference-to-video": "kling-3.0-omni/reference-to-video",
+        "v3-omni-transformation": "kling-3.0-omni/transformation",
+    }
+    for marker, model in overrides.items():
+        if marker in url:
+            return [model]
+    return extracted
+
+
 def _operation_model_variants(doc: dict[str, Any]) -> list[str]:
     """Explicit model IDs plus model-enum versions documented by KIE."""
     values = [str(x).strip() for x in (doc.get("models") or []) if str(x).strip()]
@@ -609,7 +629,7 @@ def _fetch_doc(session: requests.Session, entry: dict[str, str]) -> dict[str, An
         **entry,
         "method": method,
         "endpoint": endpoint,
-        "models": _extract_models(text),
+        "models": _authoritative_models(entry, _extract_models(text)),
         "example_body": sample_body,
         "example_query": _extract_example_query(text, endpoint_query),
         "path_params": _extract_path_params(endpoint),

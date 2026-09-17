@@ -1,3 +1,12 @@
+# v0.4.0 Studio Direction
+
+- Refreshes the official KIE catalog to 165 model IDs and 234 operations, with 182 schema-enriched operations.
+- Adds newly documented Claude, GPT Image 2.5, and Suno V6 model variants.
+- Removes deprecated Flux Kontext model IDs from the selectable model inventory.
+- Repairs stale Kling 2.6 identifiers embedded in Kling 3.0 Omni documentation pages.
+- Adds Camera Director and six-shot sequence-builder nodes.
+- Adds purpose-built Kling 3.0 Omni Studio and Seedance Studio generation nodes with mode-aware validation and native ComfyUI media inputs.
+
 # v0.3.6 Result Delivery Repair
 
 - Keeps polling briefly when KIE reports `state=success` before its generated URL has been persisted.

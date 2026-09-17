@@ -71,6 +71,10 @@ def _series_bucket(root: str, vendor: str, op: dict[str, Any]) -> str:
         if "isolation" in combined: return "Audio Isolation"
         if "dialogue" in combined: return "Dialogue"
         if "speech" in combined or "tts" in combined: return "Text to Speech"
+    if root == "Audio" and vendor == "Suno":
+        if "generate music" in combined or "music generation" in combined: return "Music Generation"
+        if "lyrics" in combined: return "Lyrics"
+        if "stem" in combined or "separation" in combined: return "Stems"
     if root == "Audio" and vendor == "Google" and ("speech" in combined or "tts" in combined):
         return "Gemini TTS"
     if root == "Video" and vendor == "Google" and "gemini omni" in combined:
@@ -98,7 +102,8 @@ def category_for(op: dict[str, Any]) -> str:
     combined = f"{family} {op.get('title','')} {' '.join(str(x) for x in (op.get('models') or []))}".lower()
 
     if head.startswith("suno"):
-        subsection = tail[-1] if tail else "Generation"
+        title = str(op.get("title") or "").lower()
+        subsection = tail[-1] if tail else ("Music Generation" if "generate music" in title else "Generation")
         return f"KIE Next/Audio/Suno/{subsection}"
     if head.startswith("veo") or "veo3" in head:
         return "KIE Next/Video/Google/Veo"
@@ -173,6 +178,10 @@ def display_name_for(op: dict[str, Any], model: str = "") -> str:
                 title = candidate
                 break
     title = re.sub(r"^bytedance[- ]", "", title, flags=re.I)
+    seedance = re.fullmatch(r"seedance[- ](\d+)(?:[.-](\d+))?", title, flags=re.I)
+    if seedance:
+        major, minor = seedance.groups()
+        title = f"Seedance {major}.{minor or '0'}"
     return title
 
 
