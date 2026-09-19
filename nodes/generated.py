@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import re
 import time
 from typing import Any
@@ -9,7 +10,7 @@ from typing import Any
 from ..kie.catalog import load_catalog, resolve_operation
 from ..kie.client import KIEAPIError, KIEClient, pretty_json
 from ..kie.helpers import make_client, parse_object_json
-KIE_GENERATED_BUILD = "0.4.3"
+KIE_GENERATED_BUILD = "0.4.4"
 
 from ..kie.media import (
     download_audio_object,
