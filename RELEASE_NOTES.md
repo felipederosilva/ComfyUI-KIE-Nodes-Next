@@ -1,3 +1,9 @@
+# v0.4.4 Topaz Diagnostic Hotfix
+
+- Fixes a missing `os` import introduced by the v0.4.3 Topaz upload-size diagnostic.
+- Keeps the v0.4.3 canonical 8-bit SDR H.264 Topaz input path unchanged.
+- Syncs package metadata and runtime build markers to v0.4.4.
+
 # v0.4.3 Topaz Video Compatibility Repair
 
 - Re-encodes ComfyUI VIDEO inputs specifically for Topaz as 8-bit SDR/sRGB H.264 MP4 before upload.
