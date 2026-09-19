@@ -9,7 +9,7 @@ from typing import Any
 from ..kie.catalog import load_catalog, resolve_operation
 from ..kie.client import KIEAPIError, KIEClient, pretty_json
 from ..kie.helpers import make_client, parse_object_json
-KIE_GENERATED_BUILD = "0.4.2"
+KIE_GENERATED_BUILD = "0.4.3"
 
 from ..kie.media import (
     download_audio_object,
@@ -538,7 +538,16 @@ def _build_payload(client: KIEClient, op: dict[str, Any], kwargs: dict[str, Any]
         # Empty optional strings are omitted instead of overriding provider defaults.
         if value == "" and not bool((hints.get(name) or {}).get("required")):
             continue
-        out[name] = _coerce_widget_value(name, example, value, client)
+        if _is_topaz_video_upscale(model) and _is_video_field(name):
+            path = video_to_temp_file(value, canonical_h264_sdr=True)
+            size_bytes = os.path.getsize(path)
+            print(
+                f"[KIE Next][Topaz] Prepared canonical H.264/SDR MP4 "
+                f"({size_bytes / (1024 * 1024):.2f} MiB) before upload."
+            )
+            out[name] = client.upload_file(path, upload_path="comfyui/videos")
+        else:
+            out[name] = _coerce_widget_value(name, example, value, client)
 
     # Skeleton docs or a temporarily unresolved page still preserve the central prompt.
     if not out and str(kwargs.get("prompt") or "").strip():
