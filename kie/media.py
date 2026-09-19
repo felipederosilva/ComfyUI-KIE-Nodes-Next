@@ -80,12 +80,36 @@ def _comfy_temp_dir() -> str:
     return path
 
 
-def video_to_temp_file(video: Any) -> str:
+def video_to_temp_file(video: Any, *, canonical_h264_sdr: bool = False) -> str:
     path = os.path.join(_comfy_temp_dir(), f"kie_upload_{uuid.uuid4().hex}.mp4")
     if hasattr(video, "save_to"):
-        video.save_to(path)
+        if canonical_h264_sdr:
+            # Topaz's remote decoder is stricter than many generation providers.
+            # Modern ComfyUI can preserve 10-bit/HDR source characteristics by
+            # default, so explicitly materialize an interoperable 8-bit SDR H.264 MP4.
+            try:
+                video.save_to(
+                    path,
+                    bit_depth=8,
+                    crf=18.0,
+                    color_space="sRGB",
+                    preset="medium",
+                )
+            except TypeError as exc:
+                raise KIEAPIError(
+                    "Topaz Video Upscale requires a current ComfyUI VideoInput implementation "
+                    "that supports 8-bit SDR H.264 export. Update ComfyUI and try again."
+                ) from exc
+        else:
+            video.save_to(path)
+        if not os.path.isfile(path) or os.path.getsize(path) <= 0:
+            raise KIEAPIError("ComfyUI produced an empty video file before KIE upload.")
         return path
     if isinstance(video, str) and os.path.isfile(video):
+        if canonical_h264_sdr:
+            raise KIEAPIError(
+                "Topaz safe-video normalization requires a ComfyUI VIDEO object, not a raw file path."
+            )
         return video
     raise KIEAPIError("Unsupported VIDEO object. Update ComfyUI to a build with VideoInput.save_to().")
 
