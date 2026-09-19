@@ -9,6 +9,8 @@ from typing import Any
 from ..kie.catalog import load_catalog, resolve_operation
 from ..kie.client import KIEAPIError, KIEClient, pretty_json
 from ..kie.helpers import make_client, parse_object_json
+KIE_GENERATED_BUILD = "0.4.2"
+
 from ..kie.media import (
     download_audio_object,
     download_image_tensor,
@@ -907,7 +909,7 @@ def _topaz_failure_message(task_ids: list[str], exc: KIEAPIError) -> str:
     )
 
 
-def _market_execute(op: dict[str, Any], model: str, kind: str, kwargs: dict[str, Any]):
+def _market_execute(op: dict[str, Any], model: str, kind: str, kwargs: dict[str, Any], payload_model: str | None = None):
     client = make_client(None)
     payload = _build_payload(client, op, kwargs, model=model)
     payload = _normalize_topaz_video_payload(model, payload)

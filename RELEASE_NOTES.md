@@ -1,3 +1,10 @@
+# v0.4.2 Install Integrity Repair
+
+- Adds a build marker to the generated node module and verifies it against the package version at startup.
+- Refuses to run mixed installations where __init__.py was updated but nodes/generated.py stayed stale.
+- Keeps Topaz v0.4.1 retry/validation repair intact.
+- Restores compatibility with callers that pass the generated payload_model keyword.
+
 # v0.4.1 Topaz Reliability Repair
 
 - Normalizes Topaz Video Upscale payloads before task submission.
