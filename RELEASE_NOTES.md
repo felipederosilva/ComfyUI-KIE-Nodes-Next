@@ -1,3 +1,11 @@
+# v0.4.3 Topaz Video Compatibility Repair
+
+- Re-encodes ComfyUI VIDEO inputs specifically for Topaz as 8-bit SDR/sRGB H.264 MP4 before upload.
+- Stops preserving 10-bit/HDR characteristics on the Topaz path, which can be rejected by stricter remote decoders.
+- Verifies the materialized MP4 is non-empty before upload/task submission.
+- Prints the canonical Topaz upload size to the ComfyUI log for provider-limit diagnosis.
+- Keeps the single narrow provider-internal-error retry from v0.4.1.
+
 # v0.4.2 Install Integrity Repair
 
 - Adds a build marker to the generated node module and verifies it against the package version at startup.
