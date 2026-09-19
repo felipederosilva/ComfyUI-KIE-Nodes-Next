@@ -22,3 +22,17 @@ class TestMedia(unittest.TestCase):
 if __name__ == "__main__":
     unittest.main()
 
+
+
+def test_video_to_temp_file_rejects_empty_canonical_output(monkeypatch, tmp_path):
+    class EmptyVideo:
+        def save_to(self, path, **kwargs):
+            open(path, "wb").close()
+
+    monkeypatch.setattr(media, "_comfy_temp_dir", lambda: str(tmp_path))
+    try:
+        media.video_to_temp_file(EmptyVideo(), canonical_h264_sdr=True)
+    except media.KIEAPIError as exc:
+        assert "empty video file" in str(exc)
+    else:
+        raise AssertionError("empty canonical Topaz video should fail locally")
