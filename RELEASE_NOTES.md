@@ -1,3 +1,11 @@
+# v0.4.1 Topaz Reliability Repair
+
+- Normalizes Topaz Video Upscale payloads before task submission.
+- Rejects missing video inputs and unsupported upscale factors locally before spending credits.
+- Retries exactly once when KIE accepts a Topaz task and the remote provider returns the narrow terminal "internal error / please try again later" failure signature.
+- Preserves single-submit behavior for all other models and all non-transient errors.
+- Returns a Topaz-specific diagnostic with task IDs when the provider fails again.
+
 # v0.4.0 Studio Direction
 
 - Refreshes the official KIE catalog to 165 model IDs and 234 operations, with 182 schema-enriched operations.

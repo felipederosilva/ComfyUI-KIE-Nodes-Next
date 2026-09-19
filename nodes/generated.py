@@ -853,13 +853,98 @@ def _execute_llm(op: dict[str, Any], model: str, kwargs: dict[str, Any]):
 # ----------------------------- class factories -------------------------------
 
 
+def _is_topaz_video_upscale(model: str) -> bool:
+    return str(model or "").strip().lower() == "topaz/video-upscale"
+
+
+def _normalize_topaz_video_payload(model: str, payload: dict[str, Any]) -> dict[str, Any]:
+    """Normalize Topaz's stricter Market payload before a paid task is submitted."""
+    if not _is_topaz_video_upscale(model):
+        return payload
+
+    video_url = payload.get("video_url")
+    if not isinstance(video_url, str) or not video_url.strip():
+        raise KIEAPIError(
+            "Topaz Video Upscale requires a valid video input. Connect a VIDEO to video_url before running the node."
+        )
+
+    raw_factor = payload.get("upscale_factor", "2")
+    factor = str(raw_factor).strip().lower()
+    if factor.endswith("x"):
+        factor = factor[:-1].strip()
+    if factor.endswith(".0"):
+        factor = factor[:-2]
+    if factor not in {"1", "2", "4"}:
+        raise KIEAPIError(
+            f"Topaz Video Upscale upscale_factor must be 1, 2, or 4 (received {raw_factor!r})."
+        )
+
+    normalized = dict(payload)
+    normalized["video_url"] = video_url.strip()
+    # KIE's current Topaz API documents this value as a string.
+    normalized["upscale_factor"] = factor
+    return normalized
+
+
+def _retryable_topaz_internal_error(exc: KIEAPIError) -> bool:
+    message = str(exc).lower()
+    return (
+        "internal error" in message
+        or "internal server error" in message
+        or "please try again later" in message
+    )
+
+
+def _topaz_failure_message(task_ids: list[str], exc: KIEAPIError) -> str:
+    ids = ", ".join(task_ids) if task_ids else "unknown"
+    return (
+        "Topaz Video Upscale was accepted by KIE but the remote Topaz provider failed during processing. "
+        "KIE Next retried the provider once and the retry also failed. "
+        f"Task ID(s): {ids}. Provider message: {exc}. "
+        "This is a remote KIE/Topaz processing failure, not a local CUDA/VRAM error. "
+        "Try a short H.264 MP4 at 2x to isolate source compatibility; if that succeeds, transcode the original "
+        "video to H.264/MP4 before upscaling."
+    )
+
+
 def _market_execute(op: dict[str, Any], model: str, kind: str, kwargs: dict[str, Any]):
     client = make_client(None)
     payload = _build_payload(client, op, kwargs, model=model)
+    payload = _normalize_topaz_video_payload(model, payload)
     _validate_special(model, payload)
     callback = str(kwargs.get("callback_url") or "").strip()
-    task_id = client.create_task(model, payload, callback_url=callback)
-    result = client.wait_for_task(task_id, timeout_seconds=int(kwargs.get("timeout_seconds", 1200)))
+    timeout_seconds = int(kwargs.get("timeout_seconds", 1200))
+
+    # Topaz occasionally returns a terminal provider-side "internal error" only
+    # seconds after accepting a task. Retry exactly once for that narrow failure
+    # signature. Other models and all validation/auth/billing failures keep the
+    # previous single-submit behavior.
+    max_attempts = 2 if _is_topaz_video_upscale(model) else 1
+    task_ids: list[str] = []
+    result = None
+    last_error: KIEAPIError | None = None
+
+    for attempt in range(max_attempts):
+        task_id = client.create_task(model, payload, callback_url=callback)
+        task_ids.append(task_id)
+        try:
+            result = client.wait_for_task(task_id, timeout_seconds=timeout_seconds)
+            break
+        except KIEAPIError as exc:
+            last_error = exc
+            if attempt + 1 < max_attempts and _retryable_topaz_internal_error(exc):
+                time.sleep(2.0)
+                continue
+            if _is_topaz_video_upscale(model) and _retryable_topaz_internal_error(exc):
+                raise KIEAPIError(_topaz_failure_message(task_ids, exc), payload=getattr(exc, "payload", None)) from exc
+            raise
+
+    if result is None:
+        if last_error is not None:
+            raise last_error
+        raise KIEAPIError("KIE task ended without a result.")
+
+    task_id = task_ids[-1]
     payload_out = result.raw
     if kind in {"image", "video", "audio", "text"}:
         return _result_for_kind(client, kind, payload_out, task_id, result.credits_consumed)

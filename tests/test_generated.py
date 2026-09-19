@@ -96,3 +96,27 @@ class TestGeneratedNodes(unittest.TestCase):
 if __name__ == "__main__":
     unittest.main()
 
+
+
+def test_topaz_video_payload_normalization():
+    payload = {"video_url": "  https://example.com/input.mp4  ", "upscale_factor": "2x"}
+    normalized = generated._normalize_topaz_video_payload("topaz/video-upscale", payload)
+    assert normalized["video_url"] == "https://example.com/input.mp4"
+    assert normalized["upscale_factor"] == "2"
+
+
+def test_topaz_video_payload_rejects_invalid_scale():
+    try:
+        generated._normalize_topaz_video_payload(
+            "topaz/video-upscale",
+            {"video_url": "https://example.com/input.mp4", "upscale_factor": "3"},
+        )
+    except generated.KIEAPIError as exc:
+        assert "must be 1, 2, or 4" in str(exc)
+    else:
+        raise AssertionError("invalid Topaz upscale factor should fail before submission")
+
+
+def test_topaz_retry_signature_is_narrow():
+    assert generated._retryable_topaz_internal_error(generated.KIEAPIError("internal error, please try again later"))
+    assert not generated._retryable_topaz_internal_error(generated.KIEAPIError("insufficient credits"))
