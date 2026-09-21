@@ -1,3 +1,71 @@
+# v0.4.15 Market Model Payload Regression Fix
+
+- Fixes Wan's rejection of an unsupported nested model field introduced by the Suno adapter.
+- Ordinary Market requests now retain model only in the outer request envelope. Versioned Suno requests still include their declared input.model.
+- Validates the Wan submission with its bundled schema without submitting paid generation requests.
+
+# v0.4.14 Wan Workflow Widget Migration
+
+- Repairs existing Wan 3.0 and Wan 3.0 Prime workflow nodes whose serialized widgets shifted when `audio` was corrected from an AUDIO socket to a boolean control.
+- Detects the distinctive stale layout (`seed="randomize"`) and restores seed, control-after-generate, NSFW, timeout, and callback values when the workflow opens.
+- Leaves newly created or already-corrected Wan nodes untouched and records the repaired layout on the next workflow save.
+
+# v0.4.13 Schema-Aware Boolean Controls
+
+- Fixes **Wan 3.0 Video Prime** and other generated nodes whose boolean `audio` toggle was incorrectly treated as an AUDIO media input.
+- Gives explicit OpenAPI boolean types priority over media-like parameter names in both ComfyUI widgets and submitted payloads.
+- Coerces legacy workflow values such as `"true"` and `"false"` back to real JSON booleans without changing genuine audio-file inputs.
+
+# v0.4.12 Suno Non-Custom Payload Repair
+
+- Completes the image-reference compatibility path by omitting `duration` and every other Custom-Mode-only control when image references require Generate Music to run with `custom_mode=false`.
+- Prevents the follow-up provider error `duration is only supported when customMode is true` and the equivalent style, title, persona, and weight validation chain.
+- Keeps `prompt`, image/audio references, and the selected Suno model version intact; text-only Custom Mode requests remain unchanged.
+
+# v0.4.11 Suno Image-Reference Mode Repair
+
+- Fixes existing **Generate Music** workflows that connect image references while retaining Custom Mode, a combination the provider rejects as `imageUrls is only supported when customMode is false`.
+- Automatically submits that specific documented combination with `custom_mode=false`, retaining the connected images and avoiding a provider-side failed task.
+- Leaves text-only Custom Mode generations unchanged.
+
+# v0.4.10 Suno Market Envelope Repair
+
+- Fixes existing generated Suno nodes, including **Generate Music · V6 WILD**, that incorrectly sent a provider version such as `V6_WILD` as KIE's outer Market model name.
+- Sends KIE's documented `ai-music-api/...` envelope model while preserving the selected Suno version in the nested `input.model` payload.
+- Covers Generate Music, Extend Music, Upload/Cover, Upload/Extend, Add Instrumental, Add Vocals, Mashup, Sounds, and Music Cover without changing any node IDs or workflow wiring.
+- Does not submit, repeat, or charge for a failed task; affected existing workflows work after a ComfyUI restart.
+
+# v0.4.9 Persistent Load Video
+
+- Adds **KIE • Persistent Load Video**, a self-contained replacement for the core Load Video node.
+- Reads nested input files and saved output files directly, including durable values such as `V6_00001_.mp4 [output]`.
+- Stores the selected video in the workflow and draws a preview frame from the durable file on reopening.
+
+# v0.4.8 Persistent Preview Image
+
+- Adds **KIE • Persistent Preview Image**, a durable replacement for ComfyUI's temp-only Preview Image node.
+- Saves incoming images under `output/KIE-Previews/` and records the output reference in the workflow.
+- Restores and draws the saved thumbnail when the workflow is reopened, while continuing to pass the image downstream.
+
+# v0.4.7 Output-Video Preview Repair
+
+- Corrects `Load Video` previews for annotated `[output]` files, which core ComfyUI otherwise labels as input-folder media after workflow restoration.
+- Keeps the v0.4.6 durable result archive and recursive media selector repair.
+
+# v0.4.6 Persistent Result Media and Loader Repair
+
+- Repairs stale `Load Video`, `Load Image`, and `Load Audio` selections by listing recursively discovered input files and existing annotated `[output]` media references.
+- Preserves existing files in place; no media is copied, renamed, or removed to repair a workflow.
+- Archives KIE-downloaded image, video, audio, and generic-file results under `output/KIE-Results/` using content-addressed filenames, so results survive temp-folder cleanup and app restarts.
+- Keeps the former temp-file behavior as a fallback only when ComfyUI's output directory cannot be written.
+
+# v0.4.5 Nested Pasted-Media Compatibility
+
+- Fixes workflows whose `Load Image` values persist as `pasted/<filename>` after a ComfyUI reload.
+- Extends the core image-node combo list with recursively discovered files under the configured input directory, including `input/pasted/`.
+- Preserves ComfyUI's existing path-containment validation and leaves normal top-level input loading unchanged.
+- Adds offline coverage for nested paths, forward-slash normalization, and symlinked-directory exclusion.
+
 # v0.4.4 Topaz Diagnostic Hotfix
 
 - Fixes a missing `os` import introduced by the v0.4.3 Topaz upload-size diagnostic.

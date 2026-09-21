@@ -1,7 +1,10 @@
 import importlib.util
+import json
 import pathlib
 import sys
 import unittest
+from types import SimpleNamespace
+from unittest.mock import patch
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 
@@ -66,6 +69,145 @@ class TestGeneratedNodes(unittest.TestCase):
         self.assertNotIn("model", inputs["required"])
         self.assertNotIn("model", inputs["optional"])
         self.assertIn("prompt", inputs["required"])
+
+    def test_suno_market_envelope_and_payload_model_are_distinct(self):
+        generated = self.plugin.nodes.generated
+        op = {
+            "endpoint": "/api/v1/jobs/createTask",
+            "docs_url": "https://docs.kie.ai/suno-api/generate-music.md",
+            "example_body": {"prompt": "test", "model": "V4"},
+            "parameter_hints": {"prompt": {"required": True}, "model": {"required": True}},
+        }
+        self.assertEqual(generated._market_envelope_model(op, "V6_WILD"), "ai-music-api/generate")
+        payload = generated._build_payload(None, op, {"prompt": "test"}, model="V6_WILD")
+        self.assertEqual(payload["model"], "V6_WILD")
+
+    def test_suno_unversioned_market_node_uses_documented_envelope(self):
+        generated = self.plugin.nodes.generated
+        op = {
+            "endpoint": "/api/v1/jobs/createTask",
+            "docs_url": "https://docs.kie.ai/suno-api/cover-suno.md",
+        }
+        self.assertEqual(generated._market_envelope_model(op), "ai-music-api/cover-generate")
+
+    def test_suno_market_submission_keeps_envelope_and_input_version_separate(self):
+        generated = self.plugin.nodes.generated
+        op = {
+            "endpoint": "/api/v1/jobs/createTask",
+            "docs_url": "https://docs.kie.ai/suno-api/generate-music.md",
+            "example_body": {"prompt": "test", "model": "V4"},
+            "parameter_hints": {"prompt": {"required": True}, "model": {"required": True}},
+        }
+
+        class FakeClient:
+            def create_task(self, model, payload, callback_url=""):
+                self.submission = (model, payload, callback_url)
+                return "task-1"
+
+            def wait_for_task(self, task_id, timeout_seconds):
+                return SimpleNamespace(raw={}, urls=[], credits_consumed=0.0)
+
+        fake = FakeClient()
+        with patch.object(generated, "make_client", return_value=fake):
+            generated._market_execute(
+                op,
+                "ai-music-api/generate",
+                "utility",
+                {"prompt": "test"},
+                payload_model="V6_WILD",
+            )
+
+        self.assertEqual(fake.submission[0], "ai-music-api/generate")
+        self.assertEqual(fake.submission[1]["model"], "V6_WILD")
+
+    def test_wan_market_submission_has_no_nested_model(self):
+        generated = self.plugin.nodes.generated
+        catalog = json.loads((ROOT / "models" / "catalog.json").read_text(encoding="utf-8"))
+        op = next(x for x in catalog["operations"]
+                  if x.get("docs_url", "").endswith("/wan/3-0-video-prime.md"))
+        fake = SimpleNamespace(
+            wait_for_task=lambda *a, **kw: SimpleNamespace(raw={}, urls=[], credits_consumed=0),
+        )
+        submissions = []
+        def submit(model, payload, **kwargs):
+            submissions.append((model, payload))
+            return "offline-task"
+        fake.create_task = submit
+        with patch.object(generated, "make_client", return_value=fake):
+            generated._market_execute(
+                op, "wan/3-0-video-prime", "utility",
+                {"prompt": "test", "audio": False, "duration": 10},
+                payload_model="wan/3-0-video-prime",
+            )
+        self.assertEqual(len(submissions), 1)
+        model, payload = submissions[0]
+        self.assertEqual(model, "wan/3-0-video-prime")
+        self.assertNotIn("model", payload)
+        self.assertIs(payload["audio"], False)
+        self.assertEqual(payload["duration"], 10)
+        self.assertLessEqual(set(payload), set(op["parameter_hints"]))
+
+    def test_suno_image_reference_disables_custom_mode_before_submission(self):
+        generated = self.plugin.nodes.generated
+        op = {"docs_url": "https://docs.kie.ai/suno-api/generate-music.md"}
+        payload = {
+            "image_urls": ["https://example.test/reference.png"],
+            "custom_mode": True,
+            "duration": 20,
+            "style": "Cinematic",
+            "title": "Example",
+            "instrumental": True,
+            "model": "V6_WILD",
+            "prompt": "music",
+        }
+        normalized = generated._normalize_suno_music_payload(op, payload)
+        self.assertFalse(normalized["custom_mode"])
+        self.assertNotIn("duration", normalized)
+        self.assertNotIn("style", normalized)
+        self.assertNotIn("title", normalized)
+        self.assertNotIn("instrumental", normalized)
+        self.assertEqual(normalized["model"], "V6_WILD")
+        self.assertEqual(normalized["prompt"], "music")
+        self.assertEqual(normalized["image_urls"], ["https://example.test/reference.png"])
+
+    def test_suno_text_only_custom_mode_is_preserved(self):
+        generated = self.plugin.nodes.generated
+        op = {"docs_url": "https://docs.kie.ai/suno-api/generate-music.md"}
+        payload = {"prompt": "music", "custom_mode": True}
+        normalized = generated._normalize_suno_music_payload(op, payload)
+        self.assertTrue(normalized["custom_mode"])
+
+    def test_topaz_payload_normalization_still_applies(self):
+        generated = self.plugin.nodes.generated
+        normalized = generated._normalize_topaz_video_payload(
+            "topaz/video-upscale",
+            {"video_url": " https://example.test/input.mp4 ", "upscale_factor": "2x"},
+        )
+        self.assertEqual(normalized["video_url"], "https://example.test/input.mp4")
+        self.assertEqual(normalized["upscale_factor"], "2")
+
+    def test_boolean_audio_schema_is_not_treated_as_media(self):
+        generated = self.plugin.nodes.generated
+        op = {
+            "title": "Wan 3.0 - Video Prime",
+            "endpoint": "/api/v1/jobs/createTask",
+            "parameter_hints": {
+                "audio": {"type": "boolean", "required": False, "default": True},
+            },
+        }
+        inputs = generated._friendly_input_types(op, model="wan/3-0-video-prime")
+        self.assertEqual(inputs["optional"]["audio"][0], "BOOLEAN")
+        payload = generated._build_payload(None, op, {"audio": "false"}, model="wan/3-0-video-prime")
+        self.assertIs(payload["audio"], False)
+
+    def test_real_audio_field_without_boolean_schema_remains_media(self):
+        generated = self.plugin.nodes.generated
+        op = {
+            "title": "Audio Input",
+            "parameter_hints": {"audio": {"type": "object", "required": True}},
+        }
+        inputs = generated._friendly_input_types(op)
+        self.assertEqual(inputs["required"]["audio"][0], "AUDIO")
 
     def test_bootstrap_exposes_more_than_transport_helpers(self):
         # 15 utility/advanced nodes + individual model/version nodes.

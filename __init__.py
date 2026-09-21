@@ -1,8 +1,15 @@
 from .nodes import NODE_CLASS_MAPPINGS, NODE_DISPLAY_NAME_MAPPINGS
 
-__version__ = "0.4.4"
+__version__ = "0.4.15"
 
 WEB_DIRECTORY = "./js"
+
+try:
+    from .kie.media_compat import install as _install_media_compat
+    _install_media_compat()
+except Exception as exc:
+    # Media compatibility is optional and must never prevent node loading.
+    print(f"[KIE Next] Nested input-media compatibility disabled: {exc}")
 
 # Refuse to run a mixed install (for example, a new __init__.py with an old
 # nodes/generated.py). This is safer than reporting a new version while silently

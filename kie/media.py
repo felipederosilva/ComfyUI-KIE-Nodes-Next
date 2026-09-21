@@ -1,11 +1,13 @@
 from __future__ import annotations
 
 import io
+import hashlib
 import os
 import tempfile
 import uuid
 from pathlib import Path
 from typing import Any
+from urllib.parse import urlparse
 
 import numpy as np
 import torch
@@ -64,8 +66,41 @@ def bytes_to_image_tensor(content: bytes) -> torch.Tensor:
     return torch.from_numpy(array).unsqueeze(0)
 
 
+def _result_suffix(url: str, fallback: str) -> str:
+    suffix = Path(urlparse(url).path).suffix.lower()
+    return suffix if suffix and len(suffix) <= 12 and suffix[1:].isalnum() else fallback
+
+
+def persist_result_bytes(content: bytes, url: str, *, kind: str, fallback_suffix: str) -> str | None:
+    """Archive downloaded KIE media under ComfyUI output and return its path.
+
+    KIE result objects used to live only in ComfyUI's temp directory, so a
+    restart could make a successful generation unavailable to the workflow.
+    Content-addressed filenames avoid accidental overwrites and duplicate writes.
+    """
+    try:
+        import folder_paths  # type: ignore
+
+        directory = Path(folder_paths.get_output_directory()) / "KIE-Results" / kind
+        directory.mkdir(parents=True, exist_ok=True)
+        suffix = _result_suffix(url, fallback_suffix)
+        path = directory / f"kie_{hashlib.sha256(content).hexdigest()}{suffix}"
+        if not path.exists():
+            temporary = path.with_name(f".{path.name}.{uuid.uuid4().hex}.tmp")
+            temporary.write_bytes(content)
+            temporary.replace(path)
+        return str(path)
+    except Exception as exc:
+        # Keep a successful remote generation usable if a local output folder is
+        # temporarily unavailable. The caller retains the former temp fallback.
+        print(f"[KIE Next] Could not archive generated {kind}: {exc}")
+        return None
+
+
 def download_image_tensor(client: KIEClient, url: str) -> torch.Tensor:
-    return bytes_to_image_tensor(client.download_bytes(url))
+    content = client.download_bytes(url)
+    persist_result_bytes(content, url, kind="images", fallback_suffix=".png")
+    return bytes_to_image_tensor(content)
 
 
 def _comfy_temp_dir() -> str:
@@ -116,8 +151,10 @@ def video_to_temp_file(video: Any, *, canonical_h264_sdr: bool = False) -> str:
 
 def download_video_object(client: KIEClient, url: str):
     content = client.download_bytes(url)
-    path = os.path.join(_comfy_temp_dir(), f"kie_result_{uuid.uuid4().hex}.mp4")
-    Path(path).write_bytes(content)
+    path = persist_result_bytes(content, url, kind="videos", fallback_suffix=".mp4")
+    if path is None:
+        path = os.path.join(_comfy_temp_dir(), f"kie_result_{uuid.uuid4().hex}.mp4")
+        Path(path).write_bytes(content)
     try:
         from comfy_api.latest import InputImpl  # type: ignore
     except Exception as exc:
@@ -166,10 +203,14 @@ def upload_audio(client: KIEClient, audio: Any, *, prefix: str = "audio") -> str
 
 
 def download_to_temp_file(client: KIEClient, url: str, suffix: str = "") -> str:
-    from urllib.parse import urlparse
     content = client.download_bytes(url)
-    if not suffix:
-        suffix = Path(urlparse(url).path).suffix or ".bin"
+    if suffix:
+        suffix = suffix if suffix.startswith(".") and suffix[1:].isalnum() else ".bin"
+    else:
+        suffix = _result_suffix(url, ".bin")
+    persistent_path = persist_result_bytes(content, url, kind="files", fallback_suffix=suffix)
+    if persistent_path is not None:
+        return persistent_path
     path = os.path.join(_comfy_temp_dir(), f"kie_result_{uuid.uuid4().hex}{suffix}")
     Path(path).write_bytes(content)
     return path
@@ -178,10 +219,11 @@ def download_to_temp_file(client: KIEClient, url: str, suffix: str = "") -> str:
 def download_audio_object(client: KIEClient, url: str):
     """Download generated audio and decode it to ComfyUI's standard AUDIO dict."""
     content = client.download_bytes(url)
-    from urllib.parse import urlparse
-    suffix = Path(urlparse(url).path).suffix or ".mp3"
-    path = os.path.join(_comfy_temp_dir(), f"kie_audio_{uuid.uuid4().hex}{suffix}")
-    Path(path).write_bytes(content)
+    suffix = _result_suffix(url, ".mp3")
+    path = persist_result_bytes(content, url, kind="audio", fallback_suffix=suffix)
+    if path is None:
+        path = os.path.join(_comfy_temp_dir(), f"kie_audio_{uuid.uuid4().hex}{suffix}")
+        Path(path).write_bytes(content)
     try:
         import torchaudio  # ComfyUI ships with torchaudio in standard installs.
         waveform, sample_rate = torchaudio.load(path)

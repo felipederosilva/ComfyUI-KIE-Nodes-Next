@@ -10,7 +10,7 @@ from typing import Any
 from ..kie.catalog import load_catalog, resolve_operation
 from ..kie.client import KIEAPIError, KIEClient, pretty_json
 from ..kie.helpers import make_client, parse_object_json
-KIE_GENERATED_BUILD = "0.4.4"
+KIE_GENERATED_BUILD = "0.4.15"
 
 from ..kie.media import (
     download_audio_object,
@@ -277,6 +277,24 @@ def _hint_default(hint: dict[str, Any]) -> Any:
     return ""
 
 
+def _is_boolean_hint(hint: dict[str, Any]) -> bool:
+    return str(hint.get("type") or "").lower() in {"boolean", "bool"}
+
+
+def _coerce_boolean(value: Any, default: bool = False) -> bool:
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, (int, float)):
+        return value != 0
+    if isinstance(value, str):
+        normalized = value.strip().lower()
+        if normalized in {"true", "1", "yes", "on"}:
+            return True
+        if normalized in {"false", "0", "no", "off", ""}:
+            return False
+    return bool(default)
+
+
 def _enum_from_hint(hint: dict[str, Any]) -> list[str]:
     values = hint.get("enum") or hint.get("options") or []
     if isinstance(values, str): values = [x.strip() for x in values.split(",")]
@@ -292,10 +310,15 @@ def _scalar_widget(name: str, value: Any, op: dict[str, Any]):
         value = _hint_default(hint)
 
     common = {"tooltip": desc} if desc else {}
+    schema_type = str(hint.get("type") or "").lower()
+    # Schema types take precedence over field names and enums. In particular,
+    # providers often call an output-audio toggle simply ``audio``; it is not
+    # an AUDIO upload socket when the OpenAPI schema declares a boolean.
+    if schema_type in {"boolean", "bool"}:
+        return ("BOOLEAN", {"default": _coerce_boolean(value, bool(hint.get("default", False))), **common})
     if hinted_enum:
         default = str(value) if value not in (None, "") else hinted_enum[0]
         return (_dedupe_default(default, hinted_enum), {"default": default, **common})
-    schema_type = str(hint.get("type") or "").lower()
     if schema_type in {"integer", "int"}:
         default = int(value) if isinstance(value, (int, float)) and not isinstance(value, bool) else int(hint.get("default") or 0)
         return ("INT", {
@@ -314,8 +337,6 @@ def _scalar_widget(name: str, value: Any, op: dict[str, Any]):
             "step": 0.01,
             **common,
         })
-    if schema_type in {"boolean", "bool"}:
-        return ("BOOLEAN", {"default": bool(value if value is not None else hint.get("default", False)), **common})
     if n in {"aspect_ratio", "aspectratio"} and isinstance(value, str):
         return (_dedupe_default(value or "auto", _ASPECTS), {"default": value or "auto", **common})
     if n in {"resolution", "image_resolution", "resolution_type"} and isinstance(value, str):
@@ -376,6 +397,40 @@ def _request_templates(op: dict[str, Any]) -> tuple[dict[str, Any], dict[str, An
     return dict(body), dict(query), market
 
 
+# Some KIE Market pages describe a provider-specific ``input.model`` version
+# (such as Suno V6_WILD) rather than the KIE Market model accepted by
+# ``/api/v1/jobs/createTask``. The request examples in those official pages
+# show both values. Keep this mapping tied to the documentation URL, rather
+# than guessing from a display label, so generated nodes retain their stable
+# workflow IDs while the transport receives the documented envelope model.
+_MARKET_ENVELOPE_MODELS_BY_DOC_PATH = {
+    "suno-api/generate-music": "ai-music-api/generate",
+    "suno-api/extend-music": "ai-music-api/extend",
+    "suno-api/upload-and-cover-audio": "ai-music-api/upload-and-cover-audio",
+    "suno-api/upload-and-extend-audio": "ai-music-api/upload-and-extend-audio",
+    "suno-api/add-instrumental": "ai-music-api/add-instrumental",
+    "suno-api/add-vocals": "ai-music-api/add-vocals",
+    "suno-api/generate-mashup": "ai-music-api/mashup",
+    "suno-api/generate-sounds": "ai-music-api/sounds",
+    "suno-api/cover-suno": "ai-music-api/cover-generate",
+}
+
+
+def _market_envelope_model(op: dict[str, Any], fallback_model: str = "") -> str:
+    """Return the documented Market transport model for an operation.
+
+    ``fallback_model`` preserves existing behavior for every operation that
+    does not need an adapter. A resolved Suno operation can intentionally
+    have no input-model variant (for example, music-cover generation), so the
+    adapter also lets those nodes use their official Market envelope.
+    """
+    docs_url = str(op.get("docs_url") or "").lower().split("?", 1)[0].rstrip("/")
+    for doc_path, envelope_model in _MARKET_ENVELOPE_MODELS_BY_DOC_PATH.items():
+        if docs_url.endswith("/" + doc_path) or docs_url.endswith("/" + doc_path + ".md"):
+            return envelope_model
+    return fallback_model
+
+
 def _all_parameter_names(op: dict[str, Any], body: dict[str, Any], query: dict[str, Any]) -> list[str]:
     names = list(body.keys()) + [x for x in query.keys() if x not in body]
     for name in (op.get("path_params") or []):
@@ -408,12 +463,15 @@ def _friendly_input_types(op: dict[str, Any], *, model: str = "") -> dict[str, d
         elif name in query: value = query.get(name)
         else: value = _hint_default(hint)
 
-        aliases = _media_aliases(name, value)
+        is_boolean = _is_boolean_hint(hint)
+        aliases = [] if is_boolean else _media_aliases(name, value)
         if aliases:
             for alias, socket_type, force_required in aliases:
                 (required if force_required else optional)[alias] = (socket_type,)
             continue
-        if _is_image_field(name):
+        if is_boolean:
+            widget = _scalar_widget(name, value, op)
+        elif _is_image_field(name):
             widget = ("IMAGE",)
         elif _is_video_field(name):
             widget = ("VIDEO",)
@@ -527,8 +585,10 @@ def _build_payload(client: KIEClient, op: dict[str, Any], kwargs: dict[str, Any]
             continue
         if name == "model" and model:
             continue
-        example = body.get(name, query.get(name, _hint_default(hints.get(name) or {})))
-        aliased_urls = _collect_media_aliases(client, name, example, kwargs)
+        hint = hints.get(name) or {}
+        is_boolean = _is_boolean_hint(hint)
+        example = body.get(name, query.get(name, _hint_default(hint)))
+        aliased_urls = None if is_boolean else _collect_media_aliases(client, name, example, kwargs)
         if aliased_urls is not None:
             if aliased_urls:
                 out[name] = aliased_urls
@@ -539,7 +599,9 @@ def _build_payload(client: KIEClient, op: dict[str, Any], kwargs: dict[str, Any]
         # Empty optional strings are omitted instead of overriding provider defaults.
         if value == "" and not bool((hints.get(name) or {}).get("required")):
             continue
-        if _is_topaz_video_upscale(model) and _is_video_field(name):
+        if is_boolean:
+            out[name] = _coerce_boolean(value, bool(hint.get("default", False)))
+        elif _is_topaz_video_upscale(model) and _is_video_field(name):
             path = video_to_temp_file(value, canonical_h264_sdr=True)
             size_bytes = os.path.getsize(path)
             print(
@@ -559,7 +621,14 @@ def _build_payload(client: KIEClient, op: dict[str, Any], kwargs: dict[str, Any]
         "expert_override_json",
     )
     out.update(advanced)
-    if not market and model:
+    # Ordinary Market models belong only in create_task's outer envelope.
+    # Adapted provider versions (Suno) belong in input only when declared by
+    # its schema; unversioned adapters such as cover generation have no model.
+    nested_model = (
+        _market_envelope_model(op, model) != model
+        and ("model" in hints or "model" in body)
+    )
+    if model and (not market or nested_model):
         out["model"] = model
     return out
 
@@ -578,8 +647,12 @@ def _build_query(client: KIEClient, op: dict[str, Any], kwargs: dict[str, Any]) 
     for name in query_names:
         if name not in kwargs or kwargs[name] is None or kwargs[name] == "":
             continue
-        example = query_template.get(name, _hint_default(hints.get(name) or {}))
-        out[name] = _coerce_widget_value(name, example, kwargs[name], client)
+        hint = hints.get(name) or {}
+        example = query_template.get(name, _hint_default(hint))
+        if _is_boolean_hint(hint):
+            out[name] = _coerce_boolean(kwargs[name], bool(hint.get("default", False)))
+        else:
+            out[name] = _coerce_widget_value(name, example, kwargs[name], client)
     advanced = parse_object_json(
         str(kwargs.get("expert_override_json") or "{}"), "expert_override_json"
     )
@@ -898,6 +971,62 @@ def _normalize_topaz_video_payload(model: str, payload: dict[str, Any]) -> dict[
     return normalized
 
 
+def _normalize_suno_music_payload(op: dict[str, Any], payload: dict[str, Any]) -> dict[str, Any]:
+    """Apply documented Suno Generate Music input-mode constraints locally.
+
+    KIE only accepts image references on this endpoint when Custom Mode is
+    disabled. Generated ComfyUI workflows commonly connect an IMAGE socket but
+    retain the catalog's historical ``custom_mode=True`` default, producing a
+    provider-side rejection after the file has already been uploaded. Keep the
+    image reference and make the compatible mode explicit before submission.
+    """
+    docs_url = str(op.get("docs_url") or "").lower().split("?", 1)[0].rstrip("/")
+    is_generate_music = docs_url.endswith("/suno-api/generate-music") or docs_url.endswith("/suno-api/generate-music.md")
+    has_image_refs = any(
+        bool(value)
+        for key, value in payload.items()
+        if str(key).replace("_", "").lower() == "imageurls"
+    )
+    if not is_generate_music or not has_image_refs:
+        return payload
+
+    custom_mode_keys = [key for key in payload if str(key).replace("_", "").lower() == "custommode"]
+    if custom_mode_keys:
+        for key in custom_mode_keys:
+            payload[key] = False
+    else:
+        payload["custom_mode"] = False
+    # These controls are valid only in Custom Mode. ComfyUI sends values for
+    # visible optional widgets even when the provider mode makes them invalid,
+    # so remove the entire incompatible set instead of surfacing a sequence of
+    # remote validation failures (duration first, then style/title/persona).
+    custom_only_fields = {
+        "duration",
+        "style",
+        "title",
+        "negativetags",
+        "vocalgender",
+        "styleweight",
+        "weirdnessconstraint",
+        "audioweight",
+        "variety",
+        "personaid",
+        "personamodel",
+        "instrumental",
+    }
+    removed = []
+    for key in list(payload):
+        if str(key).replace("_", "").lower() in custom_only_fields:
+            removed.append(str(key))
+            payload.pop(key, None)
+    print(
+        "[KIE Next][Suno] Image references require Custom Mode off; "
+        "submitting Generate Music with custom_mode=false"
+        + (f" and omitting incompatible fields: {', '.join(sorted(removed))}." if removed else ".")
+    )
+    return payload
+
+
 def _retryable_topaz_internal_error(exc: KIEAPIError) -> bool:
     message = str(exc).lower()
     return (
@@ -921,7 +1050,8 @@ def _topaz_failure_message(task_ids: list[str], exc: KIEAPIError) -> str:
 
 def _market_execute(op: dict[str, Any], model: str, kind: str, kwargs: dict[str, Any], payload_model: str | None = None):
     client = make_client(None)
-    payload = _build_payload(client, op, kwargs, model=model)
+    payload = _build_payload(client, op, kwargs, model=payload_model or model)
+    payload = _normalize_suno_music_payload(op, payload)
     payload = _normalize_topaz_video_payload(model, payload)
     _validate_special(model, payload)
     callback = str(kwargs.get("callback_url") or "").strip()
@@ -1028,9 +1158,10 @@ def make_model_node(op: dict[str, Any], model: str = ""):
                 return _execute_llm(current, fixed_model, kwargs)
             current_market = str(current.get("endpoint") or "") == "/api/v1/jobs/createTask" or market
             if current_market:
-                if not fixed_model:
+                envelope_model = _market_envelope_model(current, fixed_model)
+                if not envelope_model:
                     raise KIEAPIError("KIE model ID has not been resolved yet. Refresh the live catalog once.")
-                return _market_execute(current, fixed_model, kind, kwargs)
+                return _market_execute(current, envelope_model, kind, kwargs, payload_model=fixed_model)
             return _direct_execute(current, fixed_model, kind, kwargs)
 
     GeneratedKIEModelNode.__name__ = f"Generated_{_slug(title)}_{hashlib.sha1((resolved_model or title).encode()).hexdigest()[:6]}"
