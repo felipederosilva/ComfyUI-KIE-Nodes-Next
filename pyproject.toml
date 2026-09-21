@@ -17,6 +17,6 @@ Documentation = "https://docs.kie.ai/"
 Repository = "https://github.com/felipederosilva/ComfyUI-KIE-Nodes-Next"
 
 [tool.comfy]
-PublisherId = "felipe-kie-next"
+PublisherId = "felipeosilva"
 DisplayName = "KIE.ai Nodes Next"
 
