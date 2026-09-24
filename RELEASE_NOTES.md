@@ -1,3 +1,11 @@
+# v0.4.16 Live Catalog and Credit Receipts
+
+- Refreshes the bundled catalog from KIE's official live API index: 223 API documents scanned, 0 fetch failures, 165 distinct model IDs, and 241 operations. The refreshed docs add or enrich operations even where they do not introduce a new unique model ID.
+- Adds a live **credits spent** and **credits left** receipt to generated model and Studio nodes, including the Advanced Universal Market Task and Wait for Task nodes.
+- Adds `credits_left` output sockets while preserving the existing socket order and values; displays a compact receipt directly on the node after a successful run.
+- Reads the post-generation balance from KIE's documented Common API endpoint and saves the latest balance for the Connection Settings display. If the balance endpoint is temporarily unavailable, generation still completes and the node shows `unavailable` rather than failing the job.
+- Keeps the KIE-returned task consumption as the preferred spent value and uses the before/after account-balance difference when task metadata does not report consumption.
+
 # v0.4.15 Market Model Payload Regression Fix
 
 - Fixes Wan's rejection of an unsupported nested model field introduced by the Suno adapter.

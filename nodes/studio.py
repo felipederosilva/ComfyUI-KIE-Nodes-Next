@@ -6,7 +6,7 @@ from typing import Any
 from ..kie.client import KIEAPIError
 from ..kie.helpers import make_client
 from ..kie.media import upload_audio, upload_image_batch, video_to_temp_file
-from .generated import _result_for_kind
+from .generated import _credit_balance, _result_for_kind
 
 
 CAMERA_MOVES = [
@@ -125,8 +125,8 @@ class KIEShotSequenceNode:
 class KIEKlingOmniStudioNode:
     CATEGORY = "KIE Next/Studio/Kling"
     FUNCTION = "execute"
-    RETURN_TYPES = ("VIDEO", "STRING", "STRING", "STRING", "STRING", "FLOAT")
-    RETURN_NAMES = ("video", "url", "all_urls_json", "task_id", "raw_json", "credits_consumed")
+    RETURN_TYPES = ("VIDEO", "STRING", "STRING", "STRING", "STRING", "FLOAT", "FLOAT")
+    RETURN_NAMES = ("video", "url", "all_urls_json", "task_id", "raw_json", "credits_consumed", "credits_left")
     DESCRIPTION = "Purpose-built Kling 3.0 Omni director with single, automatic, or manually planned multi-shot generation."
 
     @classmethod
@@ -147,6 +147,7 @@ class KIEKlingOmniStudioNode:
 
     def execute(self, prompt, shot_mode, resolution, aspect_ratio, duration, audio, camera_direction="", shot_sequence_json="[]", first_frame=None, timeout_seconds=1200):
         client = make_client(None)
+        credits_before = _credit_balance(client)
         combined = str(prompt).strip()
         if str(camera_direction).strip():
             combined = f"{combined}\n\n{str(camera_direction).strip()}".strip()
@@ -173,14 +174,14 @@ class KIEKlingOmniStudioNode:
             model = "kling-3.0-omni/image-to-video"
         task_id = client.create_task(model, payload)
         result = client.wait_for_task(task_id, timeout_seconds=int(timeout_seconds))
-        return _result_for_kind(client, "video", result.raw, task_id, result.credits_consumed)
+        return _result_for_kind(client, "video", result.raw, task_id, result.credits_consumed, credits_before)
 
 
 class KIESeedanceStudioNode:
     CATEGORY = "KIE Next/Studio/ByteDance"
     FUNCTION = "execute"
-    RETURN_TYPES = ("VIDEO", "STRING", "STRING", "STRING", "STRING", "FLOAT")
-    RETURN_NAMES = ("video", "url", "all_urls_json", "task_id", "raw_json", "credits_consumed")
+    RETURN_TYPES = ("VIDEO", "STRING", "STRING", "STRING", "STRING", "FLOAT", "FLOAT")
+    RETURN_NAMES = ("video", "url", "all_urls_json", "task_id", "raw_json", "credits_consumed", "credits_left")
     DESCRIPTION = "Mode-aware Seedance director with frames, multimodal references, camera language, audio, and last-frame output control."
 
     @classmethod
@@ -205,6 +206,7 @@ class KIESeedanceStudioNode:
 
     def execute(self, model, generation_mode, prompt, resolution, aspect_ratio, duration, generate_audio, camera_direction="", first_frame=None, last_frame=None, reference_image_1=None, reference_image_2=None, reference_image_3=None, reference_video=None, reference_audio=None, return_last_frame=False, web_search=False, timeout_seconds=1200):
         client = make_client(None)
+        credits_before = _credit_balance(client)
         combined = str(prompt).strip()
         if str(camera_direction).strip():
             combined = f"{combined}\n\n{str(camera_direction).strip()}".strip()
@@ -238,7 +240,7 @@ class KIESeedanceStudioNode:
                 raise ValueError("Multimodal reference mode requires at least one image, video, or audio reference.")
         task_id = client.create_task(model, payload)
         result = client.wait_for_task(task_id, timeout_seconds=int(timeout_seconds))
-        return _result_for_kind(client, "video", result.raw, task_id, result.credits_consumed)
+        return _result_for_kind(client, "video", result.raw, task_id, result.credits_consumed, credits_before)
 
 
 STUDIO_CLASS_MAPPINGS = {

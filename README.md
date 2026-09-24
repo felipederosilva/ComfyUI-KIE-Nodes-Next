@@ -2,16 +2,18 @@
 
 # KIE.ai Nodes Next for ComfyUI
 
-**Current version: 0.4.4 — Topaz Diagnostic Hotfix**
+**Current version: 0.4.16 — Live Catalog and Automatic Credit Receipts**
 
-The repository includes the current source, the complete change history from v0.3.1 through v0.4.4, and ready-to-download Windows installers and historical packages in [`dist/`](dist/).
+The repository includes the source, release history, and downloadable package in [`dist/`](dist/).
 
-- Latest package: [`ComfyUI-KIE-Nodes-Next-v0.4.4-TOPAZ-DIAGNOSTIC.zip`](dist/ComfyUI-KIE-Nodes-Next-v0.4.4-TOPAZ-DIAGNOSTIC.zip)
+- Latest package: [`ComfyUI-KIE-Nodes-Next-v0.4.16.zip`](dist/ComfyUI-KIE-Nodes-Next-v0.4.16.zip)
 - Windows one-click installer: [`KIE-Nodes-Next-OneClick-Windows-v0.3.2.vbs`](dist/KIE-Nodes-Next-OneClick-Windows-v0.3.2.vbs)
 - Full uninstaller: [`KIE-Nodes-Next-Full-Uninstall.vbs`](dist/KIE-Nodes-Next-Full-Uninstall.vbs)
 - Release history: [`RELEASE_NOTES.md`](RELEASE_NOTES.md)
 
 KIE.ai Nodes Next turns KIE's API catalog into a native ComfyUI model library. The normal workflow is no longer a generic API node: each KIE model/API is exposed as its own node, organized by media type, provider, and model family.
+
+After each successful generation, model and Studio nodes display **credits spent** and the live **credits left** balance directly on the node. Both values are also available as output sockets. The latest account balance is saved for the Connection Settings status; if KIE's balance service is temporarily unavailable, the generation result is still returned and the node reports the balance as unavailable.
 
 ## Studio nodes
 
@@ -231,14 +233,6 @@ ComfyUI/custom_nodes/ComfyUI-KIE-Nodes-Next/
 
 Then install `requirements.txt` in the same Python environment ComfyUI uses.
 
-## Topaz Video Upscale troubleshooting
-
-KIE Next sends Topaz Video Upscale through the documented `topaz/video-upscale` Market model with `video_url` and a string `upscale_factor`. Native ComfyUI video inputs are converted to an 8-bit SDR H.264 MP4 before upload.
-
-If KIE accepts a job but Topaz immediately returns `internal error, please try again later`, KIE Next retries that narrow provider failure once and reports both task IDs. This is a remote provider failure, not a local CUDA or VRAM error. Failed jobs observed with `costTime: 0` reported `creditsConsumed: 0.0`.
-
-To isolate source compatibility, test a 3–5 second H.264 MP4 using `yuv420p`, constant 24/30 fps, 720p or 1080p, and 2x upscale. If that also fails immediately, keep the task IDs and contact KIE support.
-
 ## Security notes
 
 - Saved API keys live in the ComfyUI user/config area, not the workflow.
@@ -248,7 +242,7 @@ To isolate source compatibility, test a 3–5 second H.264 MP4 using `yuv420p`, 
 
 ## Validation
 
-v0.4.4 passes 30 offline tests covering:
+v0.3 currently passes 22 offline tests covering:
 
 - result URL parsing;
 - SSE normalization;
@@ -259,9 +253,7 @@ v0.4.4 passes 30 offline tests covering:
 - individual node registration;
 - Seedance folder/media inputs;
 - Claude/GPT model folders;
-- removal of the user-facing `Any KIE API` node;
-- Studio direction controls and model-specific generation modes;
-- Topaz payload normalization and result-delivery edge cases.
+- removal of the user-facing `Any KIE API` node.
 
 Paid generation calls are not run automatically by the test suite.
 

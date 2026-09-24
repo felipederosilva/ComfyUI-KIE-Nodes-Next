@@ -49,8 +49,8 @@ class KIEUniversalTaskNode:
             },
         }
 
-    RETURN_TYPES = ("STRING", "STRING", "STRING", "STRING", "FLOAT")
-    RETURN_NAMES = ("task_id", "state", "result_urls_json", "raw_json", "credits_consumed")
+    RETURN_TYPES = ("STRING", "STRING", "STRING", "STRING", "FLOAT", "FLOAT")
+    RETURN_NAMES = ("task_id", "state", "result_urls_json", "raw_json", "credits_consumed", "credits_left")
     FUNCTION = "run"
     CATEGORY = "KIE Next/Advanced/API Tools"
     DESCRIPTION = (
@@ -72,20 +72,23 @@ class KIEUniversalTaskNode:
         config=None,
     ):
         client = make_client(config)
+        from .generated import _credit_balance, _credit_receipt
+        credits_before = _credit_balance(client)
         payload = parse_object_json(input_json, "input_json")
         payload = replace_placeholders(payload, _media_replacements(client, images, video, audio))
         chosen_model = (custom_model or model).strip()
         task_id = client.create_task(chosen_model, payload, callback_url=callback_url)
         if not wait_for_completion:
-            return (task_id, "submitted", "[]", "{}", 0.0)
+            return _credit_receipt(client, (task_id, "submitted", "[]", "{}", 0.0), 0.0, credits_before)
         result = client.wait_for_task(task_id, timeout_seconds=timeout_seconds)
-        return (
+        outputs = (
             task_id,
             result.state,
             json.dumps(result.urls, ensure_ascii=False),
             pretty_json(result.raw),
             result.credits_consumed,
         )
+        return _credit_receipt(client, outputs, result.credits_consumed, credits_before)
 
 
 class KIEAnyAPIRequestNode:
@@ -189,19 +192,23 @@ class KIEWaitTaskNode:
             "optional": {"config": ("KIE_CONFIG",)},
         }
 
-    RETURN_TYPES = ("STRING", "STRING", "STRING", "FLOAT")
-    RETURN_NAMES = ("state", "result_urls_json", "raw_json", "credits_consumed")
+    RETURN_TYPES = ("STRING", "STRING", "STRING", "FLOAT", "FLOAT")
+    RETURN_NAMES = ("state", "result_urls_json", "raw_json", "credits_consumed", "credits_left")
     FUNCTION = "wait"
     CATEGORY = "KIE Next/Utility/Tasks"
 
     def wait(self, task_id, timeout_seconds, config=None):
-        result = make_client(config).wait_for_task(task_id.strip(), timeout_seconds=timeout_seconds)
-        return (
+        client = make_client(config)
+        from .generated import _credit_balance, _credit_receipt
+        credits_before = _credit_balance(client)
+        result = client.wait_for_task(task_id.strip(), timeout_seconds=timeout_seconds)
+        outputs = (
             result.state,
             json.dumps(result.urls, ensure_ascii=False),
             pretty_json(result.raw),
             result.credits_consumed,
         )
+        return _credit_receipt(client, outputs, result.credits_consumed, credits_before)
 
 
 class KIETaskStatusNode:

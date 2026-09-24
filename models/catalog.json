@@ -1,10 +1,10 @@
 {
   "schema_version": 3,
-  "generated_at": 1789681091,
+  "generated_at": 1790260402,
   "source": "https://docs.kie.ai/llms.txt",
   "deep_sync_complete": true,
-  "documents_indexed": 219,
-  "documents_scanned": 219,
+  "documents_indexed": 223,
+  "documents_scanned": 223,
   "documents_failed": 0,
   "models": [
     {
@@ -60,15 +60,6 @@
       "method": "POST",
       "endpoint": "/claude/v1/messages",
       "transport": "direct"
-    },
-    {
-      "name": "Claude Opus 5",
-      "model": "claude-opus-5",
-      "family": "Chat Models > Claude",
-      "transport": "direct",
-      "docs_url": "https://docs.kie.ai/market/claude/claude-opus-5.md",
-      "method": "POST",
-      "endpoint": "/claude/v1/messages"
     },
     {
       "name": "Claude Sonnet 4.5",
@@ -282,6 +273,15 @@
       "model": "google/imagen4-ultra",
       "family": "Image Models > Google",
       "docs_url": "https://docs.kie.ai/market/google/imagen4-ultra.md",
+      "method": "POST",
+      "endpoint": "/api/v1/jobs/createTask",
+      "transport": "market_task"
+    },
+    {
+      "name": "Grok Imagine - Text to Image",
+      "model": "grok-imagine/text-to-image",
+      "family": "Image Models > Grok Imagine",
+      "docs_url": "https://docs.kie.ai/market/grok-imagine/text-to-image.md",
       "method": "POST",
       "endpoint": "/api/v1/jobs/createTask",
       "transport": "market_task"
@@ -602,13 +602,13 @@
       "transport": "market_task"
     },
     {
-      "name": "Get Task Details",
-      "model": "grok-imagine/text-to-image",
-      "family": "KIE API",
-      "docs_url": "https://docs.kie.ai/market/common/get-task-detail.md",
-      "method": "GET",
-      "endpoint": "/api/v1/jobs/recordInfo",
-      "transport": "direct"
+      "name": "Claude Opus 5",
+      "model": "claude-opus-5",
+      "family": "LLM / Claude / Opus",
+      "transport": "direct",
+      "docs_url": "https://docs.kie.ai/market/claude/claude-opus-5.md",
+      "method": "POST",
+      "endpoint": "/claude/v1/messages"
     },
     {
       "name": "GPT 5.6 Sol",
@@ -671,38 +671,38 @@
       "transport": "market_task"
     },
     {
-      "name": "Generate Mashup Music",
+      "name": "Upload And Extend Audio",
       "model": "V4",
       "family": "Music Models > Suno > Music Generation",
       "transport": "market_task",
-      "docs_url": "https://docs.kie.ai/suno-api/generate-mashup.md",
+      "docs_url": "https://docs.kie.ai/suno-api/upload-and-extend-audio.md",
       "method": "POST",
       "endpoint": "/api/v1/jobs/createTask"
     },
     {
-      "name": "Generate Mashup Music",
+      "name": "Upload And Extend Audio",
       "model": "V4_5",
       "family": "Music Models > Suno > Music Generation",
       "transport": "market_task",
-      "docs_url": "https://docs.kie.ai/suno-api/generate-mashup.md",
+      "docs_url": "https://docs.kie.ai/suno-api/upload-and-extend-audio.md",
       "method": "POST",
       "endpoint": "/api/v1/jobs/createTask"
     },
     {
-      "name": "Generate Mashup Music",
+      "name": "Upload And Extend Audio",
       "model": "V4_5ALL",
       "family": "Music Models > Suno > Music Generation",
       "transport": "market_task",
-      "docs_url": "https://docs.kie.ai/suno-api/generate-mashup.md",
+      "docs_url": "https://docs.kie.ai/suno-api/upload-and-extend-audio.md",
       "method": "POST",
       "endpoint": "/api/v1/jobs/createTask"
     },
     {
-      "name": "Generate Mashup Music",
+      "name": "Upload And Extend Audio",
       "model": "V4_5PLUS",
       "family": "Music Models > Suno > Music Generation",
       "transport": "market_task",
-      "docs_url": "https://docs.kie.ai/suno-api/generate-mashup.md",
+      "docs_url": "https://docs.kie.ai/suno-api/upload-and-extend-audio.md",
       "method": "POST",
       "endpoint": "/api/v1/jobs/createTask"
     },
@@ -1082,6 +1082,15 @@
       "transport": "market_task"
     },
     {
+      "name": "Kling 2.6 Text to Video",
+      "model": "kling-2.6/text-to-video",
+      "family": "Video Models > Kling",
+      "docs_url": "https://docs.kie.ai/market/kling/text-to-video.md",
+      "method": "POST",
+      "endpoint": "/api/v1/jobs/createTask",
+      "transport": "market_task"
+    },
+    {
       "name": "Kling 2.6 motion-control",
       "model": "kling-2.6/motion-control",
       "family": "Video Models > Kling",
@@ -1095,15 +1104,6 @@
       "model": "kling-3.0/video",
       "family": "Video Models > Kling",
       "docs_url": "https://docs.kie.ai/market/kling/kling-3-0.md",
-      "method": "POST",
-      "endpoint": "/api/v1/jobs/createTask",
-      "transport": "market_task"
-    },
-    {
-      "name": "Kling 3.0 Omni  Image To Video",
-      "model": "kling-2.6/text-to-video",
-      "family": "Video Models > Kling",
-      "docs_url": "https://docs.kie.ai/market/kling/v3-omni-image-to-video.md",
       "method": "POST",
       "endpoint": "/api/v1/jobs/createTask",
       "transport": "market_task"
@@ -3412,6 +3412,16 @@
       "summary": "GPT Codex OpenAPI Specification json { \"tools\": [ { \"type\": \"web_search\" } ] } json { \"tools\": [ { \"type\": \"function\", \"name\": \"get_current_weather\", \"description\": \"Get the current weather in a given location\", \"parameters\": { \"type\": \"object\", \"properties\": { \"location\": { \"type\": \"string\", \"description\": \"The city and state, e.g. San Francisco, CA\" }, \"unit\": { \"type\": \"string\", \"enum\": [\"celsius\", \"fahrenheit\"] } }, \"required\": [\"location\", \"unit\"] } } ], \"tool_choice\": \"auto\" }"
     },
     {
+      "label": "Chat Models > Deepseek • DeepSeek V4.1 Flash",
+      "title": "DeepSeek V4.1 Flash",
+      "family": "Chat Models > Deepseek",
+      "method": "",
+      "endpoint": "",
+      "docs_url": "https://docs.kie.ai/market/deepseek-v4-1-flash.md",
+      "resolved": false,
+      "summary": "__prepareDocsConfigScript(JSON.parse(\"{\\\"theme\\\":\\\"system\\\",\\\"themePrimarySettings\\\":{\\\"light\\\":{\\\"accentColor\\\":\\\"purple\\\"},\\\"dark\\\":{\\\"accentColor\\\":\\\"purple\\\"}},\\\"logoSettings\\\":{\\\"light\\\":{\\\"icon\\\":\\\"\\\",\\\"type\\\":\\\"project\\\"},\\\"dark\\\":{\\\"icon\\\":\\\"\\\",\\\"type\\\":\\\"followLight\\\"}},\\\"backgroundImageSettings\\\":{\\\"light\\\":{\\\"type\\\":\\\"custom\\\",\\\"color\\\":\\\"\\\"},\\\"dark\\\":{\\\"type\\\":\\\"followLight\\\",\\\"color\\\":\\\"\\\"}},\\\"id\\\":0}\")); window.eventTracking = { dataLayer: [] } window.eventTracking.report = function(){ window.eventTracking.dataLayer.push(arguments); } ((STORAGE_KEY, restoreKey) = { if (!window.history.state !window.history.state.key) { let key = Math.random().toString(32).slice(2); window.histo"
+    },
+    {
       "label": "Chat Models > GPT • GPT 5.2",
       "title": "GPT 5.2",
       "family": "Chat Models > GPT",
@@ -3474,6 +3484,26 @@
       "docs_url": "https://docs.kie.ai/market/chat/gpt-5-6-terra.md",
       "resolved": true,
       "summary": "GPT 5.6 Terra OpenAPI Specification json { \"tools\": [ { \"type\": \"web_search\" } ] } json { \"tools\": [ { \"type\": \"function\", \"name\": \"get_current_weather\", \"description\": \"Get the current weather in a given location\", \"parameters\": { \"type\": \"object\", \"properties\": { \"location\": { \"type\": \"string\", \"description\": \"The city and state, e.g. San Francisco, CA\" }, \"unit\": { \"type\": \"string\", \"enum\": [\"celsius\", \"fahrenheit\"] } }, \"required\": [\"location\", \"unit\"] } } ], \"tool_choice\": \"auto\" }"
+    },
+    {
+      "label": "Chat Models > GPT • GPT 6 Luna",
+      "title": "GPT 6 Luna",
+      "family": "Chat Models > GPT",
+      "method": "POST",
+      "endpoint": "/codex/v1/responses",
+      "docs_url": "https://docs.kie.ai/market/chat/gpt-6-luna.md",
+      "resolved": true,
+      "summary": "GPT 6 Luna OpenAPI Specification json { \"tools\": [ { \"type\": \"web_search\" } ] } json { \"tools\": [ { \"type\": \"function\", \"name\": \"get_current_weather\", \"description\": \"Get the current weather in a given location\", \"parameters\": { \"type\": \"object\", \"properties\": { \"location\": { \"type\": \"string\", \"description\": \"The city and state, e.g. San Francisco, CA\" }, \"unit\": { \"type\": \"string\", \"enum\": [\"celsius\", \"fahrenheit\"] } }, \"required\": [\"location\", \"unit\"] } } ], \"tool_choice\": \"auto\" }"
+    },
+    {
+      "label": "Chat Models > GPT • GPT 6 Sol",
+      "title": "GPT 6 Sol",
+      "family": "Chat Models > GPT",
+      "method": "POST",
+      "endpoint": "/codex/v1/responses",
+      "docs_url": "https://docs.kie.ai/market/chat/gpt-6-sol.md",
+      "resolved": true,
+      "summary": "GPT 6 Sol OpenAPI Specification json { \"tools\": [ { \"type\": \"web_search\" } ] } json { \"tools\": [ { \"type\": \"function\", \"name\": \"get_current_weather\", \"description\": \"Get the current weather in a given location\", \"parameters\": { \"type\": \"object\", \"properties\": { \"location\": { \"type\": \"string\", \"description\": \"The city and state, e.g. San Francisco, CA\" }, \"unit\": { \"type\": \"string\", \"enum\": [\"celsius\", \"fahrenheit\"] } }, \"required\": [\"location\", \"unit\"] } } ], \"tool_choice\": \"auto\" }"
     },
     {
       "label": "Chat Models > GPT • Gpt 6 Astra",
@@ -3553,7 +3583,7 @@
       "endpoint": "",
       "docs_url": "https://docs.kie.ai/market/gemini/gemini-3-5-flash.md",
       "resolved": false,
-      "summary": "Gemini 3.5 Flash OpenAPI Specification"
+      "summary": "__prepareDocsConfigScript(JSON.parse(\"{\\\"theme\\\":\\\"system\\\",\\\"themePrimarySettings\\\":{\\\"light\\\":{\\\"accentColor\\\":\\\"purple\\\"},\\\"dark\\\":{\\\"accentColor\\\":\\\"purple\\\"}},\\\"logoSettings\\\":{\\\"light\\\":{\\\"icon\\\":\\\"\\\",\\\"type\\\":\\\"project\\\"},\\\"dark\\\":{\\\"icon\\\":\\\"\\\",\\\"type\\\":\\\"followLight\\\"}},\\\"backgroundImageSettings\\\":{\\\"light\\\":{\\\"type\\\":\\\"custom\\\",\\\"color\\\":\\\"\\\"},\\\"dark\\\":{\\\"type\\\":\\\"followLight\\\",\\\"color\\\":\\\"\\\"}},\\\"id\\\":0}\")); window.eventTracking = { dataLayer: [] } window.eventTracking.report = function(){ window.eventTracking.dataLayer.push(arguments); } ((STORAGE_KEY, restoreKey) = { if (!window.history.state !window.history.state.key) { let key = Math.random().toString(32).slice(2); window.histo"
     },
     {
       "label": "Chat Models > Gemini • Gemini 3.5 Flash (openai)",
@@ -3573,7 +3603,7 @@
       "endpoint": "",
       "docs_url": "https://docs.kie.ai/market/gemini/gemini-3-6-flash.md",
       "resolved": false,
-      "summary": "Gemini 3.6 Flash OpenAPI Specification"
+      "summary": "__prepareDocsConfigScript(JSON.parse(\"{\\\"theme\\\":\\\"system\\\",\\\"themePrimarySettings\\\":{\\\"light\\\":{\\\"accentColor\\\":\\\"purple\\\"},\\\"dark\\\":{\\\"accentColor\\\":\\\"purple\\\"}},\\\"logoSettings\\\":{\\\"light\\\":{\\\"icon\\\":\\\"\\\",\\\"type\\\":\\\"project\\\"},\\\"dark\\\":{\\\"icon\\\":\\\"\\\",\\\"type\\\":\\\"followLight\\\"}},\\\"backgroundImageSettings\\\":{\\\"light\\\":{\\\"type\\\":\\\"custom\\\",\\\"color\\\":\\\"\\\"},\\\"dark\\\":{\\\"type\\\":\\\"followLight\\\",\\\"color\\\":\\\"\\\"}},\\\"id\\\":0}\")); window.eventTracking = { dataLayer: [] } window.eventTracking.report = function(){ window.eventTracking.dataLayer.push(arguments); } ((STORAGE_KEY, restoreKey) = { if (!window.history.state !window.history.state.key) { let key = Math.random().toString(32).slice(2); window.histo"
     },
     {
       "label": "Chat Models > Gemini • Gemini 3.6 Flash (openai)",
@@ -3593,7 +3623,7 @@
       "endpoint": "",
       "docs_url": "https://docs.kie.ai/market/gemini/gemini-3-7-flash.md",
       "resolved": false,
-      "summary": "Gemini 3.7 Flash OpenAPI Specification"
+      "summary": "__prepareDocsConfigScript(JSON.parse(\"{\\\"theme\\\":\\\"system\\\",\\\"themePrimarySettings\\\":{\\\"light\\\":{\\\"accentColor\\\":\\\"purple\\\"},\\\"dark\\\":{\\\"accentColor\\\":\\\"purple\\\"}},\\\"logoSettings\\\":{\\\"light\\\":{\\\"icon\\\":\\\"\\\",\\\"type\\\":\\\"project\\\"},\\\"dark\\\":{\\\"icon\\\":\\\"\\\",\\\"type\\\":\\\"followLight\\\"}},\\\"backgroundImageSettings\\\":{\\\"light\\\":{\\\"type\\\":\\\"custom\\\",\\\"color\\\":\\\"\\\"},\\\"dark\\\":{\\\"type\\\":\\\"followLight\\\",\\\"color\\\":\\\"\\\"}},\\\"id\\\":0}\")); window.eventTracking = { dataLayer: [] } window.eventTracking.report = function(){ window.eventTracking.dataLayer.push(arguments); } ((STORAGE_KEY, restoreKey) = { if (!window.history.state !window.history.state.key) { let key = Math.random().toString(32).slice(2); window.histo"
     },
     {
       "label": "Chat Models > Gemini • Gemini 3.7 Flash (openai)",
@@ -3613,7 +3643,7 @@
       "endpoint": "",
       "docs_url": "https://docs.kie.ai/market/gemini/gemini-3-8-flash.md",
       "resolved": false,
-      "summary": "Gemini 3.8 Flash OpenAPI Specification"
+      "summary": "__prepareDocsConfigScript(JSON.parse(\"{\\\"theme\\\":\\\"system\\\",\\\"themePrimarySettings\\\":{\\\"light\\\":{\\\"accentColor\\\":\\\"purple\\\"},\\\"dark\\\":{\\\"accentColor\\\":\\\"purple\\\"}},\\\"logoSettings\\\":{\\\"light\\\":{\\\"icon\\\":\\\"\\\",\\\"type\\\":\\\"project\\\"},\\\"dark\\\":{\\\"icon\\\":\\\"\\\",\\\"type\\\":\\\"followLight\\\"}},\\\"backgroundImageSettings\\\":{\\\"light\\\":{\\\"type\\\":\\\"custom\\\",\\\"color\\\":\\\"\\\"},\\\"dark\\\":{\\\"type\\\":\\\"followLight\\\",\\\"color\\\":\\\"\\\"}},\\\"id\\\":0}\")); window.eventTracking = { dataLayer: [] } window.eventTracking.report = function(){ window.eventTracking.dataLayer.push(arguments); } ((STORAGE_KEY, restoreKey) = { if (!window.history.state !window.history.state.key) { let key = Math.random().toString(32).slice(2); window.histo"
     },
     {
       "label": "Chat Models > Gemini • Gemini 3.8 Flash (openai)",
@@ -3654,6 +3684,26 @@
       "docs_url": "https://docs.kie.ai/market/grok/grok-4-6.md",
       "resolved": true,
       "summary": "Grok 4.6 OpenAPI Specification json { \"tools\": [ { \"type\": \"web_search\" } ] } json { \"tools\": [ { \"type\": \"function\", \"name\": \"get_current_weather\", \"description\": \"Get the current weather in a given location\", \"parameters\": { \"type\": \"object\", \"properties\": { \"location\": { \"type\": \"string\", \"description\": \"The city and state, e.g. San Francisco, CA\" }, \"unit\": { \"type\": \"string\", \"enum\": [\"celsius\", \"fahrenheit\"] } }, \"required\": [\"location\", \"unit\"] } } ], \"tool_choice\": \"auto\" }"
+    },
+    {
+      "label": "Chat Models > Grok • Grok 4.7",
+      "title": "Grok 4.7",
+      "family": "Chat Models > Grok",
+      "method": "",
+      "endpoint": "",
+      "docs_url": "https://docs.kie.ai/market/grok/grok-4-7.md",
+      "resolved": false,
+      "summary": "__prepareDocsConfigScript(JSON.parse(\"{\\\"theme\\\":\\\"system\\\",\\\"themePrimarySettings\\\":{\\\"light\\\":{\\\"accentColor\\\":\\\"purple\\\"},\\\"dark\\\":{\\\"accentColor\\\":\\\"purple\\\"}},\\\"logoSettings\\\":{\\\"light\\\":{\\\"icon\\\":\\\"\\\",\\\"type\\\":\\\"project\\\"},\\\"dark\\\":{\\\"icon\\\":\\\"\\\",\\\"type\\\":\\\"followLight\\\"}},\\\"backgroundImageSettings\\\":{\\\"light\\\":{\\\"type\\\":\\\"custom\\\",\\\"color\\\":\\\"\\\"},\\\"dark\\\":{\\\"type\\\":\\\"followLight\\\",\\\"color\\\":\\\"\\\"}},\\\"id\\\":0}\")); window.eventTracking = { dataLayer: [] } window.eventTracking.report = function(){ window.eventTracking.dataLayer.push(arguments); } ((STORAGE_KEY, restoreKey) = { if (!window.history.state !window.history.state.key) { let key = Math.random().toString(32).slice(2); window.histo"
+    },
+    {
+      "label": "Chat Models > Kimi • Kimi K3",
+      "title": "Kimi K3",
+      "family": "Chat Models > Kimi",
+      "method": "",
+      "endpoint": "",
+      "docs_url": "https://docs.kie.ai/market/kimi/kimi-k3.md",
+      "resolved": false,
+      "summary": "__prepareDocsConfigScript(JSON.parse(\"{\\\"theme\\\":\\\"system\\\",\\\"themePrimarySettings\\\":{\\\"light\\\":{\\\"accentColor\\\":\\\"purple\\\"},\\\"dark\\\":{\\\"accentColor\\\":\\\"purple\\\"}},\\\"logoSettings\\\":{\\\"light\\\":{\\\"icon\\\":\\\"\\\",\\\"type\\\":\\\"project\\\"},\\\"dark\\\":{\\\"icon\\\":\\\"\\\",\\\"type\\\":\\\"followLight\\\"}},\\\"backgroundImageSettings\\\":{\\\"light\\\":{\\\"type\\\":\\\"custom\\\",\\\"color\\\":\\\"\\\"},\\\"dark\\\":{\\\"type\\\":\\\"followLight\\\",\\\"color\\\":\\\"\\\"}},\\\"id\\\":0}\")); window.eventTracking = { dataLayer: [] } window.eventTracking.report = function(){ window.eventTracking.dataLayer.push(arguments); } ((STORAGE_KEY, restoreKey) = { if (!window.history.state !window.history.state.key) { let key = Math.random().toString(32).slice(2); window.histo"
     },
     {
       "label": "Image Models > 4o Image API • Generate 4o Image",
@@ -6489,6 +6539,219 @@
         }
       },
       "summary": "Qwen - Text to Image OpenAPI Specification"
+    },
+    {
+      "label": "Image Models > Qwen • Qwen 2.1 - Image to Image",
+      "title": "Qwen 2.1 - Image to Image",
+      "family": "Image Models > Qwen",
+      "method": "POST",
+      "endpoint": "/api/v1/jobs/createTask",
+      "docs_url": "https://docs.kie.ai/market/qwen2-1/image-to-image.md",
+      "resolved": true,
+      "example_body": {
+        "image_urls": [
+          "https://example.com/a.jpg",
+          "https://example.com/b.jpg"
+        ],
+        "prompt": "Replace the backpack in the first image with the colour scheme from the second image, and leave everything else unchanged",
+        "aspect_ratio": "auto",
+        "resolution": "1K",
+        "background": "opaque",
+        "output_format": "png",
+        "enhance_prompt": true,
+        "seed": 20260921
+      },
+      "parameter_hints": {
+        "image_urls": {
+          "type": "array",
+          "required": true,
+          "description": "Reference images, given as an array of 1 to 10 http(s) URLs. Required. The order of the array is the order the prompt refers to (\"the first image\", \"the second image\"). JPEG, PNG and WebP are supported, up to 30MB and 25MP each, and every URL must be directly retrievable with a GET — a reference the origin refuses with 4xx, or whose domain does not resolve, fails the request with 400. More than 10 entries returns 422. The more references you supply the less detail each individual one keeps, so stay within 4 when fidelity matters. When combining several people or objects into a single picture, a landscape ratio such as `3:2` or `16:9` usually gives better results.",
+          "default": [
+            "https://example.com/a.jpg",
+            "https://example.com/b.jpg"
+          ],
+          "items": {
+            "type": "string",
+            "format": "uri"
+          }
+        },
+        "prompt": {
+          "type": "string",
+          "required": true,
+          "description": "The prompt describing the result you want. Required. Any language is supported, up to 5000 characters; longer input returns 422. When `mask_url` is supplied, use it to describe what should be generated inside the white area of the mask.",
+          "minLength": 1,
+          "maxLength": 5000,
+          "default": "Replace the backpack in the first image with the colour scheme from the second image, and leave everything else unchanged"
+        },
+        "mask_url": {
+          "type": "string",
+          "required": false,
+          "description": "Inpainting mask that switches the request into local-edit mode. A black and white image where **white marks the area to change and black is kept unchanged**, with a few pixels of feathering along the boundary. It must be used with exactly one entry in `image_urls`, otherwise the request returns 422. The mask should have the same aspect ratio as that reference image; a mask of a different size is scaled to it. In local-edit mode the output ratio follows the reference image, so `aspect_ratio` and `enhance_prompt` are ignored and reported in the `ignored` field of the result. It cannot be combined with `background: transparent`, which returns 422.",
+          "format": "uri",
+          "default": "https://example.com/room-mask.png"
+        },
+        "aspect_ratio": {
+          "type": "string",
+          "required": false,
+          "description": "Output aspect ratio. Defaults to `auto`, which takes the aspect ratio of the first reference image and snaps it to the nearest supported ratio. The actual pixel size also depends on `resolution` — see the aspect ratio table above. Ignored in local-edit mode.",
+          "enum": [
+            "auto",
+            "1:1",
+            "4:3",
+            "3:4",
+            "3:2",
+            "2:3",
+            "16:9",
+            "9:16",
+            "21:9",
+            "9:21"
+          ],
+          "default": "auto"
+        },
+        "resolution": {
+          "type": "string",
+          "required": false,
+          "description": "Output resolution tier. `1K` is the faster option; `2K` produces four times the pixels and takes considerably longer, up to about 3 minutes with reference images. Only `1K` and `2K` are accepted — any other value, including `4K`, returns 422.",
+          "enum": [
+            "1K",
+            "2K"
+          ],
+          "default": "1K"
+        },
+        "background": {
+          "type": "string",
+          "required": false,
+          "description": "Background type. transparent outputs a PNG or WebP with a real alpha channel and cannot be used with JPEG. When using transparent, describe only the subject — prompts that mention a background, scene, surface, etc. may produce a non-transparent result.",
+          "enum": [
+            "opaque",
+            "transparent"
+          ],
+          "default": "opaque"
+        },
+        "output_format": {
+          "type": "string",
+          "required": false,
+          "description": "Output image format. `png` (default) and `webp` both carry an alpha channel and can be used with `background: transparent`. `jpeg` has no alpha channel and cannot be combined with a transparent background.",
+          "enum": [
+            "png",
+            "webp",
+            "jpeg"
+          ],
+          "default": "png"
+        },
+        "enhance_prompt": {
+          "type": "boolean",
+          "required": false,
+          "description": "Rewrites the prompt into a fuller scene description before generating, which noticeably improves quality. Enabled by default (also when the parameter is omitted); pass false to turn it off.",
+          "default": true
+        },
+        "seed": {
+          "type": "integer",
+          "required": false,
+          "description": "The random seed. Omit it to generate with a random seed; the seed actually used is returned with the result. Passing the same seed together with the same prompt and parameters reproduces the same image within the same service version.",
+          "default": 20260921
+        },
+        "nsfw_checker": {
+          "type": "boolean",
+          "required": false,
+          "description": "Defaults to false. You can set it to false based on your needs. If set to false, our content filtering will be disabled, and all results will be returned directly by the model itself.\nNote: There is no guarantee that everything can be filtered out; if you are not satisfied with the results, you will need to make your own arrangements."
+        }
+      },
+      "summary": "Qwen 2.1 - Image to Image OpenAPI Specification"
+    },
+    {
+      "label": "Image Models > Qwen • Qwen 2.1 - Text to Image",
+      "title": "Qwen 2.1 - Text to Image",
+      "family": "Image Models > Qwen",
+      "method": "POST",
+      "endpoint": "/api/v1/jobs/createTask",
+      "docs_url": "https://docs.kie.ai/market/qwen2-1/text-to-image.md",
+      "resolved": true,
+      "example_body": {
+        "prompt": "A corgi wearing a yellow rain hat sitting on stone steps after the rain, shallow depth of field",
+        "aspect_ratio": "16:9",
+        "resolution": "1K",
+        "background": "opaque",
+        "output_format": "png",
+        "enhance_prompt": true,
+        "seed": 20260921
+      },
+      "parameter_hints": {
+        "prompt": {
+          "type": "string",
+          "required": true,
+          "description": "The prompt that describes the image content, style and composition you want to generate. Required. Any language is supported, up to 5000 characters; longer input returns 422.",
+          "minLength": 1,
+          "maxLength": 5000,
+          "default": "A corgi wearing a yellow rain hat sitting on stone steps after the rain, shallow depth of field"
+        },
+        "aspect_ratio": {
+          "type": "string",
+          "required": false,
+          "description": "The output aspect ratio. Default `1:1`. The actual pixel size also depends on `resolution` — see the aspect ratio table above for the exact dimensions of each combination.",
+          "enum": [
+            "1:1",
+            "4:3",
+            "3:4",
+            "3:2",
+            "2:3",
+            "16:9",
+            "9:16",
+            "21:9",
+            "9:21"
+          ],
+          "default": "1:1"
+        },
+        "resolution": {
+          "type": "string",
+          "required": false,
+          "description": "The output resolution tier. `1K` is the faster option at roughly 7-12 seconds; `2K` produces four times the pixels and takes roughly 30-55 seconds. Only `1K` and `2K` are accepted — any other value, including `4K`, returns 422.",
+          "enum": [
+            "1K",
+            "2K"
+          ],
+          "default": "1K"
+        },
+        "background": {
+          "type": "string",
+          "required": false,
+          "description": "Background type. transparent outputs a PNG or WebP with a real alpha channel and cannot be used with JPEG. When using transparent, describe only the subject — prompts that mention a background, scene, surface, etc. may produce a non-transparent result.",
+          "enum": [
+            "opaque",
+            "transparent"
+          ],
+          "default": "opaque"
+        },
+        "output_format": {
+          "type": "string",
+          "required": false,
+          "description": "The output image format. `png` (default) and `webp` both carry an alpha channel and can be used with `background: transparent`. `jpeg` has no alpha channel and cannot be combined with a transparent background.",
+          "enum": [
+            "png",
+            "webp",
+            "jpeg"
+          ],
+          "default": "png"
+        },
+        "enhance_prompt": {
+          "type": "boolean",
+          "required": false,
+          "description": "Rewrites the prompt into a fuller scene description before generating, which noticeably improves quality. Enabled by default (also when the parameter is omitted); pass false to turn it off.",
+          "default": true
+        },
+        "seed": {
+          "type": "integer",
+          "required": false,
+          "description": "The random seed. Omit it to generate with a random seed; the seed actually used is returned with the result. Passing the same seed together with the same prompt and parameters reproduces the same image within the same service version.",
+          "default": 20260921
+        },
+        "nsfw_checker": {
+          "type": "boolean",
+          "required": false,
+          "description": "Defaults to false. You can set it to false based on your needs. If set to false, our content filtering will be disabled, and all results will be returned directly by the model itself.\nNote: There is no guarantee that everything can be filtered out; if you are not satisfied with the results, you will need to make your own arrangements."
+        }
+      },
+      "summary": "Qwen 2.1 - Text to Image OpenAPI Specification"
     },
     {
       "label": "Image Models > Qwen • Qwen2 - Image Edit",
@@ -10151,13 +10414,15 @@
         "vocal_gender": "m",
         "style_weight": 0.61,
         "weirdness_constraint": 0.72,
-        "audio_weight": 0.65
+        "audio_weight": 0.65,
+        "lyrics": "[Verse]\nKeep the melody flowing\nInto a gentle bridge\n[Chorus]\nLet the piano rise and fall",
+        "variety": 1
       },
       "parameter_hints": {
         "upload_url": {
           "type": "string",
           "required": true,
-          "description": "URL of the uploaded audio file. Specifies the source audio file location for adding accompaniment.",
+          "description": "URL of the uploaded audio file. Required. Source audio (`upload_url`) is enough to generate once `title`, `negative_tags`, and `tags` are provided.",
           "format": "uri",
           "default": "https://example.com/music.mp3"
         },
@@ -10178,20 +10443,20 @@
         "title": {
           "type": "string",
           "required": true,
-          "description": "Title of the generated music. Will be displayed in the player interface and file name.",
+          "description": "Title of the generated music. Required. Will be displayed in the player interface and file name.",
           "default": "Relaxing Piano"
         },
         "negative_tags": {
           "type": "string",
           "required": true,
-          "description": "Music styles or characteristics to exclude from the generated audio. Used to avoid specific unwanted music elements.",
+          "description": "Music styles or characteristics to exclude from the generated audio. Required. Used to avoid specific unwanted music elements.",
           "maxLength": 200,
           "default": "heavy metal, fast drums"
         },
         "tags": {
           "type": "string",
           "required": true,
-          "description": "Music styles or tags to include in the generated music. Defines the desired music style and characteristics.",
+          "description": "Music styles or tags to include in the generated music. Required. Defines the desired music style and characteristics.",
           "maxLength": 1000,
           "default": "relaxing, piano, soothing"
         },
@@ -10228,6 +10493,21 @@
           "minimum": 0,
           "maximum": 1,
           "default": 0.65
+        },
+        "lyrics": {
+          "type": "string",
+          "required": false,
+          "description": "Lyrics for the generated audio. Optional.\n- V6, V6_MINI, and V6_WILD: Maximum 5000 characters.\n- Not required. Source audio (`upload_url`) is enough to generate once `title`, `negative_tags`, and `tags` are provided.",
+          "maxLength": 5000,
+          "default": "[Verse]\\nKeep the melody flowing\\nInto a gentle bridge\\n[Chorus]\\nLet the piano rise and fall"
+        },
+        "variety": {
+          "type": "integer",
+          "required": false,
+          "description": "Controls the diversity and stylistic variation of generated results. Optional. Integer range 0–4, default 1.\n\n- **`0`**: off (exact style) — fully off, strictly the same style\n- **`1`**: normal (balanced variety) — default, balances stability and diversity\n- **`2`**: high (distinct styles) — produces results with clearly different styles\n- **`3`**: extra (bold exploration) — higher variation, encourages bold exploration of different styles\n- **`4`**: max (unreasonably varied) — maximum diversity; results may differ in style very significantly",
+          "default": 1,
+          "minimum": 0,
+          "maximum": 4
         }
       },
       "summary": "Add Instrumental to Music OpenAPI Specification json { \"code\": 200, \"msg\": \"All generated successfully.\", \"data\": { \"callbackType\": \"complete\", \"task_id\": \"2fac 9f72\", \"data\": [ { \"id\": \"e231 - - - - 8cadc7dc\", \"audio_url\": \"https://example.cn/ .mp3\", \"stream_audio_url\": \"https://example.cn/ \", \"image_url\": \"https://example.cn/ .jpeg\", \"prompt\": \"[Verse] Night city lights shining bright\", \"model_name\": \"chirp-v4-5\", \"title\": \"Iron Man\", \"tags\": \"electrifying, rock\", \"createTime\": \"2025-01-01 00:00:00\", \"duration\": 198.44 } ] } }"
@@ -10250,13 +10530,16 @@
         "vocal_gender": "m",
         "style_weight": 0.61,
         "weirdness_constraint": 0.72,
-        "audio_weight": 0.65
+        "audio_weight": 0.65,
+        "lyrics": "[Verse]\nKeep the melody flowing\nInto a gentle bridge\n[Chorus]\nLet the piano rise and fall",
+        "variety": 1
       },
       "parameter_hints": {
         "prompt": {
           "type": "string",
-          "required": true,
-          "description": "Prompt for generating audio. Usually text describing audio content, used to guide vocal singing content and style.",
+          "required": false,
+          "description": "Prompt for generating audio. Optional.\n- Used as lyrics only when `lyrics` is not provided. If `lyrics` is present, `prompt` is not used as lyrics.\n- V6, V6_MINI, and V6_WILD: Maximum 5000 characters.",
+          "maxLength": 5000,
           "default": "A calm and relaxing piano track."
         },
         "model": {
@@ -10276,20 +10559,20 @@
         "title": {
           "type": "string",
           "required": true,
-          "description": "Music title. Will be displayed in the player interface and file name.",
+          "description": "Music title. Required. Will be displayed in the player interface and file name.",
           "default": "Relaxing Piano"
         },
         "negative_tags": {
           "type": "string",
           "required": true,
-          "description": "Excluded music styles. Used to avoid including specific styles or elements in the generated music.",
+          "description": "Excluded music styles. Required. Used to avoid including specific styles or elements in the generated music.",
           "maxLength": 200,
           "default": "heavy metal, strong drum beats"
         },
         "style": {
           "type": "string",
           "required": true,
-          "description": "Music style. Such as jazz, electronic, classical and other music types.",
+          "description": "Music style. Required. Such as jazz, electronic, classical and other music types.",
           "maxLength": 1000,
           "default": "Jazz"
         },
@@ -10330,9 +10613,24 @@
         "upload_url": {
           "type": "string",
           "required": true,
-          "description": "URL of the uploaded audio file. Specifies the source audio file location for adding vocals.",
+          "description": "URL of the uploaded audio file. Required. Source audio (`upload_url`) is enough to generate once `title`, `negative_tags`, and `style` are provided.",
           "format": "uri",
           "default": "https://example.com/music.mp3"
+        },
+        "lyrics": {
+          "type": "string",
+          "required": false,
+          "description": "Lyrics for the generated audio. Optional.\n- Takes priority over `prompt` as lyrics. If omitted, `prompt` is used as lyrics when provided.\n- V6, V6_MINI, and V6_WILD: Maximum 5000 characters.\n- Not required. Source audio (`upload_url`) is enough to generate once `title`, `negative_tags`, and `style` are provided.",
+          "maxLength": 5000,
+          "default": "[Verse]\\nKeep the melody flowing\\nInto a gentle bridge\\n[Chorus]\\nLet the piano rise and fall"
+        },
+        "variety": {
+          "type": "integer",
+          "required": false,
+          "description": "Controls the diversity and stylistic variation of generated results. Optional. Integer range 0–4, default 1.\n\n- **`0`**: off (exact style) — fully off, strictly the same style\n- **`1`**: normal (balanced variety) — default, balances stability and diversity\n- **`2`**: high (distinct styles) — produces results with clearly different styles\n- **`3`**: extra (bold exploration) — higher variation, encourages bold exploration of different styles\n- **`4`**: max (unreasonably varied) — maximum diversity; results may differ in style very significantly",
+          "default": 1,
+          "minimum": 0,
+          "maximum": 4
         }
       },
       "summary": "Add Vocals to Music OpenAPI Specification json { \"code\": 200, \"msg\": \"All generated successfully.\", \"data\": { \"callbackType\": \"complete\", \"task_id\": \"2fac 9f72\", \"data\": [ { \"id\": \"e231 - - - - 8cadc7dc\", \"audio_url\": \"https://example.cn/ .mp3\", \"stream_audio_url\": \"https://example.cn/ \", \"image_url\": \"https://example.cn/ .jpeg\", \"prompt\": \"[Verse] Night city lights shining bright\", \"model_name\": \"chirp-v4-5\", \"title\": \"Iron Man\", \"tags\": \"electrifying, rock\", \"createTime\": \"2025-01-01 00:00:00\", \"duration\": 198.44 } ] } }"
@@ -10367,7 +10665,6 @@
       "docs_url": "https://docs.kie.ai/suno-api/extend-music.md",
       "resolved": true,
       "example_body": {
-        "default_param_flag": true,
         "audio_id": "e231****-****-****-****-****8cadc7dc",
         "prompt": "Extend the music with more relaxing notes and a gentle bridge section",
         "model": "V4",
@@ -10380,15 +10677,11 @@
         "weirdness_constraint": 0.65,
         "audio_weight": 0.65,
         "persona_id": "persona_123",
-        "persona_model": "style_persona"
+        "persona_model": "style_persona",
+        "lyrics": "[Verse]\nKeep the melody flowing\nInto a gentle bridge\n[Chorus]\nLet the piano rise and fall",
+        "variety": 1
       },
       "parameter_hints": {
-        "default_param_flag": {
-          "type": "boolean",
-          "required": true,
-          "description": "Controls parameter source for extension.  \n- If `true`: Use custom parameters specified in this request. Requires `continue_at`, `prompt`, `style`, and `title`.  \n- If `false`: Use original audio parameters. Only `audio_id` is required, other parameters are inherited.",
-          "default": true
-        },
         "audio_id": {
           "type": "string",
           "required": true,
@@ -10398,25 +10691,28 @@
         "prompt": {
           "type": "string",
           "required": false,
-          "description": "Prompt describing the desired audio extension content.\n- Required when `defaultParamFlag` is `true` (this parameter is not needed if `instrumental` is `true`).\n- Character limits by model:\n- **V4**（Discontinued）: Max 3,000 characters\n- **V4_5 and V4_5PLUS**（Discontinued）: Max 5,000 characters\n- **V4_5ALL**（Discontinued）: Max 5,000 characters\n- **V5_5 and V5**（Discontinued）: Max 5,000 characters\n- **V6、V6_MINI 和 V6_WILD**: Max 5,000 characters\n- Describe how the music should continue or evolve in the extended section.",
+          "description": "Lyrics for the extended audio. Optional.\n- Used as lyrics only when `lyrics` is not provided. If `lyrics` is present, `prompt` is not used as lyrics.\n- V6, V6_MINI, and V6_WILD: Maximum 5000 characters.\n- Not required. Source audio (`audio_id`) is enough to generate.\n- Do not pass this parameter when `instrumental` is `true`.",
+          "maxLength": 5000,
           "default": "Extend the music with more relaxing notes and a gentle bridge section"
         },
         "style": {
           "type": "string",
           "required": false,
-          "description": "Music style specification for the extended audio.  \n- Required when `defaultParamFlag` is `true`.  \n- Character limits by model:  \n  - **V4**（Discontinued）: Maximum 200 characters  \n  - **V4_5 & V4_5PLUS**（Discontinued）: Maximum 1000 characters  \n  - **V4_5ALL**（Discontinued）: Maximum 1000 characters  \n  - **V5_5 & V5**（Discontinued）: Maximum 1000 characters  \n  - **V6、V6_MINI 和 V6_WILD**: Maximum 1000 characters \n- Should typically align with the original audio's style for best results.",
+          "description": "Music style specification for the extended audio. Optional.\n- Not required. Source audio (`audio_id`) is enough to generate.\n- Character limits by model:\n  - **V4**（Discontinued）: Maximum 200 characters\n  - **V4_5 & V4_5PLUS**（Discontinued）: Maximum 1000 characters\n  - **V4_5ALL**（Discontinued）: Maximum 1000 characters\n  - **V5_5 & V5**（Discontinued）: Maximum 1000 characters\n  - **V6, V6_MINI, and V6_WILD**: Maximum 1000 characters\n- Should typically align with the original audio's style for best results.",
+          "maxLength": 1000,
           "default": "Classical"
         },
         "title": {
           "type": "string",
           "required": false,
-          "description": "Title for the extended music track.  \n- Required when `defaultParamFlag` is `true`.  \n- Character limits by model:  \n  - **V4**（Discontinued）: Maximum 80 characters  \n  - **V4_5 & V4_5PLUS**（Discontinued）: Maximum 100 characters  \n  - **V4_5ALL**（Discontinued）: Maximum 80 characters  \n  - **V5_5 & V5**（Discontinued）: Maximum 100 characters  \n  - **V6、V6_MINI 和 V6_WILD**: Maximum 100 characters  \n- Will be displayed in player interfaces and filenames.",
+          "description": "Title for the extended music track. Optional.\n- Maximum 100 characters.\n- Displayed in player interfaces and filenames.",
+          "maxLength": 100,
           "default": "Peaceful Piano Extended"
         },
         "continue_at": {
           "type": "number",
           "required": false,
-          "description": "The time point (in seconds) from which to start extending the music.  \n- Required when `default_param_flag` is `true`.  \n- Value range: greater than 0 and less than the total duration of the generated audio.  \n- Specifies the position in the original track where the extension should begin.",
+          "description": "The time point (in seconds) from which to start extending the music.\n- Value range: greater than 0 and less than the total duration of the generated audio.\n- Specifies the position in the original track where the extension should begin.",
           "default": 60
         },
         "model": {
@@ -10479,7 +10775,7 @@
         "persona_id": {
           "type": "string",
           "required": false,
-          "description": "Only available when Custom Mode (`customMode: true`) is enabled. Persona ID or Voice ID to apply to the generated music. Optional. Use this to apply a specific persona style to your music generation. \n\nTo generate a persona ID, use the [Generate Persona](https://docs.kie.ai/suno-api/generate-persona) endpoint to create a personalized music Persona based on generated music.\n\nTo generate a Voice ID, use the [Generate Voice](https://docs.kie.ai/suno-api/suno-voice-generate)endpoint",
+          "description": "Persona ID or Voice ID to apply to the generated music. Optional. Use this to apply a specific persona style to your music generation.\n\nTo generate a Persona ID, use the [Generate Persona](https://docs.kie.ai/suno-api/generate-persona) endpoint to create a personalized music Persona based on generated music.\n\nTo generate a Voice ID, use the [Generate Voice](https://docs.kie.ai/suno-api/suno-voice-generate) endpoint.",
           "default": "persona_123"
         },
         "persona_model": {
@@ -10494,8 +10790,23 @@
         "instrumental": {
           "type": "boolean",
           "required": false,
-          "description": "Indicates whether it is an instrumental track. If true, passing the `prompt` and `vocal_gender` parameters is prohibited.",
+          "description": "Indicates whether it is an instrumental track. If true, passing the `lyrics`, `prompt`, and `vocal_gender` parameters is prohibited.",
           "default": false
+        },
+        "lyrics": {
+          "type": "string",
+          "required": false,
+          "description": "Lyrics for the extended audio. Optional.\n- Takes priority over `prompt` as lyrics. If omitted, `prompt` is used as lyrics when provided.\n- V6, V6_MINI, and V6_WILD: Maximum 5000 characters.\n- Not required. Source audio (`audio_id`) is enough to generate.\n- Do not pass this parameter when `instrumental` is `true`.",
+          "maxLength": 5000,
+          "default": "[Verse]\\nKeep the melody flowing\\nInto a gentle bridge\\n[Chorus]\\nLet the piano rise and fall"
+        },
+        "variety": {
+          "type": "integer",
+          "required": false,
+          "description": "Controls the diversity and stylistic variation of generated results. Optional. Integer range 0–4, default 1.\n\n- **`0`**: off (exact style) — fully off, strictly the same style\n- **`1`**: normal (balanced variety) — default, balances stability and diversity\n- **`2`**: high (distinct styles) — produces results with clearly different styles\n- **`3`**: extra (bold exploration) — higher variation, encourages bold exploration of different styles\n- **`4`**: max (unreasonably varied) — maximum diversity; results may differ in style very significantly",
+          "default": 1,
+          "minimum": 0,
+          "maximum": 4
         }
       },
       "summary": "Extend Music OpenAPI Specification json { \"code\": 200, \"msg\": \"All generated successfully.\", \"data\": { \"callbackType\": \"complete\", \"task_id\": \"2fac 9f72\", \"data\": [ { \"id\": \"e231 - - - - 8cadc7dc\", \"audio_url\": \"https://example.cn/ .mp3\", \"stream_audio_url\": \"https://example.cn/ \", \"image_url\": \"https://example.cn/ .jpeg\", \"prompt\": \"[Verse] Night city lights shining bright\", \"model_name\": \"chirp-v3-5\", \"title\": \"Iron Man\", \"tags\": \"electrifying, rock\", \"createTime\": \"2025-01-01 00:00:00\", \"duration\": 198.44 }, { \"id\": \"bd15 1873\", \"audio_url\": \"https://example.cn/ .mp3\", \"stream_audio_url\": \"https://example.cn/ \", \"image_url\": \"https://example.cn/ .jpeg\", \"prompt\": \"[Verse] Night city light"
@@ -10513,22 +10824,39 @@
           "https://example.com/audio1.mp3",
           "https://example.com/audio2.mp3"
         ],
-        "custom_mode": true,
         "model": "V4",
         "prompt": "A calm and relaxing piano track with soft melodies",
         "style": "Jazz",
         "title": "Relaxing Piano",
-        "instrumental": true,
         "vocal_gender": "m",
         "style_weight": 0.61,
         "weirdness_constraint": 0.72,
-        "audio_weight": 0.65
+        "audio_weight": 0.65,
+        "lyrics": "[Verse]\nKeep the melody flowing\nInto a gentle bridge\n[Chorus]\nLet the piano rise and fall",
+        "variety": 1,
+        "persona_id": "persona_123",
+        "persona_model": "style_persona",
+        "duration": 20
       },
       "parameter_hints": {
+        "lyrics": {
+          "type": "string",
+          "required": false,
+          "description": "Lyrics for the mashup. Optional.\n- Takes priority over `prompt` as lyrics. If omitted, `prompt` is used as lyrics when provided.\n- V6, V6_MINI, and V6_WILD: Maximum 5000 characters.",
+          "maxLength": 5000,
+          "default": "[Verse]\\nKeep the melody flowing\\nInto a gentle bridge\\n[Chorus]\\nLet the piano rise and fall"
+        },
+        "prompt": {
+          "type": "string",
+          "required": false,
+          "description": "A description of the desired audio content. Optional.\n- Used as lyrics only when `lyrics` is not provided. If `lyrics` is present, `prompt` is not used as lyrics.\n- V6, V6_MINI, and V6_WILD: Maximum 5000 characters.",
+          "maxLength": 5000,
+          "default": "A calm and relaxing piano track with soft melodies"
+        },
         "vocal_gender": {
           "type": "string",
           "required": false,
-          "description": "Vocal gender preference for the singing voice.  \n- Only available in Custom Mode (`custom_mode: true`). Optional. Use 'm' for male and 'f' for female. Based on practice, this parameter can only increase the probability but cannot guarantee adherence to male/female voice instructions.",
+          "description": "Vocal gender preference for the singing voice. Optional. Use 'm' for male and 'f' for female. Based on practice, this parameter can only increase the probability but cannot guarantee adherence to male/female voice instructions.",
           "enum": [
             "m",
             "f"
@@ -10538,7 +10866,7 @@
         "upload_url_list": {
           "type": "array",
           "required": true,
-          "description": "Array of audio file URLs to mashup. Must contain exactly 2 URLs. Each URL must be publicly accessible.",
+          "description": "Array of audio file URLs to mashup. Provide 2 audio URLs. Upstream uses only the first 2. Each URL must be publicly accessible.",
           "default": [
             "https://example.com/audio1.mp3",
             "https://example.com/audio2.mp3"
@@ -10548,35 +10876,18 @@
             "format": "uri"
           }
         },
-        "prompt": {
-          "type": "string",
-          "required": false,
-          "description": "A description of the desired audio content.  \n- In Custom Mode (`custom_mode: true`): Required if `instrumental` is `false`. The prompt will be strictly used as the lyrics and sung in the generated track. Character limits by model:  \n  - **V4** (Discontinued): Maximum 3000 characters  \n  - **V4_5 & V4_5PLUS** (Discontinued): Maximum 5000 characters  \n  - **V4_5ALL** (Discontinued): Maximum 5000 characters  \n  - **V5 & V5_5** (Discontinued): Maximum 5000 characters  \n  - **V6, V6_MINI & V6_WILD**: Maximum 5000 characters  \n  Example: \"A calm and relaxing piano track with soft melodies\"  \n- In Non-custom Mode (`custom_mode: false`): Always required. The prompt serves as the core idea, and lyrics will be automatically generated based on it (not strictly matching the input). Maximum 500 characters.  \n  Example: \"A short relaxing piano tune\"",
-          "default": "A calm and relaxing piano track with soft melodies"
-        },
         "style": {
           "type": "string",
           "required": true,
-          "description": "Music style specification for the generated audio.  \n- Only available and required in Custom Mode (`custom_mode: true`). Defines the genre, mood, or artistic direction.  \n- Character limits by model:  \n  - **V4** (Discontinued): Maximum 200 characters  \n  - **V4_5 & V4_5PLUS** (Discontinued): Maximum 1000 characters  \n  - **V4_5ALL** (Discontinued): Maximum 1000 characters  \n  - **V5 & V5_5** (Discontinued): Maximum 1000 characters  \n  - **V6, V6_MINI & V6_WILD**: Maximum 1000 characters  \n- Common examples: Jazz, Classical, Electronic, Pop, Rock, Hip-hop, etc.",
+          "description": "Music style specification for the generated audio. Required.\n- Character limits by model:\n  - **V4** (Discontinued): Maximum 200 characters\n  - **V4_5 & V4_5PLUS** (Discontinued): Maximum 1000 characters\n  - **V4_5ALL** (Discontinued): Maximum 1000 characters\n  - **V5 & V5_5** (Discontinued): Maximum 1000 characters\n  - **V6, V6_MINI & V6_WILD**: Maximum 1000 characters\n- Common examples: Jazz, Classical, Electronic, Pop, Rock, Hip-hop, etc.",
+          "maxLength": 1000,
           "default": "Jazz"
         },
         "title": {
           "type": "string",
           "required": true,
-          "description": "Title for the generated music track.  \n- Only available and required in Custom Mode (`custom_mode: true`).  \n- Character limits by model:  \n  - **V4** (Discontinued): Maximum 80 characters  \n  - **V4_5 & V4_5PLUS** (Discontinued): Maximum 100 characters  \n  - **V4_5ALL** (Discontinued): Maximum 80 characters  \n  - **V5 & V5_5** (Discontinued): Maximum 100 characters  \n  - **V6, V6_MINI & V6_WILD**: Maximum 100 characters  \n- Will be displayed in player interfaces and filenames.",
+          "description": "Title for the generated music track. Required.\n- Character limits by model:\n  - **V4** (Discontinued): Maximum 80 characters\n  - **V4_5 & V4_5PLUS** (Discontinued): Maximum 100 characters\n  - **V4_5ALL** (Discontinued): Maximum 80 characters\n  - **V5 & V5_5** (Discontinued): Maximum 100 characters\n  - **V6, V6_MINI & V6_WILD**: Maximum 100 characters\n- Will be displayed in player interfaces and filenames.",
           "default": "Relaxing Piano"
-        },
-        "custom_mode": {
-          "type": "boolean",
-          "required": true,
-          "description": "Determines if advanced parameter customization is enabled.  \n- If `true`: Allows detailed control with specific requirements for `style` and `title` fields.  \n- If `false`: Simplified mode where only `prompt` is required and other parameters are ignored.",
-          "default": true
-        },
-        "instrumental": {
-          "type": "boolean",
-          "required": false,
-          "description": "Determines if the audio should be instrumental (no lyrics).  \n- In Custom Mode (`custom_mode: true`):  \n  - If `true`: Only `style` and `title` are required.  \n  - If `false`: `style`, `title`, and `prompt` are required (with prompt used as the exact lyrics).  \n- In Non-custom Mode (`custom_mode: false`): No impact on required fields (prompt only).",
-          "default": true
         },
         "model": {
           "type": "string",
@@ -10598,7 +10909,7 @@
         "style_weight": {
           "type": "number",
           "required": false,
-          "description": "Strength of adherence to the specified style.  \n- Only available in Custom Mode (`custom_mode: true`). Optional. Range 0–1, up to 2 decimal places.",
+          "description": "Strength of adherence to the specified style. Optional. Range 0–1, up to 2 decimal places.",
           "minimum": 0,
           "maximum": 1,
           "default": 0.61
@@ -10606,7 +10917,7 @@
         "weirdness_constraint": {
           "type": "number",
           "required": false,
-          "description": "Controls experimental/creative deviation.  \n- Only available in Custom Mode (`custom_mode: true`). Optional. Range 0–1, up to 2 decimal places.",
+          "description": "Controls experimental/creative deviation. Optional. Range 0–1, up to 2 decimal places.",
           "minimum": 0,
           "maximum": 1,
           "default": 0.72
@@ -10614,7 +10925,7 @@
         "audio_weight": {
           "type": "number",
           "required": false,
-          "description": "Balance weight for audio features vs. other factors.  \n- Only available in Custom Mode (`custom_mode: true`). Optional. Range 0–1, up to 2 decimal places.",
+          "description": "Balance weight for audio features vs. other factors. Optional. Range 0–1, up to 2 decimal places.",
           "minimum": 0,
           "maximum": 1,
           "default": 0.65
@@ -10622,10 +10933,34 @@
         "duration": {
           "type": "integer",
           "required": false,
-          "description": "Duration is selectable; valid only when `custom_mode` is `true` and `model` is `V5_5` (Discontinued), `V6`, `V6_MINI`, or `V6_WILD`.",
+          "description": "Audio duration in seconds. Optional. Range 10–360, default 20. Valid when `model` is ~~V5_5~~ (Discontinued), V6, V6_MINI, or V6_WILD.",
           "default": 20,
           "minimum": 10,
           "maximum": 360
+        },
+        "variety": {
+          "type": "integer",
+          "required": false,
+          "description": "Controls the diversity and stylistic variation of generated results. Optional. Integer range 0–4, default 1.\n\n- **`0`**: off (exact style) — fully off, strictly the same style\n- **`1`**: normal (balanced variety) — default, balances stability and diversity\n- **`2`**: high (distinct styles) — produces results with clearly different styles\n- **`3`**: extra (bold exploration) — higher variation, encourages bold exploration of different styles\n- **`4`**: max (unreasonably varied) — maximum diversity; results may differ in style very significantly",
+          "default": 1,
+          "minimum": 0,
+          "maximum": 4
+        },
+        "persona_id": {
+          "type": "string",
+          "required": false,
+          "description": "Persona ID or Voice ID to apply to the generated music. Optional. Use this to apply a specific persona style to your music generation.\n\nTo generate a Persona ID, use the [Generate Persona](https://docs.kie.ai/suno-api/generate-persona) endpoint to create a personalized music Persona based on generated music.\n\nTo generate a Voice ID, use the [Generate Voice](https://docs.kie.ai/suno-api/suno-voice-generate) endpoint.",
+          "default": "persona_123"
+        },
+        "persona_model": {
+          "type": "string",
+          "required": false,
+          "description": "Persona model. Optional. Use `style_persona` for Generate Persona IDs, or `voice_persona` for Suno Voice IDs. Default: `style_persona`. Available for V5 (Discontinued), V5_5 (Discontinued), V6, V6_MINI, and V6_WILD.",
+          "enum": [
+            "style_persona",
+            "voice_persona"
+          ],
+          "default": "style_persona"
         }
       },
       "summary": "Generate Mashup Music OpenAPI Specification json { \"code\": 200, \"msg\": \"All generated successfully.\", \"data\": { \"callbackType\": \"complete\", \"task_id\": \"2fac 9f72\", \"data\": [ { \"id\": \"e231 - - - - 8cadc7dc\", \"audio_url\": \"https://example.cn/ .mp3\", \"stream_audio_url\": \"https://example.cn/ \", \"image_url\": \"https://example.cn/ .jpeg\", \"prompt\": \"[Verse] Night city lights shining bright\", \"model_name\": \"chirp-v3-5\", \"title\": \"Iron Man\", \"tags\": \"electrifying, rock\", \"createTime\": \"2025-01-01 00:00:00\", \"duration\": 198.44 }, { \"id\": \"bd15 1873\", \"audio_url\": \"https://example.cn/ .mp3\", \"stream_audio_url\": \"https://example.cn/ \", \"image_url\": \"https://example.cn/ .jpeg\", \"prompt\": \"[Verse] Night c"
@@ -10657,46 +10992,38 @@
       "parameter_hints": {
         "prompt": {
           "type": "string",
-          "required": true,
-          "description": "A description of the desired audio content.  \n- In Custom Mode (`customMode: true`): Required if `instrumental` is `false`. The prompt will be strictly used as the lyrics and sung in the generated track. Character limits by model:  \n  - **V4**（Discontinued）: Maximum 3000 characters  \n  - **V4_5 & V4_5PLUS**（Discontinued）: Maximum 5000 characters  \n  - **V4_5ALL**（Discontinued）: Maximum 5000 characters  \n  - **V5_5 & V5**（Discontinued）: Maximum 5000 characters  \n  - **V6、V6_MINI 和 V6_WILD**: Maximum 5000 characters  \n  Example: \"A calm and relaxing piano track with soft melodies\"  \n- In Non-custom Mode (`customMode: false`): Always required. The prompt serves as the core idea, and lyrics will be automatically generated based on it (not strictly matching the input). Maximum 3000 characters.  \n  Example: \"A short relaxing piano tune\"",
-          "default": "A calm and relaxing piano track with soft melodies"
-        },
-        "image_urls": {
-          "type": "array",
           "required": false,
-          "description": "Array of referenced image URLs.\n- Supported formats: JPEG, JPG, PNG, WEBP.\n- Limits: Maximum 10MB per image, up to 5 images in total.\n- Note: When images are provided, the `prompt` parameter becomes optional.\n- Effective only when customMode is false.",
-          "items": {
-            "type": "string"
-          }
+          "description": "A description of the desired audio content. Optional.\n- Custom mode (`custom_mode=true`): When provided, the prompt is used strictly as lyrics and sung in the generated track. Character limits by model:\n  - V4: Maximum 3000 characters\n  - V4_5, V4_5PLUS, V4_5ALL, V5_5, V5: Maximum 5000 characters\n- Non-custom mode (`custom_mode=false`): When provided, the prompt serves as the core idea. Lyrics are generated automatically based on it and do not strictly match the input. Maximum 3000 characters.\n`prompt` is not required. In non-custom mode, provide at least one of `image_urls`, `video_urls`, `audio_urls`, `style`, or `lyrics`. In custom mode, provide at least one of `style`, `lyrics`, or `negative_tags`. Generation is rejected if all related inputs are empty.",
+          "default": "A calm and relaxing piano track with soft melodies"
         },
         "style": {
           "type": "string",
           "required": false,
-          "description": "Music style specification for the generated audio.  \n- Required in Custom Mode (`customMode: true`). Defines the genre, mood, or artistic direction.  \n- Character limits by model:  \n  - **V4**（Discontinued）: Maximum 200 characters  \n  - **V4_5 & V4_5PLUS**（Discontinued）: Maximum 1000 characters  \n  - **V4_5ALL**（Discontinued）: Maximum 1000 characters  \n  - **V5_5 & V5**（Discontinued）: Maximum 1000 characters  \n  - **V6、V6_MINI 和 V6_WILD**: Maximum 1000 characters \n- Common examples: Jazz, Classical, Electronic, Pop, Rock, Hip-hop, etc.",
+          "description": "Music style specification for the generated audio.\n- Character limits by model:\n  - **V4** (Discontinued): Maximum 200 characters\n  - **V4_5 and V4_5PLUS** (Discontinued): Maximum 1000 characters\n  - **V4_5ALL** (Discontinued): Maximum 1000 characters\n  - **V5_5 and V5** (Discontinued): Maximum 1000 characters\n  - **V6, V6_MINI, and V6_WILD**: Maximum 1000 characters\n- Common examples: Jazz, Classical, Electronic, Pop, Rock, Hip-hop, etc.",
           "default": "Classical"
         },
         "title": {
           "type": "string",
           "required": false,
-          "description": "Title for the generated music track.  \n- Required in Custom Mode (`customMode: true`).  \n- Max length: 80 characters.  \n- Will be displayed in player interfaces and filenames.",
+          "description": "Title for the generated music track.\n- Required in Custom Mode (`custom_mode: true`).\n- Max length: 80 characters.\n- Will be displayed in player interfaces and filenames.",
           "default": "Peaceful Piano Meditation"
         },
         "custom_mode": {
           "type": "boolean",
           "required": true,
-          "description": "Determines if advanced parameter customization is enabled.  \n- If `true`: Allows detailed control with specific requirements for `style` and `title` fields.  \n- If `false`: Simplified mode where only `prompt` is required and other parameters are ignored.",
+          "description": "Determines whether advanced parameter customization is enabled.\n- If `true`: Allows detailed control\n- If `false`: Simplified mode",
           "default": true
         },
         "instrumental": {
           "type": "boolean",
           "required": true,
-          "description": "Determines if the audio should be instrumental (no lyrics).  \n- In Custom Mode (`custom_mode: true`):  \n  - If `true`: Only `style` and `title` are required.  \n  - If `false`: `style`, `title`, and `prompt` are required (with prompt used as the exact lyrics).  \n- In Non-custom Mode (`custom_mode: false`): No impact on required fields (prompt only).",
+          "description": "Determines whether the audio should be instrumental (no lyrics).\n- In Custom Mode (`custom_mode: true`):\n  - If `true`: Only `style` and `title` are required.\n  - If `false`: `style`, `title`, and `prompt` are required (`prompt` is used as the exact lyrics).\n- In Non-custom Mode (`custom_mode: false`):\n  - If `true`: Only `style` and `prompt` are required.\n  - If `false`: `style`, `prompt`, and `lyrics` are required (`lyrics` is used as a lyrics attachment and can be used together with the audio description in `prompt`).",
           "default": true
         },
         "model": {
           "type": "string",
           "required": true,
-          "description": "The AI model version to use for generation.  \n- Required for all requests.  \n- Available options:  \n  - **`V6_WILD`**：Pushes creative boundaries for bolder, more distinctive musical expression.\n  - **`V6_MINI`**：Lightweight and fast, balancing quality and speed for effortless creation.\n  - **`V6`**：Greater musical expression with more natural vocals and richer details.\n  - **`V5_5`**（Discontinued）：Custom Models Tailored to Your Unique Taste.  \n  - **`V5`**（Discontinued）: Superior musical expression, faster generation.  \n  - **`V4_5PLUS`**（Discontinued）: V4.5+ delivers richer sound, new ways to create, max 8 min.  \n  - **`V4_5`**（Discontinued）: V4.5 enables smarter prompts, faster generations, max 8 min.  \n  - **`V4_5ALL`**（Discontinued）: V4.5ALL enables smarter prompts, faster generations, max 8 min.  \n  - **`V4`**（Discontinued）: V4 improves vocal quality, max 4 min.\n\n",
+          "description": "The AI model version to use for generation.\n- Required for all requests.\n- Available options:\n  - **`V6_WILD`**: Pushes creative boundaries for bolder, more distinctive musical expression.\n  - **`V6_MINI`**: Lightweight and fast, balancing quality and speed for effortless creation.\n  - **`V6`**: Greater musical expression with more natural vocals and richer details.\n  - **`V5_5`** (Discontinued): Custom models tailored to your unique taste.\n  - **`V5`** (Discontinued): Superior musical expression, faster generation.\n  - **`V4_5PLUS`** (Discontinued): V4.5+ delivers richer sound, new ways to create, max 8 min.\n  - **`V4_5`** (Discontinued): V4.5 enables smarter prompts, faster generations, max 8 min.\n  - **`V4_5ALL`** (Discontinued): V4.5ALL enables smarter prompts, faster generations, max 8 min.\n  - **`V4`** (Discontinued): V4 improves vocal quality, max 4 min.",
           "enum": [
             "V4",
             "V4_5",
@@ -10719,7 +11046,7 @@
         "vocal_gender": {
           "type": "string",
           "required": false,
-          "description": "Vocal gender preference for the singing voice. Optional. Use 'm' for male and 'f' for female. Note: This parameter is only effective when custom_mode is true. Based on practice, this parameter can only increase the probability but cannot guarantee adherence to male/female voice instructions.",
+          "description": "Vocal gender preference. Optional. Use `m` for male and `f` for female. This parameter is only effective when `custom_mode` is true. In practice, it only increases probability and cannot guarantee male/female voice instructions are followed.",
           "enum": [
             "m",
             "f"
@@ -10729,7 +11056,7 @@
         "style_weight": {
           "type": "number",
           "required": false,
-          "description": "Strength of adherence to the specified style. Optional. Range 0–1, up to 2 decimal places.",
+          "description": "Only available when Custom Mode (`custom_mode: true`) is enabled. Strength of adherence to the specified style. Optional. Range 0–1, up to 2 decimal places.",
           "minimum": 0,
           "maximum": 1,
           "default": 0.65
@@ -10737,7 +11064,7 @@
         "weirdness_constraint": {
           "type": "number",
           "required": false,
-          "description": "Controls experimental/creative deviation. Optional. Range 0–1, up to 2 decimal places.",
+          "description": "Only available when Custom Mode (`custom_mode: true`) is enabled. Controls experimental/creative deviation. Optional. Range 0–1, up to 2 decimal places.",
           "minimum": 0,
           "maximum": 1,
           "default": 0.65
@@ -10745,7 +11072,7 @@
         "audio_weight": {
           "type": "number",
           "required": false,
-          "description": "Balance weight for audio features vs. other factors. Optional. Range 0–1, up to 2 decimal places.",
+          "description": "Only available when Custom Mode (`custom_mode: true`) is enabled. Relative weight of audio features. Optional. Range 0–1, up to 2 decimal places.\n- `audio_weight` is not supported when there are no vocals",
           "minimum": 0,
           "maximum": 1,
           "default": 0.65
@@ -10753,13 +11080,13 @@
         "persona_id": {
           "type": "string",
           "required": false,
-          "description": "Only available when Custom Mode (`custom_mode: true`) is enabled. Persona ID or Voice ID to apply to the generated music. Optional. Use this to apply a specific persona style to your music generation. \n\nTo generate a persona ID, use the [Generate Persona](https://docs.kie.ai/suno-api/generate-persona) endpoint to create a personalized music Persona based on generated music.\n\nTo generate a Voice ID, use the [Generate Voice](https://docs.kie.ai/suno-api/suno-voice-generate)endpoint",
+          "description": "Persona ID or Voice ID to apply to the generated music. Optional. Use this to apply a specific persona style to your music generation.\n\nTo generate a Persona ID, use the [Generate Persona](https://docs.kie.ai/suno-api/generate-persona) endpoint to create a personalized music Persona based on generated music.\n\nTo generate a Voice ID, use the [Generate Voice](https://docs.kie.ai/suno-api/suno-voice-generate) endpoint.",
           "default": "persona_123"
         },
         "persona_model": {
           "type": "string",
           "required": false,
-          "description": "The persona model is only applicable to the V5 (deactivated), V5.5 (deactivated), V6, V6_MINI, and V6_WILD models.",
+          "description": "Persona model. Only available for V5 (Discontinued), V5.5 (Discontinued), V6, V6_MINI, and V6_WILD.",
           "enum": [
             "style_persona",
             "voice_persona"
@@ -10768,10 +11095,47 @@
         "duration": {
           "type": "number",
           "required": false,
-          "description": "Audio duration. Optional; It is only valid when custom_mode is true and the model is V5_5 (deprecated), V6, V6_MINI, or V6_WILD.",
+          "description": "Audio duration. Optional; only valid when `custom_mode` is true and the model is V5_5 (Discontinued), V6, V6_MINI, or V6_WILD.",
           "default": 20,
           "minimum": 10,
           "maximum": 360
+        },
+        "image_urls": {
+          "type": "array",
+          "required": false,
+          "description": "Image references. Only effective when `custom_mode=false`.\n- Optional\n- Up to 5 images; each image must not exceed 10 MB\n- Supported formats: `jpeg`, `png`, `webp`, and `bmp`",
+          "items": {
+            "type": "string"
+          }
+        },
+        "variety": {
+          "type": "number",
+          "required": false,
+          "description": "Only available when Custom Mode (`custom_mode: true`) is enabled. Controls the diversity and stylistic variation of generated results. Optional. Range 0–4, integer, default 1.\n\n- **`0`**: off (exact style) — fully off, strictly the same style\n- **`1`**: normal (balanced variety) — default, balances stability and diversity\n- **`2`**: high (distinct styles) — produces results with clearly different styles\n- **`3`**: extra (bold exploration) — higher variation, encourages bold exploration of different styles\n- **`4`**: max (unreasonably varied) — maximum diversity; results may differ in style very significantly",
+          "default": 1,
+          "minimum": 0,
+          "maximum": 4
+        },
+        "lyrics": {
+          "type": "string",
+          "required": false,
+          "description": "Lyrics for the generated audio. Optional.\n- V6: Maximum 5000 characters.\n- When `custom_mode=true`, `lyrics` is used as lyrics first; if `lyrics` is not provided, `prompt` is used as lyrics.\n- When `custom_mode=false`, `lyrics` is used as a lyrics attachment and can be used together with the audio description in `prompt`."
+        },
+        "audio_urls": {
+          "type": "array",
+          "required": false,
+          "description": "Audio references. Only effective when `custom_mode=false`.\n- Optional\n- Audio duration must be between 6 seconds and 30 minutes; each audio file must not exceed 500 MB",
+          "items": {
+            "type": "string"
+          }
+        },
+        "video_urls": {
+          "type": "array",
+          "required": false,
+          "description": "Video references. Only effective when `custom_mode=false`.\n- Optional\n- Up to 1 video file; each file must not exceed 100 MB, duration must not exceed 241 seconds, with no minimum duration\n- Supported formats: mp4, mov, and webm",
+          "items": {
+            "type": "string"
+          }
         }
       },
       "summary": "Generate Music OpenAPI Specification json { \"code\": 200, \"msg\": \"All generated successfully.\", \"data\": { \"callbackType\": \"complete\", \"task_id\": \"2fac 9f72\", \"data\": [ { \"id\": \"e231 - - - - 8cadc7dc\", \"audio_url\": \"https://example.cn/ .mp3\", \"stream_audio_url\": \"https://example.cn/ \", \"image_url\": \"https://example.cn/ .jpeg\", \"prompt\": \"[Verse] Night city lights shining bright\", \"model_name\": \"chirp-v3-5\", \"title\": \"Iron Man\", \"tags\": \"electrifying, rock\", \"createTime\": \"2025-01-01 00:00:00\", \"duration\": 198.44 }, { \"id\": \"bd15 1873\", \"audio_url\": \"https://example.cn/ .mp3\", \"stream_audio_url\": \"https://example.cn/ \", \"image_url\": \"https://example.cn/ .jpeg\", \"prompt\": \"[Verse] Night city lig"
@@ -10849,6 +11213,146 @@
       "summary": "Recovery Audio OpenAPI Specification GET /api/v1/suno/recovery/record-info?task_id={task_id}"
     },
     {
+      "label": "Music Models > Suno > Music Generation • Replace Music Section",
+      "title": "Replace Music Section",
+      "family": "Music Models > Suno > Music Generation",
+      "method": "POST",
+      "endpoint": "/api/v1/jobs/createTask",
+      "docs_url": "https://docs.kie.ai/suno-api/replace-section.md",
+      "resolved": true,
+      "example_body": {
+        "task_id": "2fac****9f72",
+        "audio_id": "e231****-****-****-****-****8cadc7dc",
+        "prompt": "A calm and relaxing piano track.",
+        "tags": "Jazz",
+        "title": "Relaxing Piano",
+        "negative_tags": "Rock",
+        "infill_start_s": 10.5,
+        "infill_end_s": 20.75,
+        "full_lyrics": "[Verse 1]\nOriginal lyrics here\n[Chorus]\nModified lyrics for this section\n[Verse 2]\nMore original lyrics",
+        "lyrics": "[Chorus]\nModified lyrics for this section",
+        "variety": 1,
+        "vocal_gender": "m",
+        "style_weight": 0.65,
+        "weirdness_constraint": 0.65,
+        "audio_weight": 0.65,
+        "persona_id": "persona_123",
+        "persona_model": "style_persona"
+      },
+      "parameter_hints": {
+        "prompt": {
+          "type": "string",
+          "required": true,
+          "description": "The lyrics after replacement. Required.",
+          "default": "A calm and relaxing piano track."
+        },
+        "tags": {
+          "type": "string",
+          "required": true,
+          "description": "Style tags for the music, such as jazz or electronic. Required.",
+          "default": "Jazz"
+        },
+        "title": {
+          "type": "string",
+          "required": true,
+          "description": "The title of the music. Required.",
+          "default": "Relaxing Piano"
+        },
+        "negative_tags": {
+          "type": "string",
+          "required": false,
+          "description": "Music styles to exclude, used to prevent specific stylistic elements from appearing in the replacement section.",
+          "default": "Rock"
+        },
+        "infill_start_s": {
+          "type": "number",
+          "required": true,
+          "description": "The point in time, in seconds, at which replacement starts, rounded to 2 decimal places. Required. Must be less than infill_end_s, and the difference between infill_end_s and infill_start_s must be at least 10 seconds.",
+          "minimum": 0,
+          "default": 10.5
+        },
+        "infill_end_s": {
+          "type": "number",
+          "required": true,
+          "description": "The point in time, in seconds, at which replacement ends, rounded to 2 decimal places. Required. Must be greater than infill_start_s, and the difference between infill_end_s and infill_start_s must be at least 10 seconds.",
+          "minimum": 0,
+          "default": 20.75
+        },
+        "full_lyrics": {
+          "type": "string",
+          "required": true,
+          "description": "The complete modified lyrics, combining the modified and unmodified lyrics. Required. This parameter contains the complete lyrics text that will be used for the entire song after section replacement.",
+          "default": "[Verse 1]\\nOriginal lyrics content\\n[Chorus]\\nModified lyrics for this section\\n[Verse 2]\\nMore original lyrics"
+        },
+        "lyrics": {
+          "type": "string",
+          "required": false,
+          "description": "Lyrics for the replaced segment. Optional.\n- V6, V6_MINI, and V6_WILD: Maximum 5000 characters.",
+          "maxLength": 5000,
+          "default": "[Chorus]\\nModified lyrics for this section"
+        },
+        "vocal_gender": {
+          "type": "string",
+          "required": false,
+          "description": "Vocal gender preference. Optional. 'm' for male, 'f' for female. Based on practice, this parameter can only increase the probability but cannot guarantee adherence to male/female voice instructions.",
+          "enum": [
+            "m",
+            "f"
+          ],
+          "default": "m"
+        },
+        "style_weight": {
+          "type": "number",
+          "required": false,
+          "description": "Adherence strength to specified style. Optional. Range 0–1, up to 2 decimal places.",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 0.65
+        },
+        "weirdness_constraint": {
+          "type": "number",
+          "required": false,
+          "description": "Controls experimental/creative deviation level. Optional. Range 0–1, up to 2 decimal places.",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 0.65
+        },
+        "audio_weight": {
+          "type": "number",
+          "required": false,
+          "description": "Relative weight of audio elements. Optional. Range 0–1, up to 2 decimal places.",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 0.65
+        },
+        "variety": {
+          "type": "integer",
+          "required": false,
+          "description": "Controls the diversity and stylistic variation of generated results. Optional. Integer range 0–4, default 1.\n\n- **`0`**: off (exact style) — fully off, strictly the same style\n- **`1`**: normal (balanced variety) — default, balances stability and diversity\n- **`2`**: high (distinct styles) — produces results with clearly different styles\n- **`3`**: extra (bold exploration) — higher variation, encourages bold exploration of different styles\n- **`4`**: max (unreasonably varied) — maximum diversity; results may differ in style very significantly",
+          "default": 1,
+          "minimum": 0,
+          "maximum": 4
+        },
+        "persona_id": {
+          "type": "string",
+          "required": false,
+          "description": "Persona ID or Voice ID to apply to the generated music. Optional. Use this to apply a specific persona style to your music generation.\n\nTo generate a Persona ID, use the [Generate Persona](https://docs.kie.ai/suno-api/generate-persona) endpoint to create a personalized music Persona based on generated music.\n\nTo generate a Voice ID, use the [Generate Voice](https://docs.kie.ai/suno-api/suno-voice-generate) endpoint.",
+          "default": "persona_123"
+        },
+        "persona_model": {
+          "type": "string",
+          "required": false,
+          "description": "Persona model. Optional. Use `style_persona` for Generate Persona IDs, or `voice_persona` for Suno Voice IDs. Default: `style_persona`. Available for V5 (Discontinued), V5_5 (Discontinued), V6, V6_MINI, and V6_WILD.",
+          "enum": [
+            "style_persona",
+            "voice_persona"
+          ],
+          "default": "style_persona"
+        }
+      },
+      "summary": "Replace Music Section OpenAPI Specification json { \"code\": 200, \"msg\": \"All generated successfully.\", \"data\": { \"callbackType\": \"complete\", \"task_id\": \"2fac 9f72\", \"data\": [ { \"id\": \"e231 - - - - 8cadc7dc\", \"audio_url\": \"https://example.cn/ .mp3\", \"stream_audio_url\": \"https://example.cn/ \", \"image_url\": \"https://example.cn/ .jpeg\", \"prompt\": \"A calm and relaxing piano track.\", \"model_name\": \"chirp-v3-5\", \"title\": \"Relaxing Piano\", \"tags\": \"Jazz\", \"createTime\": \"2025-01-01 00:00:00\", \"duration\": 198.44 } ] } }"
+    },
+    {
       "label": "Music Models > Suno > Music Generation • Upload And Cover Audio",
       "title": "Upload And Cover Audio",
       "family": "Music Models > Suno > Music Generation",
@@ -10859,7 +11363,6 @@
       "example_body": {
         "upload_url": "https://storage.example.com/upload",
         "prompt": "A calm and relaxing piano track with soft melodies",
-        "custom_mode": true,
         "instrumental": true,
         "model": "V4",
         "style": "Classical",
@@ -10870,70 +11373,38 @@
         "weirdness_constraint": 0.65,
         "audio_weight": 0.65,
         "persona_id": "persona_123",
-        "persona_model": "style_persona"
+        "persona_model": "style_persona",
+        "lyrics": "[Verse]\nKeep the melody flowing\nInto a gentle bridge\n[Chorus]\nLet the piano rise and fall",
+        "variety": 1
       },
       "parameter_hints": {
-        "upload_url": {
+        "lyrics": {
           "type": "string",
-          "required": true,
-          "description": "The URL for uploading audio files, required regardless of whether custom_mode and instrumental are true or false. Ensure the uploaded audio does not exceed 8 minutes in length.",
-          "format": "uri",
-          "default": "https://storage.example.com/upload"
-        },
-        "image_urls": {
-          "type": "array",
           "required": false,
-          "description": "Array of referenced image URLs.\n- Effective only when customMode is false.\n- Supported formats: JPEG, JPG, PNG, WEBP.\n- Limits: Maximum 10MB per image, up to 5 images in total.\n- Note: When images are provided, the `prompt` parameter becomes optional.",
-          "items": {
-            "type": "string"
-          }
+          "description": "Lyrics for the covered audio. Optional.\n- Takes priority over `prompt` as lyrics. If omitted, `prompt` is used as lyrics when provided.\n- V6, V6_MINI, and V6_WILD: Maximum 5000 characters.\n- Not required. Source audio (`upload_url`) is enough to generate.\n- Do not pass this parameter when `instrumental` is `true`.",
+          "maxLength": 5000,
+          "default": "[Verse]\\nKeep the melody flowing\\nInto a gentle bridge\\n[Chorus]\\nLet the piano rise and fall"
         },
         "prompt": {
           "type": "string",
-          "required": true,
-          "description": "A description of the desired audio content.  \n- In Custom Mode (`customMode: true`):  Required if `instrumental` is `false`. The prompt will be strictly used as the lyrics and sung in the generated track. Character limits by model:  \n  - **V4**（Discontinued）: Max 3,000 characters\n  - **V4_5 and V4_5PLUS**（Discontinued）: Max 5,000 characters\n  - **V4_5ALL**（Discontinued）: Max 5,000 characters\n  - **V5_5 and V5**（Discontinued）: Max 5,000 characters\n  - **V6、V6_MINI 和 V6_WILD**: Max 5,000 characters\n  Example: \"A calm and relaxing piano track with soft melodies\"  \n- In Non-custom Mode (`customMode: false`): Always required. The prompt serves as the core idea, and lyrics will be automatically generated based on it (not strictly matching the input). Max length: 500 characters.  \n  Example: \"A short relaxing piano tune\" ",
+          "required": false,
+          "description": "Lyrics for the covered audio. Optional.\n- Used as lyrics only when `lyrics` is not provided. If `lyrics` is present, `prompt` is not used as lyrics.\n- V6, V6_MINI, and V6_WILD: Maximum 5000 characters.\n- Not required. Source audio (`upload_url`) is enough to generate.\n- Do not pass this parameter when `instrumental` is `true`.",
+          "maxLength": 5000,
           "default": "A calm and relaxing piano track with soft melodies"
         },
         "style": {
           "type": "string",
           "required": false,
-          "description": "The music style or genre for the audio.  \n- Required in Custom Mode (`customMode: true`). Examples: \"Jazz\", \"Classical\", \"Electronic\". Character limits by model:  \n   - **V4**（Discontinued）: Maximum 200 characters  \n   - **V4_5 & V4_5PLUS**（Discontinued）: Maximum 1000 characters  \n   - **V4_5ALL**（Discontinued）: Maximum 1000 characters  \n   - **V5_5 & V5**（Discontinued）: Maximum 1000 characters  \n   - **V6、V6_MINI 和 V6_WILD**: Maximum 1000 characters \n  Example: \"Classical\"  \n- In Non-custom Mode (`customMode: false`): Leave empty.",
+          "description": "The music style or genre for the audio. Optional.\n- Not required. Source audio (`upload_url`) is enough to generate.\n- Character limits by model:\n  - **V4**（Discontinued）: Maximum 200 characters\n  - **V4_5 & V4_5PLUS**（Discontinued）: Maximum 1000 characters\n  - **V4_5ALL**（Discontinued）: Maximum 1000 characters\n  - **V5_5 & V5**（Discontinued）: Maximum 1000 characters\n  - **V6, V6_MINI, and V6_WILD**: Maximum 1000 characters",
+          "maxLength": 1000,
           "default": "Classical"
         },
         "title": {
           "type": "string",
           "required": false,
-          "description": "The title of the generated music track.  \n- Required in Custom Mode (`customMode: true`). Character limits by model:  \n  - **V4**（Discontinued）: Maximum 80 characters  \n  - **V4_5 & V4_5PLUS**（Discontinued）: Maximum 100 characters  \n  - **V4_5ALL**（Discontinued）: Maximum 80 characters  \n  - **V5_5 & V5**（Discontinued）: Maximum 100 characters  \n  - **V6、V6_MINI 和 V6_WILD**: Maximum 100 characters    \n  Example: \"Peaceful Piano Meditation\"  \n- In Non-custom Mode (`customMode: false`): Leave empty.",
+          "description": "The title of the generated music track. Optional.\n- Maximum 80 characters.\n- Displayed in player interfaces and filenames.",
+          "maxLength": 80,
           "default": "Peaceful Piano Meditation"
-        },
-        "custom_mode": {
-          "type": "boolean",
-          "required": true,
-          "description": "Enables Custom Mode for advanced audio generation settings.  \n- Set to `true` to use Custom Mode (requires `style` and `title`; `prompt` required if `instrumental` is `false`). The prompt will be strictly used as lyrics if `instrumental` is `false`.  \n- Set to `false` for Non-custom Mode (only `prompt` is required). Lyrics will be auto-generated based on the prompt.",
-          "default": true
-        },
-        "instrumental": {
-          "type": "boolean",
-          "required": true,
-          "description": "Determines if the audio should be instrumental (no lyrics).  \n- In Custom Mode (`custom_mode: true`):  \n  - If `true`: Only `style` and `title` are required.  \n  - If `false`: `style`, `title`, and `prompt` are required (with `prompt` used as the exact lyrics).  \n- In Non-custom Mode (`custom_mode: false`): No impact on required fields (`prompt` only). Lyrics are auto-generated if `instrumental` is `false`.",
-          "default": true
-        },
-        "model": {
-          "type": "string",
-          "required": true,
-          "description": "The AI model version to use for generation.  \n- Required for all requests.  \n- Available options:  \n   - **`V6_WILD`**：Pushes creative boundaries for bolder, more distinctive musical expression.\n   - **`V6_MINI`**：Lightweight and fast, balancing quality and speed for effortless creation.\n   - **`V6`**：Greater musical expression with more natural vocals and richer details.\n   - **`V5_5`**（Discontinued）：Custom Models Tailored to Your Unique Taste.  \n   - **`V5`**（Discontinued）: Superior musical expression, faster generation.  \n   - **`V4_5PLUS`**（Discontinued）: V4.5+ delivers richer sound, new ways to create, max 8 min.  \n   - **`V4_5`**（Discontinued）: V4.5 enables smarter prompts, faster generations, max 8 min.  \n   - **`V4_5ALL`**（Discontinued）: V4.5ALL enables smarter prompts, faster generations, max 8 min.  \n   - **`V4`**（Discontinued）: V4 improves vocal quality, max 4 min.",
-          "enum": [
-            "V4",
-            "V4_5",
-            "V4_5PLUS",
-            "V4_5ALL",
-            "V5",
-            "V5_5",
-            "V6",
-            "V6_WILD",
-            "V6_MINI"
-          ],
-          "default": "V6"
         },
         "negative_tags": {
           "type": "string",
@@ -10944,7 +11415,7 @@
         "vocal_gender": {
           "type": "string",
           "required": false,
-          "description": "Vocal gender preference for the singing voice. Optional. Use 'm' for male and 'f' for female. Note: This parameter is only effective when custom_mode is true. Based on practice, this parameter can only increase the probability but cannot guarantee adherence to male/female voice instructions.",
+          "description": "Vocal gender preference for the singing voice. Optional. Use 'm' for male and 'f' for female. Based on practice, this parameter can only increase the probability but cannot guarantee adherence to male/female voice instructions. Do not pass this parameter when `instrumental` is `true`.",
           "enum": [
             "m",
             "f"
@@ -10975,11 +11446,57 @@
           "maximum": 1,
           "default": 0.65
         },
+        "variety": {
+          "type": "integer",
+          "required": false,
+          "description": "Controls the diversity and stylistic variation of generated results. Optional. Integer range 0–4, default 1.\n\n- **`0`**: off (exact style) — fully off, strictly the same style\n- **`1`**: normal (balanced variety) — default, balances stability and diversity\n- **`2`**: high (distinct styles) — produces results with clearly different styles\n- **`3`**: extra (bold exploration) — higher variation, encourages bold exploration of different styles\n- **`4`**: max (unreasonably varied) — maximum diversity; results may differ in style very significantly",
+          "default": 1,
+          "minimum": 0,
+          "maximum": 4
+        },
         "persona_id": {
           "type": "string",
           "required": false,
-          "description": "Only available when Custom Mode (`custom_mode: true`) is enabled. Persona ID or Voice ID to apply to the generated music. Optional. Use this to apply a specific persona style to your music generation. \n\nTo generate a persona ID, use the [Generate Persona](https://docs.kie.ai/suno-api/generate-persona) endpoint to create a personalized music Persona based on generated music.\n\nTo generate a Voice ID, use the [Generate Voice](https://docs.kie.ai/suno-api/suno-voice-generate)endpoint",
+          "description": "Persona ID or Voice ID to apply to the generated music. Optional. Use this to apply a specific persona style to your music generation.\n\nTo generate a Persona ID, use the [Generate Persona](https://docs.kie.ai/suno-api/generate-persona) endpoint to create a personalized music Persona based on generated music.\n\nTo generate a Voice ID, use the [Generate Voice](https://docs.kie.ai/suno-api/suno-voice-generate) endpoint.",
           "default": "persona_123"
+        },
+        "duration": {
+          "type": "integer",
+          "required": false,
+          "description": "Audio duration in seconds. Optional. Range 10–360, default 20. Valid when `model` is ~~V5_5~~ (Discontinued), V6, V6_MINI, or V6_WILD.",
+          "default": 20,
+          "minimum": 10,
+          "maximum": 360
+        },
+        "upload_url": {
+          "type": "string",
+          "required": true,
+          "description": "The URL of the source audio file to cover. Required. Source audio (`upload_url`) is enough to generate. Ensure the uploaded audio does not exceed 8 minutes in length.",
+          "format": "uri",
+          "default": "https://storage.example.com/upload"
+        },
+        "instrumental": {
+          "type": "boolean",
+          "required": true,
+          "description": "Determines if the audio should be instrumental (no lyrics).\n- If `true`: generate instrumental music (no vocals). Do not pass `lyrics`, `prompt`, or `vocal_gender`.\n- If `false`: use `lyrics` as lyrics (fall back to `prompt` if `lyrics` is not provided).",
+          "default": true
+        },
+        "model": {
+          "type": "string",
+          "required": true,
+          "description": "The AI model version to use for generation.  \n- Required for all requests.  \n- Available options:  \n   - **`V6_WILD`**：Pushes creative boundaries for bolder, more distinctive musical expression.\n   - **`V6_MINI`**：Lightweight and fast, balancing quality and speed for effortless creation.\n   - **`V6`**：Greater musical expression with more natural vocals and richer details.\n   - **`V5_5`**（Discontinued）：Custom Models Tailored to Your Unique Taste.  \n   - **`V5`**（Discontinued）: Superior musical expression, faster generation.  \n   - **`V4_5PLUS`**（Discontinued）: V4.5+ delivers richer sound, new ways to create, max 8 min.  \n   - **`V4_5`**（Discontinued）: V4.5 enables smarter prompts, faster generations, max 8 min.  \n   - **`V4_5ALL`**（Discontinued）: V4.5ALL enables smarter prompts, faster generations, max 8 min.  \n   - **`V4`**（Discontinued）: V4 improves vocal quality, max 4 min.",
+          "enum": [
+            "V4",
+            "V4_5",
+            "V4_5PLUS",
+            "V4_5ALL",
+            "V5",
+            "V5_5",
+            "V6",
+            "V6_WILD",
+            "V6_MINI"
+          ],
+          "default": "V6"
         },
         "persona_model": {
           "type": "string",
@@ -10989,14 +11506,6 @@
             "voice_persona",
             "style_persona"
           ]
-        },
-        "duration": {
-          "type": "integer",
-          "required": false,
-          "description": "Duration is selectable; valid only when `custom_mode` is `true` and `model` is `V5_5`.",
-          "default": 20,
-          "minimum": 10,
-          "maximum": 360
         }
       },
       "summary": "Upload And Cover Audio OpenAPI Specification json { \"code\": 200, \"msg\": \"All generated successfully.\", \"data\": { \"callbackType\": \"complete\", \"task_id\": \"2fac 9f72\", \"data\": [ { \"id\": \"e231 - - - - 8cadc7dc\", \"audio_url\": \"https://example.cn/ .mp3\", \"source_audio_url\": \"https://example.cn/ .mp3\", \"stream_audio_url\": \"https://example.cn/ \", \"source_stream_audio_url\": \"https://example.cn/ \", \"image_url\": \"https://example.cn/ .jpeg\", \"source_image_url\": \"https://example.cn/ .jpeg\", \"prompt\": \"[Verse] Night city lights shining bright\", \"model_name\": \"chirp-v3-5\", \"title\": \"Iron Man\", \"tags\": \"electrifying, rock\", \"createTime\": \"2025-01-01 00:00:00\", \"duration\": 198.44 }, { \"id\": \"bd15 1873\", \"aud"
@@ -11011,7 +11520,6 @@
       "resolved": true,
       "example_body": {
         "upload_url": "https://storage.example.com/upload",
-        "default_param_flag": true,
         "instrumental": true,
         "continue_at": 60,
         "model": "V4",
@@ -11024,50 +11532,56 @@
         "weirdness_constraint": 0.65,
         "audio_weight": 0.65,
         "persona_id": "persona_123",
-        "persona_model": "style_persona"
+        "persona_model": "style_persona",
+        "lyrics": "[Verse]\nKeep the melody flowing\nInto a gentle bridge\n[Chorus]\nLet the piano rise and fall",
+        "variety": 1
       },
       "parameter_hints": {
+        "lyrics": {
+          "type": "string",
+          "required": false,
+          "description": "Lyrics for the extended audio. Optional.\n- Takes priority over `prompt` as lyrics. If omitted, `prompt` is used as lyrics when provided.\n- V6, V6_MINI, and V6_WILD: Maximum 5000 characters.\n- Not required. Source audio (`upload_url`) is enough to generate.\n- Do not pass this parameter when `instrumental` is `true`.",
+          "maxLength": 5000,
+          "default": "[Verse]\\nKeep the melody flowing\\nInto a gentle bridge\\n[Chorus]\\nLet the piano rise and fall"
+        },
         "prompt": {
           "type": "string",
           "required": false,
-          "description": "Describe how the music should be extended. Optional; if provided, it will be used as a prompt. Subject to model character limits:\n- **V6, V6_MINI & V6_WILD**: Max 5,000 characters\n- **V5_5 & V5** (Discontinued): Max 5,000 characters\n- **V4_5PLUS & V4_5** (Discontinued): Max 5,000 characters\n- **V4_5ALL** (Discontinued): Max 5,000 characters\n- **V4** (Discontinued): Max 3,000 characters",
+          "description": "Lyrics for the extended audio. Optional.\n- Used as lyrics only when `lyrics` is not provided. If `lyrics` is present, `prompt` is not used as lyrics.\n- V6, V6_MINI, and V6_WILD: Maximum 5000 characters.\n- Not required. Source audio (`upload_url`) is enough to generate.\n- Do not pass this parameter when `instrumental` is `true`.",
+          "maxLength": 5000,
           "default": "Extend the music with more relaxing notes"
         },
         "upload_url": {
           "type": "string",
           "required": true,
-          "description": "The URL for uploading audio files, required regardless of whether default_param_flag is true or false. Ensure the uploaded audio does not exceed 8 minutes in length.",
+          "description": "The URL of the source audio file to extend. Required. Source audio (`upload_url`) is enough to generate. Ensure the uploaded audio does not exceed 8 minutes in length.",
           "format": "uri",
           "default": "https://storage.example.com/upload"
-        },
-        "default_param_flag": {
-          "type": "boolean",
-          "required": true,
-          "description": "Enable custom mode for advanced audio generation settings.  \n- Set to `true` to use custom parameter mode (requires `style`, `title`, and `upload_url`; if `instrumental` is `false`, `upload_url` and `prompt` are required). If `instrumental` is `false`, the prompt will be strictly used as lyrics.  \n- Set to `false` to use non-custom mode (only `upload_url` required). Lyrics will be automatically generated based on the prompt.",
-          "default": true
         },
         "instrumental": {
           "type": "boolean",
           "required": false,
-          "description": "Determines whether the audio is instrumental (without lyrics).\n- In custom parameter mode (`default_param_flag: true`):\n- If `true`: Only `style`, `title`, and `upload_url` are required; `prompt` and `vocal_gender` do not need to be specified. \n- If `false`: `style`, `title`, and `upload_url` are required; `prompt` is optional (if provided, it serves as a prompt); `vocal_gender` does not need to be specified.\n- In non-custom parameter mode (`default_param_flag: false`): Does not affect mandatory fields (only `upload_url` is required); `prompt` is optional. If set to `false`, lyrics will be automatically generated.\nOptional; defaults to `false`.",
+          "description": "Determines whether the audio is instrumental (without lyrics). Optional; defaults to `false`.\n- If `true`: generate instrumental music (no vocals). Do not pass `lyrics`, `prompt`, or `vocal_gender`.\n- If `false`: use `lyrics` as lyrics (fall back to `prompt` if `lyrics` is not provided).",
           "default": false
         },
         "style": {
           "type": "string",
           "required": false,
-          "description": "Music style, e.g., Jazz, Classical, Electronic. Character limits by model:  \n- **V6, V6_MINI & V6_WILD**: Maximum 1000 characters  \n- **V5_5 & V5** (Discontinued): Maximum 1000 characters  \n- **V4_5PLUS & V4_5** (Discontinued): Maximum 1000 characters  \n- **V4_5ALL** (Discontinued): Maximum 1000 characters  \n- **V4** (Discontinued): Maximum 200 characters",
+          "description": "Music style, e.g., Jazz, Classical, Electronic. Optional.\n- Not required. Source audio (`upload_url`) is enough to generate.\n- Character limits by model:\n- **V6, V6_MINI & V6_WILD**: Maximum 1000 characters\n- **V5_5 & V5** (Discontinued): Maximum 1000 characters\n- **V4_5PLUS & V4_5** (Discontinued): Maximum 1000 characters\n- **V4_5ALL** (Discontinued): Maximum 1000 characters\n- **V4** (Discontinued): Maximum 200 characters",
+          "maxLength": 1000,
           "default": "Classical"
         },
         "title": {
           "type": "string",
           "required": false,
-          "description": "Music title. Character limits by model:  \n- **V6, V6_MINI & V6_WILD**: Maximum 100 characters  \n- **V5_5 & V5** (Discontinued): Maximum 100 characters  \n- **V4_5PLUS & V4_5** (Discontinued): Maximum 100 characters  \n- **V4_5ALL** (Discontinued): Maximum 80 characters  \n- **V4** (Discontinued): Maximum 80 characters",
+          "description": "Music title. Optional.\n- Maximum 100 characters.\n- Displayed in player interfaces and filenames.",
+          "maxLength": 100,
           "default": "Peaceful Piano Extended"
         },
         "continue_at": {
           "type": "number",
-          "required": true,
-          "description": "The time point (in seconds) from which to start extending the music.  \n- Required when `default_param_flag` is `true`.  \n- Value range: greater than 0 and less than the total duration of the uploaded audio.  \n- Specifies the position in the original track where the extension should begin.",
+          "required": false,
+          "description": "The time point (in seconds) from which to start extending the music.\n- Value range: greater than 0 and less than the total duration of the uploaded audio.\n- Specifies the position in the original track where the extension should begin.",
           "default": 60
         },
         "model": {
@@ -11096,7 +11610,7 @@
         "vocal_gender": {
           "type": "string",
           "required": false,
-          "description": "Vocal gender preference for the singing voice. Optional. Use 'm' for male and 'f' for female. Based on practice, this parameter can only increase the probability but cannot guarantee adherence to male/female voice instructions.",
+          "description": "Vocal gender preference for the singing voice. Optional. Use 'm' for male and 'f' for female. Based on practice, this parameter can only increase the probability but cannot guarantee adherence to male/female voice instructions. Do not pass this parameter when `instrumental` is `true`.",
           "enum": [
             "m",
             "f"
@@ -11130,7 +11644,7 @@
         "persona_id": {
           "type": "string",
           "required": false,
-          "description": "Only available when Custom Mode (`default_param_flag: true`) is enabled. Persona ID or Voice ID to apply to the generated music. Optional. Use this to apply a specific persona style to your music generation. \n\nTo generate a persona ID, use the [Generate Persona](https://docs.kie.ai/suno-api/generate-persona) endpoint to create a personalized music Persona based on generated music.\n\nTo generate a Voice ID, use the [Generate Voice](https://docs.kie.ai/suno-api/suno-voice-generate)endpoint",
+          "description": "Persona ID or Voice ID to apply to the generated music. Optional. Use this to apply a specific persona style to your music generation.\n\nTo generate a Persona ID, use the [Generate Persona](https://docs.kie.ai/suno-api/generate-persona) endpoint to create a personalized music Persona based on generated music.\n\nTo generate a Voice ID, use the [Generate Voice](https://docs.kie.ai/suno-api/suno-voice-generate) endpoint.",
           "default": "persona_123"
         },
         "persona_model": {
@@ -11141,6 +11655,14 @@
             "style_persona",
             "voice_persona"
           ]
+        },
+        "variety": {
+          "type": "integer",
+          "required": false,
+          "description": "Controls the diversity and stylistic variation of generated results. Optional. Integer range 0–4, default 1.\n\n- **`0`**: off (exact style) — fully off, strictly the same style\n- **`1`**: normal (balanced variety) — default, balances stability and diversity\n- **`2`**: high (distinct styles) — produces results with clearly different styles\n- **`3`**: extra (bold exploration) — higher variation, encourages bold exploration of different styles\n- **`4`**: max (unreasonably varied) — maximum diversity; results may differ in style very significantly",
+          "default": 1,
+          "minimum": 0,
+          "maximum": 4
         }
       },
       "summary": "Upload And Extend Audio OpenAPI Specification json { \"code\": 200, \"msg\": \"All generated successfully.\", \"data\": { \"callbackType\": \"complete\", \"task_id\": \"2fac 9f72\", \"data\": [ { \"id\": \"e231 - - - - 8cadc7dc\", \"audio_url\": \"https://example.cn/ .mp3\", \"source_audio_url\": \"https://example.cn/ .mp3\", \"stream_audio_url\": \"https://example.cn/ \", \"source_stream_audio_url\": \"https://example.cn/ \", \"image_url\": \"https://example.cn/ .jpeg\", \"source_image_url\": \"https://example.cn/ .jpeg\", \"prompt\": \"[Verse] Night city lights shining bright\", \"model_name\": \"chirp-v3-5\", \"title\": \"Iron Man\", \"tags\": \"electrifying, rock\", \"createTime\": \"2025-01-01 00:00:00\", \"duration\": 198.44 } ] } }"
@@ -11637,81 +12159,6 @@
       "docs_url": "https://docs.kie.ai/suno-api/get-music-details.md",
       "resolved": false,
       "summary": "__prepareDocsConfigScript(JSON.parse(\"{\\\"theme\\\":\\\"system\\\",\\\"themePrimarySettings\\\":{\\\"light\\\":{\\\"accentColor\\\":\\\"purple\\\"},\\\"dark\\\":{\\\"accentColor\\\":\\\"purple\\\"}},\\\"logoSettings\\\":{\\\"light\\\":{\\\"icon\\\":\\\"\\\",\\\"type\\\":\\\"project\\\"},\\\"dark\\\":{\\\"icon\\\":\\\"\\\",\\\"type\\\":\\\"followLight\\\"}},\\\"backgroundImageSettings\\\":{\\\"light\\\":{\\\"type\\\":\\\"custom\\\",\\\"color\\\":\\\"\\\"},\\\"dark\\\":{\\\"type\\\":\\\"followLight\\\",\\\"color\\\":\\\"\\\"}},\\\"id\\\":0}\")); window.eventTracking = { dataLayer: [] } window.eventTracking.report = function(){ window.eventTracking.dataLayer.push(arguments); } ((STORAGE_KEY, restoreKey) = { if (!window.history.state !window.history.state.key) { let key = Math.random().toString(32).slice(2); window.histo"
-    },
-    {
-      "label": "Suno API > Music Generation • Replace Music Section",
-      "title": "Replace Music Section",
-      "family": "Suno API > Music Generation",
-      "method": "POST",
-      "endpoint": "/api/v1/generate/replace-section",
-      "docs_url": "https://docs.kie.ai/suno-api/replace-section.md",
-      "resolved": true,
-      "example_body": {
-        "taskId": "2fac****9f72",
-        "audioId": "e231****-****-****-****-****8cadc7dc",
-        "prompt": "A calm and relaxing piano track.",
-        "tags": "Jazz",
-        "title": "Relaxing Piano",
-        "negativeTags": "Rock",
-        "infillStartS": 10.5,
-        "infillEndS": 20.75,
-        "fullLyrics": "[Verse 1]\nOriginal lyrics here\n[Chorus]\nModified lyrics for this section\n[Verse 2]\nMore original lyrics",
-        "callBackUrl": "https://example.com/callback"
-      },
-      "parameter_hints": {
-        "prompt": {
-          "type": "string",
-          "required": true,
-          "description": "Replaced lyrics",
-          "default": "A calm and relaxing piano track."
-        },
-        "tags": {
-          "type": "string",
-          "required": true,
-          "description": "Music style tags, such as jazz, electronic, etc.",
-          "default": "Jazz"
-        },
-        "title": {
-          "type": "string",
-          "required": true,
-          "description": "Music title",
-          "default": "Relaxing Piano"
-        },
-        "negativeTags": {
-          "type": "string",
-          "required": false,
-          "description": "Excluded music styles, used to avoid specific style elements in the replacement segment",
-          "default": "Rock"
-        },
-        "infillStartS": {
-          "type": "number",
-          "required": true,
-          "description": "Start time point for replacement (seconds), 2 decimal places. Must be less than infillEndS. The time interval (infillEndS - infillStartS) must  be at least 10 seconds.",
-          "minimum": 0,
-          "default": 10.5
-        },
-        "infillEndS": {
-          "type": "number",
-          "required": true,
-          "description": "End time point for replacement (seconds), 2 decimal places. Must be greater than infillStartS. The time interval (infillEndS - infillStartS) must be at least 10 seconds.",
-          "minimum": 0,
-          "default": 20.75
-        },
-        "fullLyrics": {
-          "type": "string",
-          "required": true,
-          "description": "Complete lyrics after modification, combining both modified and unmodified lyrics. This parameter contains the full lyrics text that will be used for the entire song after the section replacement.",
-          "default": "[Verse 1]\nOriginal lyrics here\n[Chorus]\nModified lyrics for this section\n[Verse 2]\nMore original lyrics"
-        },
-        "callBackUrl": {
-          "type": "string",
-          "required": false,
-          "description": "Callback URL for task completion. The system will send a POST request to this URL when replacement is complete, containing task status and results.\n\n- Your callback endpoint should be able to accept POST requests containing JSON payloads with replacement results\n- For detailed callback format and implementation guide, see [Replace Music Section Callbacks](https://docs.kie.ai/suno-api/replace-section-callbacks)\n- Alternatively, you can use the get music details interface to poll task status\n- To ensure callback security, see [Webhook Verification Guide](/common-api/webhook-verification) for signature verification implementation",
-          "format": "uri",
-          "default": "https://example.com/callback"
-        }
-      },
-      "summary": "Replace Music Section OpenAPI Specification json { \"code\": 200, \"msg\": \"All generated successfully.\", \"data\": { \"callbackType\": \"complete\", \"task_id\": \"2fac 9f72\", \"data\": [ { \"id\": \"e231 - - - - 8cadc7dc\", \"audio_url\": \"https://example.cn/ .mp3\", \"stream_audio_url\": \"https://example.cn/ \", \"image_url\": \"https://example.cn/ .jpeg\", \"prompt\": \"A calm and relaxing piano track.\", \"model_name\": \"chirp-v3-5\", \"title\": \"Relaxing Piano\", \"tags\": \"Jazz\", \"createTime\": \"2025-01-01 00:00:00\", \"duration\": 198.44 } ] } }"
     },
     {
       "label": "Suno API > Music Video Generation • Get Music Video Details",
@@ -14466,12 +14913,6 @@
           "description": "URL of the image to be used for the video (File URL after upload, not file content; Accepted types: image/jpeg, image/png; Max size: 10.0MB)",
           "default": "https://file.aiquickdraw.com/custom-page/akr/section-images/1755256297923kmjpynul.png"
         },
-        "tail_image_url": {
-          "type": "string",
-          "required": false,
-          "description": "Tail frame image of video (File URL after upload, not file content; Accepted types: image/jpeg, image/png; Max size: 10.0MB)",
-          "default": "https://file.aiquickdraw.com/custom-page/akr/section-images/1755256297923kmjpynul.png"
-        },
         "duration": {
           "type": "string",
           "required": false,
@@ -14496,6 +14937,12 @@
           "default": 0.5,
           "minimum": 0,
           "maximum": 1
+        },
+        "tail_image_url": {
+          "type": "string",
+          "required": false,
+          "description": "Tail frame image of video (File URL after upload, not file content; Accepted types: image/jpeg, image/png; Max size: 10.0MB)",
+          "default": "https://file.aiquickdraw.com/custom-page/akr/section-images/1755256297923kmjpynul.png"
         }
       },
       "summary": "Kling - V2.5 Turbo Image to Video Pro OpenAPI Specification"
@@ -18610,4 +19057,3 @@
   "catalog_merge": "bundled schemas plus live discoveries",
   "catalog_release": "2026-09-17 studio refresh"
 }
-

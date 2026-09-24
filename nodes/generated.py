@@ -10,7 +10,9 @@ from typing import Any
 from ..kie.catalog import load_catalog, resolve_operation
 from ..kie.client import KIEAPIError, KIEClient, pretty_json
 from ..kie.helpers import make_client, parse_object_json
-KIE_GENERATED_BUILD = "0.4.15"
+from ..kie.settings import save_last_credits
+
+KIE_GENERATED_BUILD = "0.4.16"
 
 from ..kie.media import (
     download_audio_object,
@@ -769,13 +771,13 @@ def _wait_direct(client: KIEClient, op: dict[str, Any], task_id: str, timeout: i
 
 def _output_signature(kind: str):
     if kind == "image":
-        return ("IMAGE", "STRING", "STRING", "STRING", "STRING", "FLOAT"), ("image", "url", "all_urls_json", "task_id", "raw_json", "credits_consumed")
+        return ("IMAGE", "STRING", "STRING", "STRING", "STRING", "FLOAT", "FLOAT"), ("image", "url", "all_urls_json", "task_id", "raw_json", "credits_consumed", "credits_left")
     if kind == "video":
-        return ("VIDEO", "STRING", "STRING", "STRING", "STRING", "FLOAT"), ("video", "url", "all_urls_json", "task_id", "raw_json", "credits_consumed")
+        return ("VIDEO", "STRING", "STRING", "STRING", "STRING", "FLOAT", "FLOAT"), ("video", "url", "all_urls_json", "task_id", "raw_json", "credits_consumed", "credits_left")
     if kind == "audio":
-        return ("AUDIO", "STRING", "STRING", "STRING", "STRING", "FLOAT"), ("audio", "url", "all_urls_json", "task_id", "raw_json", "credits_consumed")
+        return ("AUDIO", "STRING", "STRING", "STRING", "STRING", "FLOAT", "FLOAT"), ("audio", "url", "all_urls_json", "task_id", "raw_json", "credits_consumed", "credits_left")
     if kind == "text":
-        return ("STRING", "STRING", "STRING", "FLOAT"), ("text", "task_id", "raw_json", "credits_consumed")
+        return ("STRING", "STRING", "STRING", "FLOAT", "FLOAT"), ("text", "task_id", "raw_json", "credits_consumed", "credits_left")
     return ("STRING", "STRING", "STRING"), ("raw_json", "first_url", "task_id")
 
 
@@ -789,23 +791,53 @@ def _preferred_urls(urls: list[str], kind: str) -> list[str]:
     return preferred or urls
 
 
-def _result_for_kind(client: KIEClient, kind: str, payload: Any, task_id: str, credits: float = 0.0):
+def _credit_balance(client: KIEClient) -> float | None:
+    try:
+        balance = float(client.get_remaining_credits())
+        save_last_credits(balance)
+        return balance
+    except Exception as exc:
+        print(f"[KIE Next] Could not refresh remaining credits: {exc}")
+        return None
+
+
+def _credit_receipt(client: KIEClient, outputs: tuple, credits: float, credits_before: float | None, consumed_index: int = -1):
+    balance = _credit_balance(client)
+    spent = float(credits or 0.0)
+    if spent <= 0 and credits_before is not None and balance is not None:
+        spent = max(float(credits_before) - balance, 0.0)
+    remaining = float(balance) if balance is not None else -1.0
+    # Keep every existing output position stable; append live account balance.
+    mutable = list(outputs)
+    if len(mutable) >= abs(consumed_index) and isinstance(mutable[consumed_index], (int, float)):
+        mutable[consumed_index] = spent
+    mutable.append(remaining)
+    shown_spent = f"{spent:g}"
+    shown_remaining = f"{remaining:g}" if remaining >= 0 else "unavailable"
+    return {"ui": {"kie_credit_receipt": [f"Credits spent: {shown_spent}  •  Credits left: {shown_remaining}"]}, "result": tuple(mutable)}
+
+
+def _result_for_kind(client: KIEClient, kind: str, payload: Any, task_id: str, credits: float = 0.0, credits_before: float | None = None):
     all_urls = _all_urls(payload)
     urls = _preferred_urls(all_urls, kind)
     url = urls[0] if urls else ""
     all_urls_json = json.dumps(all_urls, ensure_ascii=False, indent=2)
     if kind == "image":
         if not url: raise KIEAPIError("KIE task completed but returned no image URL.", payload=payload)
-        return (download_image_tensor(client, url), url, all_urls_json, task_id, pretty_json(payload), credits)
+        outputs = (download_image_tensor(client, url), url, all_urls_json, task_id, pretty_json(payload), credits)
+        return _credit_receipt(client, outputs, credits, credits_before)
     if kind == "video":
         if not url: raise KIEAPIError("KIE task completed but returned no video URL.", payload=payload)
-        return (download_video_object(client, url), url, all_urls_json, task_id, pretty_json(payload), credits)
+        outputs = (download_video_object(client, url), url, all_urls_json, task_id, pretty_json(payload), credits)
+        return _credit_receipt(client, outputs, credits, credits_before)
     if kind == "audio":
         if not url: raise KIEAPIError("KIE task completed but returned no audio URL.", payload=payload)
-        return (download_audio_object(client, url), url, all_urls_json, task_id, pretty_json(payload), credits)
+        outputs = (download_audio_object(client, url), url, all_urls_json, task_id, pretty_json(payload), credits)
+        return _credit_receipt(client, outputs, credits, credits_before)
     if kind == "text":
         text = _extract_text(payload)
-        return (text, task_id, pretty_json(payload), credits or _credits_from(payload))
+        outputs = (text, task_id, pretty_json(payload), credits or _credits_from(payload))
+        return _credit_receipt(client, outputs, credits or _credits_from(payload), credits_before)
     return (pretty_json(payload), url, task_id)
 
 
@@ -874,6 +906,7 @@ def _model_from_op(op: dict[str, Any], fallback: str = "") -> str:
 
 def _execute_llm(op: dict[str, Any], model: str, kwargs: dict[str, Any]):
     client = make_client(None)
+    credits_before = _credit_balance(client)
     endpoint = str(op.get("endpoint") or "")
     if not endpoint:
         resolved = resolve_operation(str(op.get("label") or "")) or op
@@ -932,7 +965,9 @@ def _execute_llm(op: dict[str, Any], model: str, kwargs: dict[str, Any]):
 
     body.update(advanced)
     payload = client.raw_api_request("POST", endpoint, body=body)
-    return (_extract_text(payload), pretty_json(payload), _credits_from(payload), pretty_json(payload.get("usage") if isinstance(payload, dict) else {}))
+    outputs = (_extract_text(payload), pretty_json(payload), _credits_from(payload), pretty_json(payload.get("usage") if isinstance(payload, dict) else {}))
+    # LLM nodes keep their existing usage_json output in place and append balance.
+    return _credit_receipt(client, outputs, outputs[2], credits_before, consumed_index=2)
 
 
 # ----------------------------- class factories -------------------------------
@@ -1050,6 +1085,7 @@ def _topaz_failure_message(task_ids: list[str], exc: KIEAPIError) -> str:
 
 def _market_execute(op: dict[str, Any], model: str, kind: str, kwargs: dict[str, Any], payload_model: str | None = None):
     client = make_client(None)
+    credits_before = _credit_balance(client)
     payload = _build_payload(client, op, kwargs, model=payload_model or model)
     payload = _normalize_suno_music_payload(op, payload)
     payload = _normalize_topaz_video_payload(model, payload)
@@ -1089,12 +1125,13 @@ def _market_execute(op: dict[str, Any], model: str, kind: str, kwargs: dict[str,
     task_id = task_ids[-1]
     payload_out = result.raw
     if kind in {"image", "video", "audio", "text"}:
-        return _result_for_kind(client, kind, payload_out, task_id, result.credits_consumed)
+        return _result_for_kind(client, kind, payload_out, task_id, result.credits_consumed, credits_before)
     return (pretty_json(payload_out), result.urls[0] if result.urls else "", task_id)
 
 
 def _direct_execute(op: dict[str, Any], model: str, kind: str, kwargs: dict[str, Any]):
     client = make_client(None)
+    credits_before = _credit_balance(client)
     resolved = resolve_operation(str(op.get("label") or "")) or op
     method = str(resolved.get("method") or "POST").upper()
     endpoint = str(resolved.get("endpoint") or "")
@@ -1107,7 +1144,7 @@ def _direct_execute(op: dict[str, Any], model: str, kind: str, kwargs: dict[str,
         payload = client.raw_api_request("GET", endpoint, query=query)
         # Status/detail/download operations return metadata, not an unexpected
         # media download. Generation nodes are the ones that return IMAGE/VIDEO/AUDIO.
-        return _result_for_kind(client, kind if kind == "text" else "utility", payload, _extract_task_id(payload), _credits_from(payload))
+        return _result_for_kind(client, kind if kind == "text" else "utility", payload, _extract_task_id(payload), _credits_from(payload), credits_before)
 
     body = _build_payload(client, resolved, kwargs, model=model)
     callback = str(kwargs.get("callback_url") or "").strip()
@@ -1120,9 +1157,9 @@ def _direct_execute(op: dict[str, Any], model: str, kind: str, kwargs: dict[str,
         if completed is not None:
             payload = completed
     if kind in {"image", "video", "audio", "text"} and _all_urls(payload):
-        return _result_for_kind(client, kind, payload, task_id, _credits_from(payload))
+        return _result_for_kind(client, kind, payload, task_id, _credits_from(payload), credits_before)
     if kind == "text":
-        return _result_for_kind(client, "text", payload, task_id, _credits_from(payload))
+        return _result_for_kind(client, "text", payload, task_id, _credits_from(payload), credits_before)
     return (pretty_json(payload), (_all_urls(payload) or [""])[0], task_id)
 
 
@@ -1133,7 +1170,7 @@ def make_model_node(op: dict[str, Any], model: str = ""):
     resolved_model = model or _model_from_op(op)
     is_llm = kind == "llm"
     market = str(op.get("endpoint") or "") == "/api/v1/jobs/createTask"
-    return_types, return_names = (("STRING", "STRING", "FLOAT", "STRING"), ("text", "raw_json", "credits_consumed", "usage_json")) if is_llm else _output_signature(kind)
+    return_types, return_names = (("STRING", "STRING", "FLOAT", "STRING", "FLOAT"), ("text", "raw_json", "credits_consumed", "usage_json", "credits_left")) if is_llm else _output_signature(kind)
 
     class GeneratedKIEModelNode:
         OP = op

@@ -93,13 +93,18 @@ def save_validation_state(state: str, *, credits: float | None = None, message: 
     save_settings(payload)
 
 
+def save_last_credits(credits: float) -> None:
+    """Persist the most recently fetched live account balance for Settings UI."""
+    save_settings({"last_credits": float(credits), "last_credits_checked_at": int(time.time())})
+
+
 def clear_api_key() -> None:
     path = settings_path()
     with _LOCK:
         current = load_settings()
         for key in (
             "api_key", "key_saved_at", "key_validation_state", "key_validated_at",
-            "key_validation_message", "last_credits",
+            "key_validation_message", "last_credits", "last_credits_checked_at",
         ):
             current.pop(key, None)
         temp = path.with_suffix(".tmp")

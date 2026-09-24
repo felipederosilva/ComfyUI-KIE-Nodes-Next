@@ -259,6 +259,17 @@ class KIEClient:
             raise KIEAPIError("KIE recordInfo response did not contain a data object", payload=payload)
         return data
 
+    def get_remaining_credits(self) -> float:
+        """Fetch the current KIE account balance from the documented Common API."""
+        payload = self.raw_api_request("GET", "/api/v1/chat/credit")
+        value = payload.get("data") if isinstance(payload, dict) else None
+        if isinstance(value, bool) or not isinstance(value, (int, float, str)):
+            raise KIEAPIError("KIE credit response did not contain a numeric data balance.", payload=payload)
+        try:
+            return float(value)
+        except (TypeError, ValueError) as exc:
+            raise KIEAPIError("KIE credit response did not contain a numeric data balance.", payload=payload) from exc
+
     def wait_for_task(
         self,
         task_id: str,
