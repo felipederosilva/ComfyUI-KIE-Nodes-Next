@@ -12,7 +12,7 @@ from ..kie.client import KIEAPIError, KIEClient, pretty_json
 from ..kie.helpers import make_client, parse_object_json
 from ..kie.settings import save_last_credits
 
-KIE_GENERATED_BUILD = "0.4.16"
+KIE_GENERATED_BUILD = "0.5.0"
 
 from ..kie.media import (
     download_audio_object,
@@ -866,6 +866,7 @@ def _llm_input_types(op: dict[str, Any]) -> dict[str, dict[str, Any]]:
     summary = str(op.get("summary") or "").lower()
     is_claude = "claude" in family or endpoint.startswith("/claude/")
     is_openai_reasoning = any(x in family for x in ("gpt", "codex", "grok")) or endpoint.startswith("/codex/")
+    is_responses_api = endpoint.endswith("/v1/responses")
     mentions_images = "image" in summary or any("image" in str(k).lower() for k in (op.get("parameter_hints") or {}))
 
     required = {
@@ -877,10 +878,13 @@ def _llm_input_types(op: dict[str, Any]) -> dict[str, dict[str, Any]]:
         "tools_json": ("STRING", {"default": "[]", "multiline": True, "tooltip": "Optional function/tool definitions supported by this model endpoint."}),
         "history_json": ("STRING", {"default": "[]", "multiline": True, "tooltip": "Optional prior message/input array as JSON."}),
     }
-    if is_openai_reasoning:
+    if is_openai_reasoning or is_responses_api:
         optional["images"] = ("IMAGE",)
         optional["reasoning_effort"] = (_REASONING, {"default": "high"})
-        optional["web_search"] = ("BOOLEAN", {"default": False, "tooltip": "Use KIE's web-search tool where this endpoint supports it."})
+        if is_openai_reasoning:
+            optional["web_search"] = ("BOOLEAN", {"default": False, "tooltip": "Use KIE's web-search tool where this endpoint supports it."})
+        if is_responses_api:
+            optional["max_output_tokens"] = ("INT", {"default": 4096, "min": 1, "max": 131072, "step": 1})
     elif mentions_images and not is_claude:
         optional["images"] = ("IMAGE",)
     if is_claude:
@@ -936,7 +940,7 @@ def _execute_llm(op: dict[str, Any], model: str, kwargs: dict[str, Any]):
         if system_prompt: body["system"] = system_prompt
         if tools: body["tools"] = tools
         if "thinking" in kwargs: body["thinkingFlag"] = bool(kwargs.get("thinking"))
-    elif endpoint.startswith("/codex/") or "gpt" in family or "codex" in family:
+    elif endpoint.endswith("/v1/responses") or "gpt" in family or "codex" in family:
         input_items = list(history) if isinstance(history, list) else []
         content: list[dict[str, Any]] = [{"type": "input_text", "text": prompt}]
         content.extend({"type": "input_image", "image_url": url} for url in image_urls)
@@ -944,6 +948,8 @@ def _execute_llm(op: dict[str, Any], model: str, kwargs: dict[str, Any]):
         body = {"model": model, "input": input_items, "reasoning": {"effort": str(kwargs.get("reasoning_effort") or "high")}}
         if system_prompt:
             body["instructions"] = system_prompt
+        if endpoint.endswith("/v1/responses") and kwargs.get("max_output_tokens"):
+            body["max_output_tokens"] = int(kwargs["max_output_tokens"])
         if bool(kwargs.get("web_search")):
             body["tools"] = [{"type": "web_search"}]
         elif tools:

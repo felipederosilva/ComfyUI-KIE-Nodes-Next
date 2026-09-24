@@ -21,6 +21,7 @@ from .universal import (
     KIEWaitTaskNode,
 )
 from .studio import STUDIO_CLASS_MAPPINGS, STUDIO_DISPLAY_NAME_MAPPINGS
+from .characters import CHARACTER_CLASS_MAPPINGS, CHARACTER_DISPLAY_NAME_MAPPINGS
 
 # The public product is the generated model tree. Raw transport tools remain under
 # Advanced for debugging/power-user workflows; "Any KIE API" is intentionally no
@@ -45,6 +46,7 @@ _BASE_CLASS_MAPPINGS = {
     "KIE_Next_API_Describe": KIEAPIDescribeNode,
 }
 _BASE_CLASS_MAPPINGS.update(STUDIO_CLASS_MAPPINGS)
+_BASE_CLASS_MAPPINGS.update(CHARACTER_CLASS_MAPPINGS)
 
 _BASE_DISPLAY_NAME_MAPPINGS = {
     "KIE_Next_Connection_Status": "KIE • Connection Status",
@@ -66,6 +68,7 @@ _BASE_DISPLAY_NAME_MAPPINGS = {
     "KIE_Next_API_Describe": "KIE • Inspect API Definition (Advanced)",
 }
 _BASE_DISPLAY_NAME_MAPPINGS.update(STUDIO_DISPLAY_NAME_MAPPINGS)
+_BASE_DISPLAY_NAME_MAPPINGS.update(CHARACTER_DISPLAY_NAME_MAPPINGS)
 
 NODE_CLASS_MAPPINGS: dict[str, type] = dict(_BASE_CLASS_MAPPINGS)
 NODE_DISPLAY_NAME_MAPPINGS: dict[str, str] = dict(_BASE_DISPLAY_NAME_MAPPINGS)

@@ -43,7 +43,7 @@ def _camera_sentence(shot_size: str, angle: str, movement: str, lens: str, speed
     return "Cinematography: " + ", ".join(parts) + "."
 
 
-def _parse_shots(value: str) -> list[dict[str, Any]]:
+def _parse_shots(value: str, *, scene_prompt: str = "", camera_direction: str = "") -> list[dict[str, Any]]:
     text = str(value or "").strip()
     if not text:
         return []
@@ -60,7 +60,25 @@ def _parse_shots(value: str) -> list[dict[str, Any]]:
         duration = int(shot.get("duration") or 1)
         if duration < 1 or duration > 15:
             raise ValueError(f"Shot {index} duration must be between 1 and 15 seconds.")
-        normalized.append({"prompt": str(shot["prompt"]).strip(), "duration": duration})
+        prompt_parts = [str(scene_prompt or "").strip(), str(shot["prompt"]).strip()]
+        camera = shot.get("camera") if isinstance(shot.get("camera"), dict) else {}
+        shot_camera = str(shot.get("camera_direction") or "").strip()
+        if camera:
+            camera_text = _camera_sentence(
+                str(camera.get("shot_size") or "medium"),
+                str(camera.get("angle") or "eye level"),
+                str(camera.get("movement") or "locked-off"),
+                str(camera.get("lens") or "35mm natural"),
+                str(camera.get("speed") or "moderate"),
+                str(camera.get("stabilization") or "tripod stable"),
+                str(camera.get("focus") or ""),
+            )
+            shot_camera = " ".join(part for part in (shot_camera, camera_text) if part)
+        if camera_direction.strip():
+            shot_camera = " ".join(part for part in (shot_camera, camera_direction.strip()) if part)
+        if shot_camera:
+            prompt_parts.append("Camera direction: " + shot_camera)
+        normalized.append({"prompt": "\n\n".join(part for part in prompt_parts if part), "duration": duration})
     return normalized
 
 
@@ -99,26 +117,53 @@ class KIEShotSequenceNode:
     FUNCTION = "build"
     RETURN_TYPES = ("STRING", "INT", "STRING")
     RETURN_NAMES = ("shot_sequence_json", "total_duration", "director_prompt")
-    DESCRIPTION = "Create a Kling-compatible sequence of up to six directed shots."
+    DESCRIPTION = "Plan up to six shots with a shared visual setup and per-shot camera movement. Camera controls are translated into prompt guidance when the provider does not expose native camera parameters."
 
     @classmethod
     def INPUT_TYPES(cls):
-        required = {}
+        required = {
+            "shot_size": (SHOT_SIZES, {"default": "medium"}),
+            "camera_angle": (ANGLES, {"default": "eye level"}),
+            "lens": (LENSES, {"default": "35mm natural"}),
+            "motion_speed": (MOTION_SPEEDS, {"default": "slow"}),
+            "stabilization": (STABILIZATION, {"default": "gimbal smooth"}),
+        }
         optional = {}
         for i in range(1, 7):
             target = required if i == 1 else optional
             target[f"shot_{i}_prompt"] = ("STRING", {"default": "" if i > 1 else "Establish the subject and environment", "multiline": True})
             target[f"shot_{i}_duration"] = ("INT", {"default": 2, "min": 1, "max": 15, "step": 1})
+            target[f"shot_{i}_movement"] = (CAMERA_MOVES, {"default": "locked-off" if i == 1 else "push-in with parallax"})
+            target[f"shot_{i}_focus"] = ("STRING", {"default": "", "multiline": False, "tooltip": "Optional per-shot focus behavior, such as a rack focus or deep focus."})
         return {"required": required, "optional": optional}
 
     def build(self, **kwargs):
         shots = []
+        shared = {
+            "shot_size": str(kwargs.get("shot_size") or "medium"),
+            "angle": str(kwargs.get("camera_angle") or "eye level"),
+            "lens": str(kwargs.get("lens") or "35mm natural"),
+            "speed": str(kwargs.get("motion_speed") or "slow"),
+            "stabilization": str(kwargs.get("stabilization") or "gimbal smooth"),
+        }
         for i in range(1, 7):
             prompt = str(kwargs.get(f"shot_{i}_prompt") or "").strip()
             if prompt:
-                shots.append({"prompt": prompt, "duration": int(kwargs.get(f"shot_{i}_duration") or 1)})
+                camera = {
+                    **shared,
+                    "movement": str(kwargs.get(f"shot_{i}_movement") or "locked-off"),
+                    "focus": str(kwargs.get(f"shot_{i}_focus") or "").strip(),
+                }
+                shots.append({
+                    "prompt": prompt,
+                    "duration": int(kwargs.get(f"shot_{i}_duration") or 1),
+                    "camera": camera,
+                })
         total = sum(s["duration"] for s in shots)
-        director = " | ".join(f"Shot {i}: {s['prompt']} ({s['duration']}s)" for i, s in enumerate(shots, 1))
+        director = " | ".join(
+            f"Shot {i}: {s['prompt']} ({s['duration']}s; {s['camera']['movement']}, {s['camera']['shot_size']}, {s['camera']['angle']}, {s['camera']['lens']})"
+            for i, s in enumerate(shots, 1)
+        )
         return (json.dumps(shots, ensure_ascii=False), total, director)
 
 
@@ -158,7 +203,7 @@ class KIEKlingOmniStudioNode:
             "aspect_ratio": aspect_ratio, "duration": int(duration),
         }
         if shot_mode == "manual shot sequence":
-            shots = _parse_shots(shot_sequence_json)
+            shots = _parse_shots(shot_sequence_json, scene_prompt=prompt, camera_direction=camera_direction)
             if not shots:
                 raise ValueError("Manual shot sequence mode requires at least one shot.")
             if sum(s["duration"] for s in shots) != int(duration):

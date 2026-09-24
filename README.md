@@ -2,16 +2,31 @@
 
 # KIE.ai Nodes Next for ComfyUI
 
-**Current version: 0.4.16 — Live Catalog and Automatic Credit Receipts**
+**Current version: 0.5.0 — Character Packs and Refreshed Model Catalog**
+
+**Development branch:** v0.5.0 Character Packs and refreshed KIE catalog (not yet installed or released).
 
 The repository includes the source, release history, and downloadable package in [`dist/`](dist/).
 
-- Latest package: [`ComfyUI-KIE-Nodes-Next-v0.4.16.zip`](dist/ComfyUI-KIE-Nodes-Next-v0.4.16.zip)
+- Latest package: [`ComfyUI-KIE-Nodes-Next-v0.5.0.zip`](dist/ComfyUI-KIE-Nodes-Next-v0.5.0.zip)
 - Windows one-click installer: [`KIE-Nodes-Next-OneClick-Windows-v0.3.2.vbs`](dist/KIE-Nodes-Next-OneClick-Windows-v0.3.2.vbs)
 - Full uninstaller: [`KIE-Nodes-Next-Full-Uninstall.vbs`](dist/KIE-Nodes-Next-Full-Uninstall.vbs)
 - Release history: [`RELEASE_NOTES.md`](RELEASE_NOTES.md)
 
 KIE.ai Nodes Next turns KIE's API catalog into a native ComfyUI model library. The normal workflow is no longer a generic API node: each KIE model/API is exposed as its own node, organized by media type, provider, and model family.
+
+### Character Packs (v0.5 development)
+
+Version 0.5.0 adds reusable, versioned Character Packs to the Comfy graph:
+
+1. **KIE • Save Character Pack** stores an approved portrait and optional full-body/profile/expression references, plus identity, style, and continuity notes.
+2. **KIE • Load Character Pack** selects a saved version and emits its identity prompt.
+3. **KIE • Character Reference** loads a selected approved view as an `IMAGE` for a model operation that documents reference-image support.
+4. **KIE • Character Consistency Test Plan** creates a reusable eight-case prompt matrix (front, profile, wide/full-body, high/low angles, and a changed-scene test) for manual/model-specific QA. It never submits generation jobs.
+
+Packs are stored in Comfy's user data folder, outside the extension install, and immutable by name/version to protect reproducibility. Re-saving identical content is safe; changing a pack requires a new version. Keep identity anchors separate from wardrobe and scene variation. A reference image and prompt are not a universal identity lock; actual consistency depends on the selected model and operation. When marked as a real person's likeness, saving requires confirmation of permission.
+
+Model-specific reference adapters, an automated character consistency QA graph, character-sheet generation, and named wardrobe variants remain follow-up work.
 
 After each successful generation, model and Studio nodes display **credits spent** and the live **credits left** balance directly on the node. Both values are also available as output sockets. The latest account balance is saved for the Connection Settings status; if KIE's balance service is temporarily unavailable, the generation result is still returned and the node reports the balance as unavailable.
 

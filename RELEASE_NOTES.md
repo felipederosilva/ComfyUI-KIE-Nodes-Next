@@ -1,3 +1,11 @@
+# v0.5.0 — Character Packs and Live Model Refresh
+
+- Adds versioned Character Packs, reusable approved reference views, and a no-spend eight-case consistency-test prompt plan.
+- Updates the bundled model catalog from KIE's current English API index: 223 documentation entries scanned with zero fetch failures.
+- Adds DeepSeek V4.1 Flash and Kimi K3 as individual nodes; refreshes KIE Responses API request handling for those documented `/openai/v1/responses` operations and refreshes Grok 4.7 schema metadata.
+- The merged snapshot contains 167 model IDs and 241 operations. The fresh docs index alone yielded 146 model IDs; the merged count retains prior bundled model/schema records so workflows and older listed operations are not discarded.
+- Promotes the Character Packs and refreshed catalog from development into the public v0.5.0 release.
+
 # v0.4.16 Live Catalog and Credit Receipts
 
 - Refreshes the bundled catalog from KIE's official live API index: 223 API documents scanned, 0 fetch failures, 165 distinct model IDs, and 241 operations. The refreshed docs add or enrich operations even where they do not introduce a new unique model ID.

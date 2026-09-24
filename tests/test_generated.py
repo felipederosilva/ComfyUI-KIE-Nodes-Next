@@ -62,6 +62,51 @@ class TestGeneratedNodes(unittest.TestCase):
         self.assertIn("web_search", inputs["optional"])
         self.assertIn("images", inputs["optional"])
 
+    def test_kie_openai_responses_models_use_responses_payload(self):
+        generated = self.plugin.nodes.generated
+        operation = {
+            "title": "Kimi K3",
+            "family": "Chat Models > Kimi",
+            "endpoint": "/openai/v1/responses",
+            "models": ["kimi-k3"],
+        }
+        widgets = generated._llm_input_types(operation)["optional"]
+        self.assertEqual(widgets["images"][0], "IMAGE")
+        self.assertIn("max_output_tokens", widgets)
+
+        class FakeClient:
+            def raw_api_request(self, method, endpoint, body):
+                self.request = (method, endpoint, body)
+                return {"output": [], "usage": {}}
+
+        client = FakeClient()
+        with patch.object(generated, "make_client", return_value=client), patch.object(generated, "_credit_balance", return_value=55), patch.object(generated, "_credit_receipt", side_effect=lambda _client, outputs, *_args, **_kwargs: outputs):
+            generated._execute_llm(operation, "kimi-k3", {
+                "prompt": "Describe the shot.",
+                "system_prompt": "Return concise direction.",
+                "history_json": "[]",
+                "tools_json": "[]",
+                "expert_override_json": "{}",
+                "reasoning_effort": "medium",
+                "max_output_tokens": 2048,
+                "stream": False,
+            })
+        method, endpoint, body = client.request
+        self.assertEqual((method, endpoint), ("POST", "/openai/v1/responses"))
+        self.assertEqual(body["input"][0]["content"][0], {"type": "input_text", "text": "Describe the shot."})
+        self.assertEqual(body["instructions"], "Return concise direction.")
+        self.assertEqual(body["reasoning"], {"effort": "medium"})
+        self.assertEqual(body["max_output_tokens"], 2048)
+
+    def test_new_kie_responses_models_are_registered_as_individual_nodes(self):
+        kimi = self.find("Kimi K3")
+        deepseek = self.find("DeepSeek V4.1 Flash")
+        for node in (kimi, deepseek):
+            inputs = node.INPUT_TYPES()
+            self.assertIn("prompt", inputs["required"])
+            self.assertEqual(inputs["optional"]["images"][0], "IMAGE")
+            self.assertIn("reasoning_effort", inputs["optional"])
+
     def test_direct_api_model_enum_becomes_individual_nodes(self):
         node = self.find("Generate Music · V5.5")
         self.assertEqual(node.CATEGORY, "KIE Next/Audio/Suno/Music Generation")
