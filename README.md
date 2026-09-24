@@ -4,7 +4,7 @@
 
 **Current version: 0.5.0 — Character Packs and Refreshed Model Catalog**
 
-**Development branch:** v0.5.0 Character Packs and refreshed KIE catalog (not yet installed or released).
+This release adds reusable Character Packs and refreshes the bundled KIE model catalog.
 
 The repository includes the source, release history, and downloadable package in [`dist/`](dist/).
 
