@@ -458,7 +458,8 @@ def _hint_from_schema(schema: dict[str, Any], *, required: bool) -> dict[str, An
         "required": required,
         "description": str(schema.get("description") or ""),
     }
-    for key in ("enum", "default", "minimum", "maximum", "minLength", "maxLength", "format"):
+    for key in ("enum", "default", "minimum", "maximum", "minLength", "maxLength", "format",
+                "minItems", "maxItems", "nullable", "properties", "oneOf", "anyOf", "allOf", "$ref"):
         if key in schema:
             hint[key] = schema[key]
     examples = schema.get("examples")
@@ -466,6 +467,8 @@ def _hint_from_schema(schema: dict[str, Any], *, required: bool) -> dict[str, An
         hint["default"] = examples[0]
     if isinstance(schema.get("items"), dict):
         hint["items"] = dict(schema["items"])
+    if isinstance(schema.get("required"), list):
+        hint["required_properties"] = list(schema["required"])
     return hint
 
 

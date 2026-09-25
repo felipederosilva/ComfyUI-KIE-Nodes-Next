@@ -6,7 +6,36 @@ from typing import Any
 from ..kie.client import KIEAPIError
 from ..kie.helpers import make_client
 from ..kie.media import upload_audio, upload_image_batch, video_to_temp_file
+from ..kie.catalog import load_catalog
+from ..kie.capabilities import check_operation, require_valid
+from ..kie.task_history import record_task
 from .generated import _credit_balance, _result_for_kind
+
+
+def _remember(task_id, model, state, credits=None):
+    try:
+        record_task(task_id, model, state, credits=credits)
+    except OSError as exc:
+        print(f"[KIE Next] Could not save local task ID: {exc}")
+
+
+def studio_operation(model):
+    return next((op for op in load_catalog().get("operations", []) if model in (op.get("models") or [])),
+                {"title": model, "models": [model]})
+
+
+def _studio_report(model, payload):
+    return check_operation(studio_operation(model), payload, model=model,
+                           media_fields=[key for key in payload if key.endswith("_url") or key.endswith("_urls")])
+
+
+def _studio_images(client, image, prefix, dry_run, *, single=False):
+    count = int(image.shape[0]) if hasattr(image, "shape") and len(image.shape) == 4 else 1
+    if single and count != 1:
+        raise ValueError(f"{prefix}: connect one image, not a batch of {count}.")
+    if dry_run:
+        return [f"https://preflight.invalid/{prefix}/{index}" for index in range(count)]
+    return upload_image_batch(client, image, prefix=prefix)
 
 
 CAMERA_MOVES = [
@@ -53,6 +82,8 @@ def _parse_shots(value: str, *, scene_prompt: str = "", camera_direction: str = 
         raise ValueError(f"shot_sequence_json must contain valid JSON: {exc}") from exc
     if not isinstance(shots, list):
         raise ValueError("shot_sequence_json must be a JSON array.")
+    if len(shots) > 6:
+        raise ValueError("A shot sequence supports at most 6 shots. Split the sequence into separate generations.")
     normalized = []
     for index, shot in enumerate(shots[:6], 1):
         if not isinstance(shot, dict) or not str(shot.get("prompt") or "").strip():
@@ -190,9 +221,9 @@ class KIEKlingOmniStudioNode:
             "timeout_seconds": ("INT", {"default": 1200, "min": 30, "max": 7200, "step": 30}),
         }}
 
-    def execute(self, prompt, shot_mode, resolution, aspect_ratio, duration, audio, camera_direction="", shot_sequence_json="[]", first_frame=None, timeout_seconds=1200):
-        client = make_client(None)
-        credits_before = _credit_balance(client)
+    def prepare_request(self, prompt, shot_mode, resolution, aspect_ratio, duration, audio, camera_direction="", shot_sequence_json="[]", first_frame=None, timeout_seconds=1200, *, client=None, dry_run=False):
+        if shot_mode not in {"single shot", "automatic multi-shot", "manual shot sequence"}:
+            raise ValueError("Choose a valid Kling shot mode.")
         combined = str(prompt).strip()
         if str(camera_direction).strip():
             combined = f"{combined}\n\n{str(camera_direction).strip()}".strip()
@@ -215,10 +246,20 @@ class KIEKlingOmniStudioNode:
             payload.update({"customize_multi_shots": False, "prefer_multi_shots": False})
         model = "kling-3.0-omni/text-to-video"
         if first_frame is not None:
-            payload["image_urls"] = upload_image_batch(client, first_frame, prefix="kling_omni_frame")
+            payload["image_urls"] = _studio_images(client, first_frame, "kling_omni_frame", dry_run, single=True)
             model = "kling-3.0-omni/image-to-video"
+        return model, payload
+
+    def execute(self, **kwargs):
+        model, preview = self.prepare_request(**kwargs, dry_run=True)
+        require_valid(_studio_report(model, preview))
+        client = make_client(None)
+        credits_before = _credit_balance(client)
+        model, payload = self.prepare_request(**kwargs, client=client)
         task_id = client.create_task(model, payload)
-        result = client.wait_for_task(task_id, timeout_seconds=int(timeout_seconds))
+        _remember(task_id, model, "submitted")
+        result = client.wait_for_task(task_id, timeout_seconds=int(kwargs.get("timeout_seconds", 1200)))
+        _remember(task_id, model, result.state, result.credits_consumed)
         return _result_for_kind(client, "video", result.raw, task_id, result.credits_consumed, credits_before)
 
 
@@ -249,9 +290,18 @@ class KIESeedanceStudioNode:
             "timeout_seconds": ("INT", {"default": 1200, "min": 30, "max": 7200, "step": 30}),
         }}
 
-    def execute(self, model, generation_mode, prompt, resolution, aspect_ratio, duration, generate_audio, camera_direction="", first_frame=None, last_frame=None, reference_image_1=None, reference_image_2=None, reference_image_3=None, reference_video=None, reference_audio=None, return_last_frame=False, web_search=False, timeout_seconds=1200):
-        client = make_client(None)
-        credits_before = _credit_balance(client)
+    def prepare_request(self, model, generation_mode, prompt, resolution, aspect_ratio, duration, generate_audio, camera_direction="", first_frame=None, last_frame=None, reference_image_1=None, reference_image_2=None, reference_image_3=None, reference_video=None, reference_audio=None, return_last_frame=False, web_search=False, timeout_seconds=1200, *, client=None, dry_run=False):
+        if model not in self.INPUT_TYPES()["required"]["model"][0]:
+            raise ValueError("Choose a supported Seedance Studio model.")
+        if generation_mode not in {"text", "first frame", "first + last frame", "multimodal reference"}:
+            raise ValueError("Choose a valid Seedance generation mode.")
+        has_refs = any(value is not None for value in (reference_image_1, reference_image_2, reference_image_3, reference_video, reference_audio))
+        if generation_mode != "multimodal reference" and has_refs:
+            raise ValueError("Reference inputs are connected. Choose multimodal reference mode or disconnect them.")
+        if generation_mode in {"text", "multimodal reference"} and (first_frame is not None or last_frame is not None):
+            raise ValueError("Frame inputs are connected. Choose a frame generation mode or disconnect them.")
+        if generation_mode == "first frame" and last_frame is not None:
+            raise ValueError("A last frame is connected. Choose first + last frame mode or disconnect it.")
         combined = str(prompt).strip()
         if str(camera_direction).strip():
             combined = f"{combined}\n\n{str(camera_direction).strip()}".strip()
@@ -265,26 +315,36 @@ class KIESeedanceStudioNode:
         if generation_mode in {"first frame", "first + last frame"}:
             if first_frame is None:
                 raise ValueError("This Seedance mode requires a first frame.")
-            payload["first_frame_url"] = upload_image_batch(client, first_frame, prefix="seedance_first")[0]
+            payload["first_frame_url"] = _studio_images(client, first_frame, "seedance_first", dry_run, single=True)[0]
             if generation_mode == "first + last frame":
                 if last_frame is None:
                     raise ValueError("First + last frame mode requires a last frame.")
-                payload["last_frame_url"] = upload_image_batch(client, last_frame, prefix="seedance_last")[0]
+                payload["last_frame_url"] = _studio_images(client, last_frame, "seedance_last", dry_run, single=True)[0]
         elif generation_mode == "multimodal reference":
             refs = []
             for index, image in enumerate((reference_image_1, reference_image_2, reference_image_3), 1):
                 if image is not None:
-                    refs.extend(upload_image_batch(client, image, prefix=f"seedance_ref_{index}"))
+                    refs.extend(_studio_images(client, image, f"seedance_ref_{index}", dry_run))
             if refs:
                 payload["reference_image_urls"] = refs
             if reference_video is not None:
-                payload["reference_video_urls"] = [client.upload_file(video_to_temp_file(reference_video), upload_path="comfyui/videos")]
+                payload["reference_video_urls"] = ["https://preflight.invalid/video" if dry_run else client.upload_file(video_to_temp_file(reference_video), upload_path="comfyui/videos")]
             if reference_audio is not None:
-                payload["reference_audio_urls"] = [upload_audio(client, reference_audio, prefix="seedance_ref")]
+                payload["reference_audio_urls"] = ["https://preflight.invalid/audio" if dry_run else upload_audio(client, reference_audio, prefix="seedance_ref")]
             if not any(k in payload for k in ("reference_image_urls", "reference_video_urls", "reference_audio_urls")):
                 raise ValueError("Multimodal reference mode requires at least one image, video, or audio reference.")
+        return model, payload
+
+    def execute(self, **kwargs):
+        model, preview = self.prepare_request(**kwargs, dry_run=True)
+        require_valid(_studio_report(model, preview))
+        client = make_client(None)
+        credits_before = _credit_balance(client)
+        model, payload = self.prepare_request(**kwargs, client=client)
         task_id = client.create_task(model, payload)
-        result = client.wait_for_task(task_id, timeout_seconds=int(timeout_seconds))
+        _remember(task_id, model, "submitted")
+        result = client.wait_for_task(task_id, timeout_seconds=int(kwargs.get("timeout_seconds", 1200)))
+        _remember(task_id, model, result.state, result.credits_consumed)
         return _result_for_kind(client, "video", result.raw, task_id, result.credits_consumed, credits_before)
 
 

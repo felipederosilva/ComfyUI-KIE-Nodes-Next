@@ -1,6 +1,9 @@
 from __future__ import annotations
 
 import json
+import os
+import uuid
+from pathlib import Path
 
 from ..kie.helpers import make_client
 from ..kie.media import (
@@ -172,6 +175,93 @@ class KIEPersistentPreviewImageNode:
             "ui": {"images": records, "kie_persistent_preview": records},
             "result": (images, json.dumps(records, ensure_ascii=False)),
         }
+
+
+def _save_video_output(video, filename_prefix: str) -> dict:
+    """Save a VIDEO in Comfy output and return its durable /view descriptor."""
+    try:
+        import folder_paths  # type: ignore
+    except Exception as exc:
+        raise RuntimeError("KIE video output requires ComfyUI's folder_paths module.") from exc
+    if video is None or not callable(getattr(video, "save_to", None)):
+        raise ValueError("Connect a ComfyUI VIDEO object to preview or save it.")
+    prefix = str(filename_prefix or "").strip()
+    if not prefix:
+        raise ValueError("Video filename prefix cannot be empty.")
+
+    output_root = Path(folder_paths.get_output_directory()).resolve()
+    try:
+        width, height = video.get_dimensions()
+    except Exception:
+        width, height = 0, 0
+    folder, basename, counter, subfolder, _ = folder_paths.get_save_image_path(
+        prefix, str(output_root), width, height
+    )
+    directory = Path(folder).resolve()
+    if not directory.is_relative_to(output_root):
+        raise ValueError("Video output must stay inside the ComfyUI output directory.")
+    if not basename or basename in {".", ".."}:
+        raise ValueError("Invalid video filename prefix.")
+    directory.mkdir(parents=True, exist_ok=True)
+    filename = f"{basename}_{counter:05}_{uuid.uuid4().hex[:8]}.mp4"
+    destination = directory / filename
+    partial = directory / f".{filename}.{uuid.uuid4().hex}.partial.mp4"
+    try:
+        video.save_to(str(partial))
+        if not partial.is_file() or partial.stat().st_size == 0:
+            raise RuntimeError("ComfyUI produced an empty video file.")
+        partial.replace(destination)
+    finally:
+        partial.unlink(missing_ok=True)
+
+    relative = destination.relative_to(output_root).as_posix()
+    record = {"filename": filename, "subfolder": str(subfolder).replace("\\", "/"), "type": "output"}
+    return {
+        "ui": {
+            "images": [record], "animated": [True],
+            "videos": [record], "kie_persistent_video": record,
+        },
+        "result": (video, f"{relative} [output]"),
+    }
+
+
+class KIEPreviewVideoNode:
+    """Playable preview with a durable asset reference after workflow reload."""
+
+    @classmethod
+    def INPUT_TYPES(cls):
+        return {"required": {"video": ("VIDEO",)}}
+
+    RETURN_TYPES = ("VIDEO", "STRING")
+    RETURN_NAMES = ("video", "saved_file")
+    FUNCTION = "preview"
+    OUTPUT_NODE = True
+    CATEGORY = "KIE Next/Utility/Media"
+    DESCRIPTION = "Preview VIDEO in the graph. Keeps its file under output/KIE-Previews so the player survives reopening the workflow."
+
+    def preview(self, video):
+        return _save_video_output(video, "KIE-Previews/KIE")
+
+
+class KIESaveVideoNode:
+    """Export a VIDEO and make its saved file reusable in later workflows."""
+
+    @classmethod
+    def INPUT_TYPES(cls):
+        return {"required": {
+            "video": ("VIDEO",),
+            "filename_prefix": ("STRING", {"default": "KIE-Videos/KIE", "multiline": False}),
+        }}
+
+    RETURN_TYPES = ("VIDEO", "STRING")
+    RETURN_NAMES = ("video", "saved_file")
+    FUNCTION = "save"
+    OUTPUT_NODE = True
+    CATEGORY = "KIE Next/Utility/Media"
+    DESCRIPTION = "Save VIDEO as MP4 under ComfyUI output and show a playable preview. The saved_file output works with Persistent Load Video."
+
+    def save(self, video, filename_prefix="KIE-Videos/KIE"):
+        return _save_video_output(video, filename_prefix)
 
 
 class KIEPersistentLoadVideoNode:

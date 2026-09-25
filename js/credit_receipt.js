@@ -15,6 +15,7 @@ app.registerExtension({
             const result = originalExecuted?.apply(this, arguments);
             const receipt = message?.kie_credit_receipt;
             this._kieCreditReceipt = Array.isArray(receipt) ? String(receipt[0] || "") : "";
+            if (this._kieCreditReceipt) console.info(`[KIE Next] ${this.title || nodeData?.name || "Generation"}: ${this._kieCreditReceipt}`);
             if (this._kieCreditReceipt && !this._kieCreditBadgeExpanded) {
                 this.setSize?.([Math.max(this.size?.[0] || 0, 360), (this.size?.[1] || 0) + 28]);
                 this._kieCreditBadgeExpanded = true;

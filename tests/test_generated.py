@@ -36,6 +36,27 @@ class TestGeneratedNodes(unittest.TestCase):
         names = self.plugin.NODE_DISPLAY_NAME_MAPPINGS.values()
         self.assertFalse(any("Any KIE API" in x for x in names))
 
+    def test_submitted_task_does_not_claim_unrelated_balance_change_as_spend(self):
+        generated = self.plugin.nodes.generated
+        with patch.object(generated, "_credit_balance", return_value=90), patch.object(generated, "record_credit_usage") as record:
+            receipt = generated._credit_receipt(
+                object(), ("task-123", "submitted", "[]", "{}", 0.0),
+                0.0, 100.0, track_usage=False,
+            )
+        self.assertEqual(receipt["result"][-2:], (0.0, 90.0))
+        record.assert_not_called()
+
+    def test_balance_delta_is_estimate_not_confirmed_local_spend(self):
+        generated = self.plugin.nodes.generated
+        with patch.object(generated, "_credit_balance", return_value=90), patch.object(generated, "record_credit_usage") as record:
+            receipt = generated._credit_receipt(
+                object(), ("task-123", "done", "[]", "{}", 0.0),
+                0.0, 100.0, receipt_id="task-123",
+            )
+        self.assertEqual(receipt["result"][-2:], (10.0, 90.0))
+        self.assertIn("Estimated spent", receipt["ui"]["kie_credit_receipt"][0])
+        record.assert_called_once_with(0.0, 90, receipt_id="task-123")
+
     def test_seedance_folder_and_native_reference_inputs(self):
         node = self.find("Seedance 2.0")
         self.assertEqual(node.CATEGORY, "KIE Next/Video/ByteDance/Seedance")
@@ -46,6 +67,50 @@ class TestGeneratedNodes(unittest.TestCase):
         self.assertEqual(inputs["optional"]["last_frame_url"][0], "IMAGE")
         self.assertEqual(inputs["optional"]["reference_video_1"][0], "VIDEO")
         self.assertEqual(inputs["optional"]["reference_audio_1"][0], "AUDIO")
+
+    def test_wan_video_edit_uses_native_reference_image_and_preflights_single_frame(self):
+        import torch
+        generated = self.plugin.nodes.generated
+        node = self.find("Wan 2.7 - Video Edit")
+        inputs = node.INPUT_TYPES()
+        self.assertEqual(inputs["required"]["video_url"][0], "VIDEO")
+        self.assertEqual(inputs["optional"]["reference_image"][0], "IMAGE")
+        self.assertEqual(inputs["optional"]["reference_image_url"][0], "STRING")
+        operation = next(op for op in generated.load_catalog()["operations"]
+                         if op.get("title") == "Wan 2.7 - Video Edit")
+        payload = generated._build_payload(None, operation, {
+            "prompt": "Change jacket only", "video_url": object(),
+            "reference_image": torch.zeros(1, 256, 256, 3)},
+            model="wan/2-7-videoedit", dry_run=True)
+        self.assertEqual(payload["reference_image"], "https://preflight.invalid/media/0")
+        self.assertEqual(payload["video_url"], "https://preflight.invalid/media/0")
+        legacy = generated._build_payload(None, operation, {
+            "prompt": "Change jacket only", "video_url": object(),
+            "reference_image_url": "https://example.test/approved.png"},
+            model="wan/2-7-videoedit", dry_run=True)
+        self.assertEqual(legacy["reference_image"], "https://example.test/approved.png")
+        with self.assertRaisesRegex(ValueError, "either the reference_image"):
+            generated._build_payload(None, operation, {"prompt": "Edit", "video_url": object(),
+                "reference_image": torch.zeros(1, 256, 256, 3),
+                "reference_image_url": "https://example.test/approved.png"}, model="wan/2-7-videoedit", dry_run=True)
+        with self.assertRaisesRegex(ValueError, "expects one image"):
+            generated._build_payload(None, operation, {"prompt": "Change jacket", "video_url": object(),
+                "reference_image": torch.zeros(2, 256, 256, 3)}, model="wan/2-7-videoedit", dry_run=True)
+
+        class Video:
+            def __init__(self, seconds): self.seconds = seconds
+            def get_duration(self): return self.seconds
+            def get_dimensions(self): return (1280, 720)
+
+        generated._validate_wan_video_edit_media({"video_url": Video(5),
+                                                  "reference_image": torch.zeros(1, 256, 256, 3), "duration": 0})
+        with self.assertRaisesRegex(ValueError, "2–10 second source"):
+            generated._validate_wan_video_edit_media({"video_url": Video(12)})
+        with self.assertRaisesRegex(ValueError, "without alpha"):
+            generated._validate_wan_video_edit_media({"video_url": Video(5),
+                                                      "reference_image": torch.zeros(1, 256, 256, 4)})
+        with self.assertRaisesRegex(ValueError, "0 .* or 2–10"):
+            generated._validate_wan_video_edit_media({"video_url": Video(5), "duration": 1})
 
     def test_claude_opus_folder_is_individual(self):
         node = self.find("Claude Opus 5")

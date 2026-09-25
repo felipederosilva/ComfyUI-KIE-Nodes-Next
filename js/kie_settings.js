@@ -44,6 +44,12 @@ async function applyStatus(status) {
     lastStatus = status;
     await setSetting("KIE.Next.SavedKey", savedKeyText(status));
     await setSetting("KIE.Next.ConnectionState", statusText(status));
+    const spent = Number(status?.tracked_credits_spent || 0);
+    const balance = Number(status?.last_credits);
+    const updatedAt = Number(status?.last_credits_checked_at || 0);
+    const updatedText = updatedAt ? ` • checked ${new Date(updatedAt * 1000).toLocaleString()}` : "";
+    const balanceText = Number.isFinite(balance) ? balance.toLocaleString() : "not checked yet";
+    await setSetting("KIE.Next.CreditUsageState", `Spent by this Comfy profile: ${spent.toLocaleString()} credits • remaining: ${balanceText}${updatedText}`);
     if (status?.plugin_version) await setSetting("KIE.Next.PluginVersion", `v${status.plugin_version}`);
     if (status?.plugin_path) await setSetting("KIE.Next.PluginPath", String(status.plugin_path));
 }
@@ -96,6 +102,36 @@ async function testConnection({ notify = true } = {}) {
         else toast("error", "KIE.ai connection failed", payload?.error || "Check the saved key and network connection.");
     }
     return payload;
+}
+
+async function refreshCredits({ notify = true } = {}) {
+    const res = await api.fetchApi("/kie-next/credits");
+    const payload = await res.json().catch(() => ({}));
+    await applyStatus(payload);
+    if (!res.ok) {
+        if (notify) toast("error", "Could not refresh KIE credits", payload?.error || "Check the saved key and network connection.");
+        throw new Error(payload?.error || "Could not refresh KIE credits");
+    }
+    const summary = {
+        balance: payload.credits,
+        tracked_spent: payload.tracked_credits_spent,
+        tracked_since: payload.credit_usage_started_at,
+        checked_at: payload.last_credits_checked_at,
+    };
+    console.info("[KIE Next] Credit status", summary);
+    if (notify) toast("success", "KIE credits refreshed", `Remaining: ${Number(payload.credits).toLocaleString()} • tracked by this Comfy profile: ${Number(payload.tracked_credits_spent || 0).toLocaleString()} spent`);
+    return summary;
+}
+
+async function refreshRecentTasks() {
+    const res = await api.fetchApi("/kie-next/tasks");
+    if (!res.ok) throw new Error(await res.text());
+    const payload = await res.json();
+    const tasks = Array.isArray(payload.tasks) ? payload.tasks : [];
+    const recent = tasks.slice(0, 5).map(task => `${task.task_id}: ${task.state}`).join(" • ");
+    await setSetting("KIE.Next.RecentTasks", recent || "No KIE Next tasks recorded in this ComfyUI profile yet.");
+    console.info("[KIE Next] Recent local tasks", tasks);
+    return tasks;
 }
 
 async function clearSavedKey() {
@@ -195,6 +231,52 @@ app.registerExtension({
             attrs: { readonly: true, disabled: true },
         },
         {
+            id: "KIE.Next.CreditUsageState",
+            name: "Credit usage and balance",
+            type: "text",
+            defaultValue: "Checking…",
+            category: ["KIE.ai Nodes Next", "Connection", "Credits"],
+            tooltip: "Live KIE balance from the last refresh and cumulative KIE-reported spend from successful KIE Next runs on this ComfyUI profile since this tracker was added.",
+            attrs: { readonly: true, disabled: true },
+        },
+        {
+            id: "KIE.Next.RefreshCreditsTrigger",
+            name: "Refresh balance now",
+            type: "boolean",
+            defaultValue: false,
+            category: ["KIE.ai Nodes Next", "Connection", "Credits"],
+            tooltip: "Fetches the current KIE account balance now. It does not submit a generation or spend credits.",
+            onChange: async (_setting, newVal) => {
+                const value = typeof newVal === "undefined" ? _setting : newVal;
+                if (!value || internalUpdate) return;
+                try { await refreshCredits(); } catch (e) { console.error("[KIE Next] Could not refresh credits", e); }
+                finally { await setSetting("KIE.Next.RefreshCreditsTrigger", false); }
+            },
+        },
+        {
+            id: "KIE.Next.RecentTasks",
+            name: "Recent KIE tasks (this profile)",
+            type: "text",
+            defaultValue: "Checking…",
+            category: ["KIE.ai Nodes Next", "Tasks", "Recent"],
+            tooltip: "Recent task IDs and last locally known status. Run KIE • Task Board to query KIE for live status, failures, and result URLs.",
+            attrs: { readonly: true, disabled: true },
+        },
+        {
+            id: "KIE.Next.RefreshTasksTrigger",
+            name: "Refresh local task list",
+            type: "boolean",
+            defaultValue: false,
+            category: ["KIE.ai Nodes Next", "Tasks", "Recent"],
+            tooltip: "Reload local task IDs. Does not submit jobs or spend credits.",
+            onChange: async (_setting, newVal) => {
+                const value = typeof newVal === "undefined" ? _setting : newVal;
+                if (!value || internalUpdate) return;
+                try { await refreshRecentTasks(); } catch (e) { console.error("[KIE Next] Could not load recent tasks", e); }
+                finally { await setSetting("KIE.Next.RefreshTasksTrigger", false); }
+            },
+        },
+        {
             id: "KIE.Next.TestConnectionTrigger",
             name: "Test saved key now",
             type: "boolean",
@@ -257,6 +339,7 @@ app.registerExtension({
     ],
     async setup() {
         try { await getStatus(); } catch (e) { console.warn("KIE Next: settings status failed", e); }
+        try { await refreshRecentTasks(); } catch (e) { console.warn("KIE Next: task history failed", e); }
         if (app.extensionManager.setting.get("KIE.Next.AutoCatalogSync") !== false) {
             setTimeout(() => refreshCatalogIfNeeded(), 1200);
         }
@@ -264,4 +347,6 @@ app.registerExtension({
 });
 
 window.KIENextTestConnection = testConnection;
+// Callable from the browser developer console at any time: KIENextCredits()
+window.KIENextCredits = refreshCredits;
 

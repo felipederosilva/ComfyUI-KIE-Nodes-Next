@@ -5,10 +5,12 @@ from pathlib import Path
 
 from .catalog import catalog_summary, sync_catalog
 from .client import KIEAPIError, KIEClient, KIEConfig
+from .task_history import recent_tasks
 from .settings import (
     clear_api_key,
     get_api_key,
     public_status,
+    save_last_credits,
     save_api_key,
     save_validation_state,
 )
@@ -50,6 +52,24 @@ def register_routes() -> bool:
         return False
 
     routes = PromptServer.instance.routes
+
+    @routes.post("/kie-next/preflight")
+    async def kie_preflight(request):
+        from ..nodes.preflight import inspect_node_inputs
+        try:
+            body = await request.json()
+            if not isinstance(body, dict):
+                raise ValueError("Expected a node input object.")
+            node_type, inputs, connected = body.get("node_type"), body.get("inputs", {}), body.get("connected", [])
+            if not isinstance(node_type, str) or not isinstance(inputs, dict) or not isinstance(connected, list):
+                raise ValueError("Invalid node input check request.")
+            if len(inputs) > 512 or len(connected) > 512 or any(not isinstance(name, str) for name in connected):
+                raise ValueError("Invalid connected input list.")
+            loop = asyncio.get_running_loop()
+            report = await loop.run_in_executor(None, lambda: inspect_node_inputs(node_type, inputs, connected))
+            return web.json_response({"ok": True, **report})
+        except (ValueError, TypeError) as exc:
+            return web.json_response({"ok": False, "error": str(exc)}, status=400)
 
     @routes.get("/kie-next/settings")
     async def kie_settings_status(request):
@@ -97,6 +117,23 @@ def register_routes() -> bool:
             state = "invalid" if exc.status in {401, 403} else "unreachable"
             save_validation_state(state, message=str(exc))
             return web.json_response({"ok": False, "valid": False, "error": str(exc), **public_status()}, status=401 if state == "invalid" else 502)
+
+    @routes.get("/kie-next/credits")
+    async def kie_credits(request):
+        if not get_api_key():
+            return web.json_response({"ok": False, "error": "No KIE API key is configured.", **public_status()}, status=400)
+        loop = asyncio.get_running_loop()
+        try:
+            credits = await loop.run_in_executor(None, lambda: KIEClient(KIEConfig.from_values()).get_remaining_credits())
+        except Exception as exc:
+            return web.json_response({"ok": False, "error": str(exc), **public_status()}, status=502)
+        save_last_credits(float(credits))
+        return web.json_response({"ok": True, "credits": float(credits), **public_status()})
+
+    @routes.get("/kie-next/tasks")
+    async def kie_recent_tasks(request):
+        return web.json_response({"ok": True, "tasks": recent_tasks(20),
+                                  "scope": "Tasks submitted by this local ComfyUI profile since task history was enabled."})
 
     @routes.delete("/kie-next/settings/api-key")
     async def kie_settings_clear(request):
