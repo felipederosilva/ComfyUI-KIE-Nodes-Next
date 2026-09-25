@@ -1,3 +1,38 @@
+# v0.6.0 — Local Production Tools
+
+This release ships working local production tools from the 22-feature roadmap; it does not claim completion of every roadmap item. New planning, inspection, comparison and assembly nodes do not submit paid KIE tasks unless explicitly connected to and run with a generation node.
+
+- Adds a draggable top-view Camera Path with dolly/orbit/crane/custom path planning and a saved preview. The isolated ComfyUI graph executed successfully; its controls are prompt guidance unless the provider documents native equivalents.
+- Adds timecoded local visual-change analysis, sparse labelled frame sampling, an editor-gated reviewed-event timeline, an instrumental music brief, and an editor-approved sound-cue/ambience sheet. The still-frame descriptions require explicit human correction; no paid vision or audio job is submitted automatically.
+- Adds a four-take Variation Matrix, existing-task result reuse without `createTask`, and immutable generation recipe save/load nodes. Batch generation, automatic recipe capture, and provider-backed soundtrack generation remain open.
+- Adds a read-only Task Board for 1–20 explicit task IDs, including status, progress, result URLs and failures. Adds local assembly of up to four matching VIDEO takes with fitted music, dialogue-triggered music ducking and two timed SFX; a real MP4 with eight video frames and an audio stream passed a native ComfyUI/PyAV round-trip test. Transition styles and listening QA remain open.
+- Adds an explicit adapter from editor-approved sound cues to KIE's documented Suno Sounds prompt, loop, and lyric fields. No audio generation happens until the editor connects and runs a paid Sounds node.
+- Records IDs and states of locally submitted Market/Studio tasks in a bounded per-profile journal (no prompts or credentials). Settings shows recent IDs, and Task Board can refresh them live without manually pasting task IDs.
+- Wan 2.7 Video Edit's optional reference image is now a native IMAGE socket. Local checks enforce the documented source length/dimensions and reference-image shape before upload; ComfyUI's VideoTrim can select the clip to edit. This is whole-clip editing, not a spatial mask. No paid provider call was made.
+- Adds four guided JSON graph starters for labelled event-frame review, event-led soundtrack briefing, video-plus-music export, and character consistency comparison, with a persistent in-graph Text Review node. All templates passed node/link and KIE socket-contract tests; visual Desktop import acceptance is still pending.
+- Adds no-spend chat preflight for prompt presence, JSON structure of history/tools/expert overrides, token bounds, and reasoning level. The context-menu check now reports these errors before connection or image upload; provider-specific chat rules still need remote validation.
+- Adds a persistent 2×2 Variation Board that labels up to four generated images with their one-condition prompt changes. Generations remain editor-controlled; the board is not an identity/quality scoring model.
+- Moves persistent image/contact-sheet/consistency-board previews into a dedicated UI widget so they no longer draw over node controls. A UI contract test covers save and reload behavior.
+- Validation: 117 Python tests and six JavaScript UI tests pass; camera-path, labelled-frame sampling, and editor-reviewed music/SFX brief graphs completed on isolated ComfyUI 0.37.2. The latter used a synthetic two-second video; its saved labelled contact sheet was visually inspected. Live frontend acceptance, listening QA and paid KIE calls were not performed.
+- Adds an immutable per-user Elements library for locations, props, and styles, plus approved image references and continuity prompts.
+- Adds versioned Character Variants tied to an unchanged Character Pack identity, with approved outfit/look images and integrity checks.
+- Adds a persistent Consistency Board that compares one approved reference with up to four results side by side for human review.
+- Adds six editor-selectable visual rhythms to Script to Shot Draft (including neutral). Presets suggest shot size, angle, lens, movement, and editorial intent while preserving every source paragraph and the requested total duration. The contact sheet displays the intent beside each shot. These directions are editable and are treated as prompt guidance unless a chosen model explicitly supports native camera control.
+- Adds a local Script to Shot Draft and editable Shot Plan Review, compatible with the existing Shot Sequence, Storyboard, and Kling manual shot input. Drafts preserve the supplied scene text, distribute the target duration, and expose their JSON through a context menu for review. No model is called by these nodes.
+- Adds `KIE • Storyboard Contact Sheet`: connect `KIE • Shot Sequence`, optionally attach up to six hero frames, and review a persistent local image with shot order, timing, prompts, and camera notes. This step uses no KIE credits.
+- Adds a no-spend context-menu input inspection and model-controls panel, backed by cached API metadata. Native camera fields and prompt guidance are explicitly distinguished.
+- Validates documented required fields, choices, numeric limits, list sizes, and supported frame/reference conflicts before uploads in generated non-chat and Studio adapters. Connected values are deferred until execution; media content and undocumented constraints remain provider-dependent.
+- Rejects silently ignored Studio references, excess manual shots, and image batches on single-image inputs.
+- Earlier validation: 79 Python tests and two JavaScript UI-contract tests passed; new Shot Plan UI syntax checked. The Script Draft → Shot Plan Review → Storyboard graph completed on an isolated ComfyUI 0.37.2 server with a cinematic reveal rhythm, saved a PNG, and that PNG was visually inspected. A dry-run Kling Studio request confirmed the camera suggestions reach its per-shot prompt field. Browser access to localhost was blocked, so in-app menu acceptance remains pending. No paid generation was submitted.
+
+- Adds a persistent, per-ComfyUI-profile total of KIE-reported credits spent and an on-demand live account-balance refresh in Settings.
+- Adds `KIENextCredits()` for refreshing and inspecting credit status from the browser developer console; generation receipts are also logged there.
+- Clarifies that the Camera Director's trajectory is a prompt plan unless the selected provider/model documents native camera conditioning. The community Camera H3 workflow is a useful UX reference, not an official ComfyUI core camera feature.
+- Adds `KIE • Preview Video` and `KIE • Save Video`, both with a playable in-node preview, a durable output file, a reusable `VIDEO` output, and an annotated `saved_file` output.
+- Adds nine user-assignable favorite-node commands for ComfyUI's native Keybindings panel, with favorite slots set from each KIE node's context menu.
+- Deduplicates locally tracked credit spend by completed KIE task ID, so viewing the same task through multiple nodes does not count it twice.
+- Labels balance-difference spending as an estimate and excludes it from confirmed local totals, because concurrent jobs could have changed the account balance.
+
 # v0.5.0 — Character Packs and Live Model Refresh
 
 - Adds versioned Character Packs, reusable approved reference views, and a no-spend eight-case consistency-test prompt plan.

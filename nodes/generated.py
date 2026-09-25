@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import math
 import os
 import re
 import time
@@ -10,9 +11,11 @@ from typing import Any
 from ..kie.catalog import load_catalog, resolve_operation
 from ..kie.client import KIEAPIError, KIEClient, pretty_json
 from ..kie.helpers import make_client, parse_object_json
-from ..kie.settings import save_last_credits
+from ..kie.settings import record_credit_usage, save_last_credits
+from ..kie.capabilities import check_operation, operation_capabilities, require_valid
+from ..kie.task_history import record_task
 
-KIE_GENERATED_BUILD = "0.5.0"
+KIE_GENERATED_BUILD = "0.6.0"
 
 from ..kie.media import (
     download_audio_object,
@@ -220,7 +223,8 @@ def _dedupe_default(default: str, values: list[str]) -> list[str]:
 
 def _is_image_field(name: str) -> bool:
     n = name.lower()
-    if n in {"first_frame_url", "last_frame_url", "firstframeurl", "lastframeurl", "input_urls"}:
+    if n in {"first_frame_url", "last_frame_url", "firstframeurl", "lastframeurl", "input_urls",
+             "reference_image", "reference_images"}:
         return True
     return "image" in n and ("url" in n or n in {"images", "image_input", "imageurls"})
 
@@ -504,6 +508,11 @@ def _friendly_input_types(op: dict[str, Any], *, model: str = "") -> dict[str, d
             "STRING",
             {"default": "", "multiline": False, "tooltip": "Optional KIE callback URL. Leave empty for normal ComfyUI use."},
         )
+    if model == "wan/2-7-videoedit":
+        optional["reference_image_url"] = (
+            "STRING", {"default": "", "multiline": False,
+                       "tooltip": "Legacy or remote reference URL. Leave empty when connecting the native reference_image IMAGE socket."},
+        )
     # A complete OpenAPI schema is the normal product surface. Preserve a raw
     # escape hatch only for documentation pages that still lack a request schema.
     if not hints:
@@ -531,10 +540,19 @@ def _parse_json_widget(value: str, name: str) -> Any:
         raise ValueError(f"{name} must contain valid JSON: {exc}") from exc
 
 
-def _media_value(client: KIEClient, field: str, value: Any) -> Any:
+def _media_value(client: KIEClient, field: str, value: Any, *, dry_run: bool = False) -> Any:
     if value is None:
         return None
     n = field.lower()
+    if dry_run:
+        count = 1
+        if _is_image_field(field) and hasattr(value, "shape") and len(value.shape) == 4:
+            count = int(value.shape[0])
+        plural = field.endswith("s") or "urls" in n or n in {"input_urls", "image_input"} or "list" in n
+        if not plural and count > 1:
+            raise ValueError(f"{field}: expects one image; received a batch of {count}. Select one frame first.")
+        urls = [f"https://preflight.invalid/media/{index}" for index in range(count)]
+        return urls if plural else (urls[0] if urls else "")
     if _is_image_field(field):
         urls = upload_image_batch(client, value, prefix=_slug(field).lower())
         # singular URL fields take the first image; plural/list fields take the whole batch.
@@ -549,16 +567,16 @@ def _media_value(client: KIEClient, field: str, value: Any) -> Any:
     return value
 
 
-def _coerce_widget_value(name: str, example: Any, value: Any, client: KIEClient) -> Any:
+def _coerce_widget_value(name: str, example: Any, value: Any, client: KIEClient, *, dry_run: bool = False) -> Any:
     if _is_image_field(name) or _is_video_field(name) or _is_audio_field(name):
-        return _media_value(client, name, value)
+        return _media_value(client, name, value, dry_run=dry_run)
     if isinstance(example, (list, dict)) and isinstance(value, str):
         return _parse_json_widget(value, name)
     return value
 
 
 
-def _collect_media_aliases(client: KIEClient, field: str, example: Any, kwargs: dict[str, Any]) -> list[str] | None:
+def _collect_media_aliases(client: KIEClient, field: str, example: Any, kwargs: dict[str, Any], *, dry_run: bool = False) -> list[str] | None:
     aliases = _media_aliases(field, example)
     if not aliases:
         return None
@@ -567,7 +585,9 @@ def _collect_media_aliases(client: KIEClient, field: str, example: Any, kwargs: 
         value = kwargs.get(alias)
         if value is None:
             continue
-        if socket_type == "VIDEO":
+        if dry_run:
+            urls.append(f"https://preflight.invalid/{alias}")
+        elif socket_type == "VIDEO":
             path = video_to_temp_file(value)
             urls.append(client.upload_file(path, upload_path="comfyui/videos"))
         else:
@@ -575,7 +595,7 @@ def _collect_media_aliases(client: KIEClient, field: str, example: Any, kwargs: 
     return urls
 
 
-def _build_payload(client: KIEClient, op: dict[str, Any], kwargs: dict[str, Any], *, model: str = "") -> dict[str, Any]:
+def _build_payload(client: KIEClient, op: dict[str, Any], kwargs: dict[str, Any], *, model: str = "", dry_run: bool = False) -> dict[str, Any]:
     body, query, market = _request_templates(op)
     hints = op.get("parameter_hints") or {}
     out: dict[str, Any] = {}
@@ -590,7 +610,7 @@ def _build_payload(client: KIEClient, op: dict[str, Any], kwargs: dict[str, Any]
         hint = hints.get(name) or {}
         is_boolean = _is_boolean_hint(hint)
         example = body.get(name, query.get(name, _hint_default(hint)))
-        aliased_urls = None if is_boolean else _collect_media_aliases(client, name, example, kwargs)
+        aliased_urls = None if is_boolean else _collect_media_aliases(client, name, example, kwargs, dry_run=dry_run)
         if aliased_urls is not None:
             if aliased_urls:
                 out[name] = aliased_urls
@@ -598,12 +618,16 @@ def _build_payload(client: KIEClient, op: dict[str, Any], kwargs: dict[str, Any]
         if name not in kwargs or kwargs[name] is None:
             continue
         value = kwargs[name]
+        # Comfy combo widgets use strings even for numeric OpenAPI enums.
+        # Restore the documented JSON value before validation and submission.
+        if not is_boolean and isinstance(value, str) and isinstance(hint.get("enum"), list):
+            value = next((candidate for candidate in hint["enum"] if str(candidate) == value), value)
         # Empty optional strings are omitted instead of overriding provider defaults.
-        if value == "" and not bool((hints.get(name) or {}).get("required")):
+        if isinstance(value, str) and value == "" and not bool((hints.get(name) or {}).get("required")):
             continue
         if is_boolean:
             out[name] = _coerce_boolean(value, bool(hint.get("default", False)))
-        elif _is_topaz_video_upscale(model) and _is_video_field(name):
+        elif not dry_run and _is_topaz_video_upscale(model) and _is_video_field(name):
             path = video_to_temp_file(value, canonical_h264_sdr=True)
             size_bytes = os.path.getsize(path)
             print(
@@ -612,7 +636,7 @@ def _build_payload(client: KIEClient, op: dict[str, Any], kwargs: dict[str, Any]
             )
             out[name] = client.upload_file(path, upload_path="comfyui/videos")
         else:
-            out[name] = _coerce_widget_value(name, example, value, client)
+            out[name] = _coerce_widget_value(name, example, value, client, dry_run=dry_run)
 
     # Skeleton docs or a temporarily unresolved page still preserve the central prompt.
     if not out and str(kwargs.get("prompt") or "").strip():
@@ -623,6 +647,14 @@ def _build_payload(client: KIEClient, op: dict[str, Any], kwargs: dict[str, Any]
         "expert_override_json",
     )
     out.update(advanced)
+    if model == "wan/2-7-videoedit":
+        legacy_url = str(kwargs.get("reference_image_url") or "").strip()
+        if legacy_url and kwargs.get("reference_image") is not None:
+            raise ValueError("Use either the reference_image IMAGE socket or reference_image_url, not both.")
+        if legacy_url:
+            if not legacy_url.startswith(("https://", "http://", "oss://")):
+                raise ValueError("reference_image_url must be a public HTTP(S) or OSS URL.")
+            out["reference_image"] = legacy_url
     # Ordinary Market models belong only in create_task's outer envelope.
     # Adapted provider versions (Suno) belong in input only when declared by
     # its schema; unversioned adapters such as cover generation have no model.
@@ -633,6 +665,23 @@ def _build_payload(client: KIEClient, op: dict[str, Any], kwargs: dict[str, Any]
     if model and (not market or nested_model):
         out["model"] = model
     return out
+
+
+def preflight_model_inputs(op: dict[str, Any], model: str, kwargs: dict[str, Any], *, deferred_fields=()):
+    """Use the same payload builder without uploading or creating an API client."""
+    payload = _build_payload(None, op, kwargs, model=model, dry_run=True)
+    for name in op.get("path_params") or []:
+        if name in kwargs:
+            payload[name] = kwargs[name]
+    # Apply the same existing provider adapters as actual submission.
+    payload = _normalize_suno_music_payload(op, payload, announce=False)
+    payload = _normalize_topaz_video_payload(model, payload)
+    hints = op.get("parameter_hints") or {}
+    media_fields = {
+        name for name in payload if not _is_boolean_hint(hints.get(name) or {})
+        and (_is_image_field(name) or _is_video_field(name) or _is_audio_field(name))
+    }
+    return check_operation(op, payload, model=model, media_fields=media_fields, deferred_fields=deferred_fields)
 
 
 def _build_query(client: KIEClient, op: dict[str, Any], kwargs: dict[str, Any]) -> dict[str, Any]:
@@ -801,11 +850,18 @@ def _credit_balance(client: KIEClient) -> float | None:
         return None
 
 
-def _credit_receipt(client: KIEClient, outputs: tuple, credits: float, credits_before: float | None, consumed_index: int = -1):
+def _credit_receipt(client: KIEClient, outputs: tuple, credits: float, credits_before: float | None, consumed_index: int = -1, receipt_id: str = "", track_usage: bool = True):
     balance = _credit_balance(client)
-    spent = float(credits or 0.0)
-    if spent <= 0 and credits_before is not None and balance is not None:
+    reported_spent = max(float(credits or 0.0), 0.0)
+    spent = reported_spent
+    estimated = False
+    if track_usage and spent <= 0 and credits_before is not None and balance is not None:
         spent = max(float(credits_before) - balance, 0.0)
+        estimated = spent > 0
+    if track_usage:
+        # A balance delta may include concurrent jobs on the same KIE account.
+        # Keep it visible as an estimate, but never add it to confirmed spend.
+        record_credit_usage(reported_spent, balance, receipt_id=receipt_id)
     remaining = float(balance) if balance is not None else -1.0
     # Keep every existing output position stable; append live account balance.
     mutable = list(outputs)
@@ -814,7 +870,8 @@ def _credit_receipt(client: KIEClient, outputs: tuple, credits: float, credits_b
     mutable.append(remaining)
     shown_spent = f"{spent:g}"
     shown_remaining = f"{remaining:g}" if remaining >= 0 else "unavailable"
-    return {"ui": {"kie_credit_receipt": [f"Credits spent: {shown_spent}  •  Credits left: {shown_remaining}"]}, "result": tuple(mutable)}
+    spent_label = "Estimated spent (balance change)" if estimated else "Credits spent"
+    return {"ui": {"kie_credit_receipt": [f"{spent_label}: {shown_spent}  •  Credits left: {shown_remaining}"]}, "result": tuple(mutable)}
 
 
 def _result_for_kind(client: KIEClient, kind: str, payload: Any, task_id: str, credits: float = 0.0, credits_before: float | None = None):
@@ -825,19 +882,19 @@ def _result_for_kind(client: KIEClient, kind: str, payload: Any, task_id: str, c
     if kind == "image":
         if not url: raise KIEAPIError("KIE task completed but returned no image URL.", payload=payload)
         outputs = (download_image_tensor(client, url), url, all_urls_json, task_id, pretty_json(payload), credits)
-        return _credit_receipt(client, outputs, credits, credits_before)
+        return _credit_receipt(client, outputs, credits, credits_before, receipt_id=task_id)
     if kind == "video":
         if not url: raise KIEAPIError("KIE task completed but returned no video URL.", payload=payload)
         outputs = (download_video_object(client, url), url, all_urls_json, task_id, pretty_json(payload), credits)
-        return _credit_receipt(client, outputs, credits, credits_before)
+        return _credit_receipt(client, outputs, credits, credits_before, receipt_id=task_id)
     if kind == "audio":
         if not url: raise KIEAPIError("KIE task completed but returned no audio URL.", payload=payload)
         outputs = (download_audio_object(client, url), url, all_urls_json, task_id, pretty_json(payload), credits)
-        return _credit_receipt(client, outputs, credits, credits_before)
+        return _credit_receipt(client, outputs, credits, credits_before, receipt_id=task_id)
     if kind == "text":
         text = _extract_text(payload)
         outputs = (text, task_id, pretty_json(payload), credits or _credits_from(payload))
-        return _credit_receipt(client, outputs, credits or _credits_from(payload), credits_before)
+        return _credit_receipt(client, outputs, credits or _credits_from(payload), credits_before, receipt_id=task_id)
     return (pretty_json(payload), url, task_id)
 
 
@@ -908,7 +965,47 @@ def _model_from_op(op: dict[str, Any], fallback: str = "") -> str:
     return str(op.get("default_model") or "")
 
 
+def preflight_llm_inputs(op: dict[str, Any], model: str, kwargs: dict[str, Any], *, deferred_fields=()) -> dict[str, Any]:
+    """Check shared chat input structure before creating a client or uploading images."""
+    deferred = set(deferred_fields)
+    errors: list[str] = []
+    warnings: list[str] = []
+    if "prompt" not in deferred and not str(kwargs.get("prompt") or "").strip():
+        errors.append("prompt: enter a user message.")
+    for name in ("history_json", "tools_json", "expert_override_json"):
+        if name in deferred:
+            continue
+        raw = kwargs.get(name, "{}" if name == "expert_override_json" else "[]")
+        try:
+            value = json.loads(str(raw or ("{}" if name == "expert_override_json" else "[]")))
+        except json.JSONDecodeError:
+            errors.append(f"{name}: enter valid JSON.")
+            continue
+        if name == "expert_override_json":
+            if not isinstance(value, dict):
+                errors.append(f"{name}: expected a JSON object.")
+        elif not isinstance(value, list) or any(not isinstance(item, dict) for item in value):
+            errors.append(f"{name}: expected a JSON array of objects.")
+    for name in ("max_tokens", "max_output_tokens"):
+        if name in kwargs and name not in deferred:
+            value = kwargs[name]
+            if isinstance(value, bool) or not isinstance(value, int) or not 1 <= value <= 131072:
+                errors.append(f"{name}: choose an integer from 1 to 131072.")
+    if "reasoning_effort" in kwargs and "reasoning_effort" not in deferred:
+        if kwargs["reasoning_effort"] not in _REASONING:
+            errors.append("reasoning_effort: choose a listed level.")
+    if "images" in deferred or kwargs.get("images") is not None:
+        warnings.append("Connected image content and provider support are not checked until execution.")
+    if deferred:
+        warnings.append("Connected values need execution before final validation: " + ", ".join(sorted(deferred)))
+    warnings.append("Provider-specific chat limits and tool schemas may require remote validation.")
+    return {"valid": not errors, "errors": errors, "warnings": warnings,
+            "capabilities": operation_capabilities(op, model),
+            "scope": "Local chat structure only; no media uploaded and no generation submitted."}
+
+
 def _execute_llm(op: dict[str, Any], model: str, kwargs: dict[str, Any]):
+    require_valid(preflight_llm_inputs(op, model, kwargs))
     client = make_client(None)
     credits_before = _credit_balance(client)
     endpoint = str(op.get("endpoint") or "")
@@ -973,7 +1070,8 @@ def _execute_llm(op: dict[str, Any], model: str, kwargs: dict[str, Any]):
     payload = client.raw_api_request("POST", endpoint, body=body)
     outputs = (_extract_text(payload), pretty_json(payload), _credits_from(payload), pretty_json(payload.get("usage") if isinstance(payload, dict) else {}))
     # LLM nodes keep their existing usage_json output in place and append balance.
-    return _credit_receipt(client, outputs, outputs[2], credits_before, consumed_index=2)
+    response_id = str(payload.get("id") or "") if isinstance(payload, dict) else ""
+    return _credit_receipt(client, outputs, outputs[2], credits_before, consumed_index=2, receipt_id=response_id)
 
 
 # ----------------------------- class factories -------------------------------
@@ -1012,7 +1110,7 @@ def _normalize_topaz_video_payload(model: str, payload: dict[str, Any]) -> dict[
     return normalized
 
 
-def _normalize_suno_music_payload(op: dict[str, Any], payload: dict[str, Any]) -> dict[str, Any]:
+def _normalize_suno_music_payload(op: dict[str, Any], payload: dict[str, Any], *, announce: bool = True) -> dict[str, Any]:
     """Apply documented Suno Generate Music input-mode constraints locally.
 
     KIE only accepts image references on this endpoint when Custom Mode is
@@ -1060,11 +1158,12 @@ def _normalize_suno_music_payload(op: dict[str, Any], payload: dict[str, Any]) -
         if str(key).replace("_", "").lower() in custom_only_fields:
             removed.append(str(key))
             payload.pop(key, None)
-    print(
-        "[KIE Next][Suno] Image references require Custom Mode off; "
-        "submitting Generate Music with custom_mode=false"
-        + (f" and omitting incompatible fields: {', '.join(sorted(removed))}." if removed else ".")
-    )
+    if announce:
+        print(
+            "[KIE Next][Suno] Image references require Custom Mode off; "
+            "submitting Generate Music with custom_mode=false"
+            + (f" and omitting incompatible fields: {', '.join(sorted(removed))}." if removed else ".")
+        )
     return payload
 
 
@@ -1089,7 +1188,33 @@ def _topaz_failure_message(task_ids: list[str], exc: KIEAPIError) -> str:
     )
 
 
+def _validate_wan_video_edit_media(kwargs: dict[str, Any]) -> None:
+    """Enforce the provider's documented source limits before upload/spend."""
+    video = kwargs.get("video_url")
+    if video is None or not all(callable(getattr(video, method, None)) for method in ("get_duration", "get_dimensions")):
+        raise ValueError("Wan 2.7 Video Edit needs a connected ComfyUI VIDEO source.")
+    duration = float(video.get_duration())
+    width, height = video.get_dimensions()
+    if not math.isfinite(duration) or not 2 <= duration <= 10:
+        raise ValueError("Wan 2.7 Video Edit accepts a 2–10 second source. Trim the clip before this node.")
+    if not 240 <= width <= 4096 or not 240 <= height <= 4096 or not 0.125 <= width / height <= 8:
+        raise ValueError("Wan 2.7 Video Edit source must be 240–4096 px per side with aspect ratio from 1:8 to 8:1.")
+    selected = int(kwargs.get("duration") or 0)
+    if selected and not 2 <= selected <= 10:
+        raise ValueError("Wan 2.7 Video Edit output duration must be 0 (full source) or 2–10 seconds.")
+    image = kwargs.get("reference_image")
+    if image is not None:
+        shape = getattr(image, "shape", ())
+        if len(shape) != 4 or shape[0] != 1 or shape[3] != 3:
+            raise ValueError("Wan 2.7 Video Edit reference must be one RGB IMAGE without alpha.")
+        if not 240 <= shape[1] <= 8000 or not 240 <= shape[2] <= 8000 or not 0.125 <= shape[2] / shape[1] <= 8:
+            raise ValueError("Wan 2.7 Video Edit reference must be 240–8000 px per side with aspect ratio from 1:8 to 8:1.")
+
+
 def _market_execute(op: dict[str, Any], model: str, kind: str, kwargs: dict[str, Any], payload_model: str | None = None):
+    require_valid(preflight_model_inputs(op, payload_model or model, kwargs))
+    if model == "wan/2-7-videoedit":
+        _validate_wan_video_edit_media(kwargs)
     client = make_client(None)
     credits_before = _credit_balance(client)
     payload = _build_payload(client, op, kwargs, model=payload_model or model)
@@ -1112,10 +1237,22 @@ def _market_execute(op: dict[str, Any], model: str, kind: str, kwargs: dict[str,
         task_id = client.create_task(model, payload, callback_url=callback)
         task_ids.append(task_id)
         try:
+            record_task(task_id, model, "submitted")
+        except OSError as exc:
+            print(f"[KIE Next] Could not save local task ID: {exc}")
+        try:
             result = client.wait_for_task(task_id, timeout_seconds=timeout_seconds)
+            try:
+                record_task(task_id, model, getattr(result, "state", "success"), credits=result.credits_consumed)
+            except OSError as exc:
+                print(f"[KIE Next] Could not update local task ID: {exc}")
             break
         except KIEAPIError as exc:
             last_error = exc
+            try:
+                record_task(task_id, model, "needs_refresh")
+            except OSError as write_exc:
+                print(f"[KIE Next] Could not update local task ID: {write_exc}")
             if attempt + 1 < max_attempts and _retryable_topaz_internal_error(exc):
                 time.sleep(2.0)
                 continue
@@ -1136,9 +1273,10 @@ def _market_execute(op: dict[str, Any], model: str, kind: str, kwargs: dict[str,
 
 
 def _direct_execute(op: dict[str, Any], model: str, kind: str, kwargs: dict[str, Any]):
+    resolved = resolve_operation(str(op.get("label") or "")) or op
+    require_valid(preflight_model_inputs(resolved, model, kwargs))
     client = make_client(None)
     credits_before = _credit_balance(client)
-    resolved = resolve_operation(str(op.get("label") or "")) or op
     method = str(resolved.get("method") or "POST").upper()
     endpoint = str(resolved.get("endpoint") or "")
     if not endpoint:

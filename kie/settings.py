@@ -98,6 +98,59 @@ def save_last_credits(credits: float) -> None:
     save_settings({"last_credits": float(credits), "last_credits_checked_at": int(time.time())})
 
 
+def record_credit_usage(spent: float, balance: float | None = None, *, receipt_id: str = "") -> dict[str, Any]:
+    """Track KIE-reported spending by this ComfyUI profile (not account-wide history)."""
+    now = int(time.time())
+    with _LOCK:
+        current = load_settings()
+        receipts = current.get("credit_usage_receipts")
+        if not isinstance(receipts, dict):
+            receipts = {}
+        key = str(receipt_id or "").strip()
+        amount = max(0.0, float(spent or 0.0))
+        if key and key in receipts:
+            amount = 0.0
+        elif key and amount > 0:
+            receipts[key] = now
+            current["credit_usage_receipts"] = receipts
+        total = float(current.get("tracked_credits_spent") or 0.0) + amount
+        current["tracked_credits_spent"] = total
+        current.setdefault("credit_usage_started_at", now)
+        current["credit_usage_updated_at"] = now
+        if balance is not None and float(balance) >= 0:
+            current["last_credits"] = float(balance)
+            current["last_credits_checked_at"] = now
+        temp = settings_path().with_suffix(".tmp")
+        temp.write_text(json.dumps(current, ensure_ascii=False, indent=2), encoding="utf-8")
+        try:
+            os.chmod(temp, 0o600)
+        except OSError:
+            pass
+        temp.replace(settings_path())
+        try:
+            os.chmod(settings_path(), 0o600)
+        except OSError:
+            pass
+        return {
+            "tracked_credits_spent": total,
+            "credit_usage_started_at": int(current.get("credit_usage_started_at") or now),
+            "credit_usage_updated_at": now,
+            "last_credits": current.get("last_credits"),
+            "last_credits_checked_at": current.get("last_credits_checked_at"),
+        }
+
+
+def credit_usage_status() -> dict[str, Any]:
+    settings = load_settings()
+    return {
+        "tracked_credits_spent": float(settings.get("tracked_credits_spent") or 0.0),
+        "credit_usage_started_at": int(settings.get("credit_usage_started_at") or 0),
+        "credit_usage_updated_at": int(settings.get("credit_usage_updated_at") or 0),
+        "last_credits": settings.get("last_credits"),
+        "last_credits_checked_at": int(settings.get("last_credits_checked_at") or 0),
+    }
+
+
 def clear_api_key() -> None:
     path = settings_path()
     with _LOCK:
@@ -144,6 +197,8 @@ def public_status() -> dict[str, Any]:
         "validation_message": str(settings.get("key_validation_message") or ""),
         "validated_at": int(settings.get("key_validated_at") or 0),
         "last_credits": settings.get("last_credits"),
+        "last_credits_checked_at": int(settings.get("last_credits_checked_at") or 0),
+        **credit_usage_status(),
         "settings_path": str(settings_path()),
     }
 

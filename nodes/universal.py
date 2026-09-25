@@ -6,6 +6,7 @@ from ..kie.catalog import catalog_summary, model_options, operation_options, res
 from ..kie.client import KIEClient, pretty_json
 from ..kie.helpers import apply_path_params, make_client, parse_object_json, replace_placeholders
 from ..kie.media import upload_audio, upload_image_batch, video_to_temp_file
+from ..kie.task_history import record_task
 
 
 def _media_replacements(client, images=None, video=None, audio=None) -> dict[str, object]:
@@ -78,9 +79,17 @@ class KIEUniversalTaskNode:
         payload = replace_placeholders(payload, _media_replacements(client, images, video, audio))
         chosen_model = (custom_model or model).strip()
         task_id = client.create_task(chosen_model, payload, callback_url=callback_url)
+        try:
+            record_task(task_id, chosen_model, "submitted")
+        except OSError as exc:
+            print(f"[KIE Next] Could not save local task ID: {exc}")
         if not wait_for_completion:
-            return _credit_receipt(client, (task_id, "submitted", "[]", "{}", 0.0), 0.0, credits_before)
+            return _credit_receipt(client, (task_id, "submitted", "[]", "{}", 0.0), 0.0, credits_before, track_usage=False)
         result = client.wait_for_task(task_id, timeout_seconds=timeout_seconds)
+        try:
+            record_task(task_id, chosen_model, result.state, credits=result.credits_consumed)
+        except OSError as exc:
+            print(f"[KIE Next] Could not update local task ID: {exc}")
         outputs = (
             task_id,
             result.state,
@@ -88,7 +97,7 @@ class KIEUniversalTaskNode:
             pretty_json(result.raw),
             result.credits_consumed,
         )
-        return _credit_receipt(client, outputs, result.credits_consumed, credits_before)
+        return _credit_receipt(client, outputs, result.credits_consumed, credits_before, receipt_id=task_id)
 
 
 class KIEAnyAPIRequestNode:
@@ -208,7 +217,7 @@ class KIEWaitTaskNode:
             pretty_json(result.raw),
             result.credits_consumed,
         )
-        return _credit_receipt(client, outputs, result.credits_consumed, credits_before)
+        return _credit_receipt(client, outputs, result.credits_consumed, credits_before, receipt_id=task_id)
 
 
 class KIETaskStatusNode:
