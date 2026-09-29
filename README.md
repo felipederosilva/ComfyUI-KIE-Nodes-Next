@@ -1,8 +1,8 @@
 # KIE.ai Nodes Next for ComfyUI
 
-**Current version: 0.6.0 — Local Production Tools.** This release includes the verified local tools described below; it does not complete all 22 [roadmap commitments](ROADMAP.md). Paid provider workflows still require model-specific validation.
+**Current version: 0.6.1 — KIE Model Refresh & Registry Readiness.** This release refreshes the shipped catalog from KIE's official docs while preserving IDs used by older workflows, and prepares credential handling for Registry review. It does not complete all 22 [roadmap commitments](ROADMAP.md). Paid provider workflows still require model-specific validation.
 
-- Latest package: [`ComfyUI-KIE-Nodes-Next-v0.6.0.zip`](dist/ComfyUI-KIE-Nodes-Next-v0.6.0.zip)
+- Latest package: [`ComfyUI-KIE-Nodes-Next-v0.6.1.zip`](dist/ComfyUI-KIE-Nodes-Next-v0.6.1.zip)
 - Release history: [`RELEASE_NOTES.md`](RELEASE_NOTES.md)
 
 ### Input checks and model controls
@@ -164,7 +164,7 @@ The full key is backend-only. It is not put into workflow JSON and is not left i
 
 Settings also include one-shot toggles to **test the saved key** or **remove the saved key**.
 
-`KIE_API_KEY` is still supported for servers/headless installs and takes priority over the locally saved key.
+For Registry-compatible credential handling, save your API key in **KIE Next → Settings**. The extension stores it in the ComfyUI user configuration directory; environment-variable key overrides are not supported.
 
 ## Complete KIE catalog coverage
 
@@ -255,11 +255,11 @@ Task status/wait and upload/download helpers remain under Utility.
 
 ### Windows installer
 
-There is no one-click installer for v0.6.0. Use the verified v0.6.0 ZIP or ComfyUI Manager once the matching Registry entry is available. Do not use an old v0.3 installer for this release.
+There is no one-click installer for v0.6.1. Use the v0.6.1 ZIP or ComfyUI Manager once the Registry lists an approved release. Do not use an old v0.3 installer for this release.
 
 ### Comfy Registry / Manager
 
-The project metadata and publishing workflow are prepared for Comfy Registry publication. Registry availability must be verified separately; the GitHub source and ZIP do not by themselves prove Manager availability.
+The package metadata and publishing workflow are configured for Comfy Registry submission. The GitHub Actions publish job runs when a version change reaches `main`; Registry approval and Manager availability must still be verified separately. Configure the API key under **KIE Next → Settings**; environment-variable configuration is intentionally unsupported.
 
 ### Manual fallback
 

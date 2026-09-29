@@ -15,7 +15,7 @@ from ..kie.settings import record_credit_usage, save_last_credits
 from ..kie.capabilities import check_operation, operation_capabilities, require_valid
 from ..kie.task_history import record_task
 
-KIE_GENERATED_BUILD = "0.6.0"
+KIE_GENERATED_BUILD = "0.6.1"
 
 from ..kie.media import (
     download_audio_object,
@@ -922,6 +922,7 @@ def _llm_input_types(op: dict[str, Any]) -> dict[str, dict[str, Any]]:
     endpoint = str(op.get("endpoint") or "").lower()
     summary = str(op.get("summary") or "").lower()
     is_claude = "claude" in family or endpoint.startswith("/claude/")
+    is_gemini_native = endpoint.startswith("/gemini/v1/models/")
     is_openai_reasoning = any(x in family for x in ("gpt", "codex", "grok")) or endpoint.startswith("/codex/")
     is_responses_api = endpoint.endswith("/v1/responses")
     mentions_images = "image" in summary or any("image" in str(k).lower() for k in (op.get("parameter_hints") or {}))
@@ -942,7 +943,7 @@ def _llm_input_types(op: dict[str, Any]) -> dict[str, dict[str, Any]]:
             optional["web_search"] = ("BOOLEAN", {"default": False, "tooltip": "Use KIE's web-search tool where this endpoint supports it."})
         if is_responses_api:
             optional["max_output_tokens"] = ("INT", {"default": 4096, "min": 1, "max": 131072, "step": 1})
-    elif mentions_images and not is_claude:
+    elif mentions_images and not is_claude and not is_gemini_native:
         optional["images"] = ("IMAGE",)
     if is_claude:
         optional["max_tokens"] = ("INT", {"default": 4096, "min": 1, "max": 131072, "step": 1})
@@ -1024,7 +1025,29 @@ def _execute_llm(op: dict[str, Any], model: str, kwargs: dict[str, Any]):
     image_urls = upload_image_batch(client, kwargs.get("images"), prefix="kie_llm") if kwargs.get("images") is not None else []
     family = str(op.get("family") or "").lower()
 
-    if "claude" in family or endpoint.startswith("/claude/"):
+    if endpoint.startswith("/gemini/v1/models/"):
+        # KIE exposes Gemini's native contents/parts schema, not OpenAI chat
+        # messages. Convert the common prompt/history UI into that contract.
+        contents = []
+        for item in history if isinstance(history, list) else []:
+            if not isinstance(item, dict):
+                continue
+            role = "model" if str(item.get("role") or "").lower() in {"assistant", "model"} else "user"
+            value = item.get("content", item.get("parts", ""))
+            if isinstance(value, str):
+                parts = [{"text": value}]
+            elif isinstance(value, list):
+                parts = value
+            else:
+                continue
+            contents.append({"role": role, "parts": parts})
+        contents.append({"role": "user", "parts": [{"text": prompt}]})
+        body = {"contents": contents, "stream": bool(kwargs.get("stream", True))}
+        if system_prompt:
+            body["systemInstruction"] = {"parts": [{"text": system_prompt}]}
+        if tools:
+            body["tools"] = tools
+    elif "claude" in family or endpoint.startswith("/claude/"):
         messages = list(history) if isinstance(history, list) else []
         # Keep simple text prompt first-class. Multimodal Claude payloads can still be supplied through history_json/expert_override_json.
         messages.append({"role": "user", "content": prompt})

@@ -1,3 +1,12 @@
+# v0.6.1 — KIE Model Refresh & Registry Readiness
+
+- Refreshes the bundled catalog from KIE's official English docs: 229 pages scanned, 247 operations, 174 unique models after merging, and no dropped legacy model IDs.
+- Adds Seedream 5 Flash text-to-image, image-to-image, and layer-decomposition nodes; Claude Opus 5.5; Gemini 3.8 Flash chat; and Gemini 3.8 Flash / Flash Lite speech generation.
+- Adds native Gemini chat request formatting, OpenAPI route parsing for provider paths containing colons, and Gemini-specific API-key authentication.
+- Removes environment-variable credential/config overrides in favor of ComfyUI's user settings directory and the KIE Next Settings UI, aligning secret handling with Registry review requirements.
+- Bumps package metadata to 0.6.1 and refreshes Registry submission documentation. Registry approval and Comfy Manager listing remain contingent on the Registry's live review result.
+- Verification: targeted catalog/settings/generated/client tests and package metadata checks passed; no paid generation was submitted.
+
 # v0.6.0 — Local Production Tools
 
 This release ships working local production tools from the 22-feature roadmap; it does not claim completion of every roadmap item. New planning, inspection, comparison and assembly nodes do not submit paid KIE tasks unless explicitly connected to and run with a generation node.

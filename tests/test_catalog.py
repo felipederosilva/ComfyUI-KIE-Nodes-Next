@@ -1,7 +1,6 @@
 import json
 import pathlib
 import unittest
-import os
 import tempfile
 from unittest.mock import patch
 
@@ -15,6 +14,17 @@ class TestCatalog(unittest.TestCase):
         self.assertEqual(
             _authoritative_models(entry, ["kling-2.6/text-to-video"]),
             ["kling-3.0-omni/text-to-video"],
+        )
+
+    def test_new_gemini_docs_have_distinct_authoritative_models(self):
+        from kie.catalog import _authoritative_models
+        self.assertEqual(
+            _authoritative_models({"url": "https://docs.kie.ai/market/google/gemini-3-8-flash-tts.md"}, []),
+            ["google/gemini-3-8-flash-tts"],
+        )
+        self.assertEqual(
+            _authoritative_models({"url": "https://docs.kie.ai/market/google/gemini-3-8-flash-lite-tts.md"}, []),
+            ["google/gemini-3-8-flash-lite-tts"],
         )
 
     def test_index_only_keeps_every_api_page_without_fetching_each_doc(self):
@@ -31,7 +41,7 @@ class TestCatalog(unittest.TestCase):
                 self.assert_url = url
                 return Response()
 
-        with tempfile.TemporaryDirectory() as tmp, patch.dict(os.environ, {"KIE_NODES_NEXT_CONFIG_DIR": tmp}, clear=False), patch("kie.catalog.requests.Session", return_value=Session()):
+        with tempfile.TemporaryDirectory() as tmp, patch("kie.catalog.settings_path", return_value=pathlib.Path(tmp) / "settings.json"), patch("kie.catalog.requests.Session", return_value=Session()):
             result = sync_catalog(index_only=True)
             catalog = json.loads(generated_catalog_path().read_text(encoding="utf-8"))
             self.assertTrue(result["ok"])
@@ -70,6 +80,10 @@ class TestCatalog(unittest.TestCase):
         self.assertEqual(
             _extract_endpoint("POST\n\nhttps://kieai.redpandaai.co/api/file-base64-upload\n"),
             ("POST", "https://kieai.redpandaai.co/api/file-base64-upload"),
+        )
+        self.assertEqual(
+            _extract_endpoint("openapi: 3.0.1\npaths:\n  /gemini/v1/models/gemini-3-8-flash:streamGenerateContent:\n    post:\n"),
+            ("POST", "/gemini/v1/models/gemini-3-8-flash:streamGenerateContent"),
         )
 
     def test_extract_models(self):

@@ -21,13 +21,12 @@ function statusText(status) {
     if (state === "connected") return `✅ CONNECTED${keyText}${creditsText}`;
     if (state === "invalid") return `❌ SAVED KEY REJECTED BY KIE${keyText}`;
     if (state === "unreachable") return `⚠️ KEY SAVED • KIE currently unreachable${keyText}`;
-    if (state === "environment") return `✅ CONNECTED through KIE_API_KEY${keyText}${creditsText}`;
     return `✅ KEY SAVED${keyText}${creditsText}`;
 }
 
 function savedKeyText(status) {
     if (!status?.configured) return "No saved key";
-    const where = status?.source === "environment" ? "Environment variable" : "Saved in ComfyUI backend";
+    const where = "Saved in ComfyUI backend";
     return `🔐 ${where} • ${status?.masked_key || "••••"}`;
 }
 

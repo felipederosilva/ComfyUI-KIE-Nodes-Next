@@ -64,7 +64,11 @@ class _FakeResponse:
 
 
 class _FakeSession:
+    def __init__(self):
+        self.last_kwargs = None
+
     def request(self, *args, **kwargs):
+        self.last_kwargs = kwargs
         return _FakeResponse()
 
 
@@ -75,4 +79,11 @@ class TestRawAPI(unittest.TestCase):
         payload = client.raw_api_request("POST", "/codex/v1/responses", body={"model": "gpt-5-6-sol"})
         self.assertEqual(payload["event_count"], 1)
         self.assertEqual(payload["stream_events"][0]["delta"], "Hello")
+
+    def test_native_gemini_uses_google_api_key_header(self):
+        from kie.client import KIEConfig
+        session = _FakeSession()
+        client = KIEClient(KIEConfig(api_key="secret", max_retries=0), session=session)
+        client.raw_api_request("POST", "/gemini/v1/models/gemini-3-8-flash:streamGenerateContent", body={"contents": []})
+        self.assertEqual(session.last_kwargs["headers"], {"X-Goog-Api-Key": "secret", "Content-Type": "application/json"})
 

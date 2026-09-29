@@ -12,10 +12,6 @@ _SETTINGS_FILENAME = "kie_nodes_next.json"
 
 
 def _user_config_dir() -> Path:
-    override = os.getenv("KIE_NODES_NEXT_CONFIG_DIR", "").strip()
-    if override:
-        return Path(override).expanduser().resolve()
-
     try:
         import folder_paths  # type: ignore
         getter = getattr(folder_paths, "get_user_directory", None)
@@ -25,9 +21,8 @@ def _user_config_dir() -> Path:
         pass
 
     if os.name == "nt":
-        root = Path(os.getenv("APPDATA") or Path.home() / "AppData" / "Roaming")
-        return root / "ComfyUI" / "KIE-Nodes-Next"
-    return Path(os.getenv("XDG_CONFIG_HOME") or Path.home() / ".config") / "comfyui" / "kie-nodes-next"
+        return Path.home() / "AppData" / "Roaming" / "ComfyUI" / "KIE-Nodes-Next"
+    return Path.home() / ".config" / "comfyui" / "kie-nodes-next"
 
 
 def settings_path() -> Path:
@@ -170,7 +165,7 @@ def clear_api_key() -> None:
 
 
 def get_api_key() -> str:
-    return (os.getenv("KIE_API_KEY", "") or str(load_settings().get("api_key") or "")).strip()
+    return str(load_settings().get("api_key") or "").strip()
 
 
 def mask_api_key(key: str) -> str:
@@ -183,12 +178,9 @@ def mask_api_key(key: str) -> str:
 
 def public_status() -> dict[str, Any]:
     settings = load_settings()
-    env_key = os.getenv("KIE_API_KEY", "").strip()
-    key = env_key or str(settings.get("api_key") or "").strip()
-    source = "environment" if env_key else ("saved" if settings.get("api_key") else "none")
+    key = str(settings.get("api_key") or "").strip()
+    source = "saved" if key else "none"
     state = str(settings.get("key_validation_state") or ("configured" if key else "not_configured"))
-    if env_key:
-        state = "environment"
     return {
         "configured": bool(key),
         "source": source,

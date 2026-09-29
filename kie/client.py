@@ -5,6 +5,7 @@ import os
 import time
 from dataclasses import dataclass
 from typing import Any, Iterable
+from urllib.parse import urlsplit
 
 import requests
 
@@ -89,7 +90,12 @@ class KIEClient:
         retry: bool = True,
         **kwargs: Any,
     ) -> requests.Response:
-        headers = dict(self.headers)
+        if urlsplit(url).path.startswith("/gemini/v1/models/"):
+            # KIE's native Gemini endpoint authenticates through Google's key
+            # header rather than the standard KIE Bearer header.
+            headers = {"X-Goog-Api-Key": self.config.api_key}
+        else:
+            headers = dict(self.headers)
         headers.update(kwargs.pop("headers", {}) or {})
         attempts = self.config.max_retries + 1 if retry else 1
         last_error: Exception | None = None
