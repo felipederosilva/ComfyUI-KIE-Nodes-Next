@@ -1,6 +1,6 @@
-import os
 import tempfile
 import unittest
+from pathlib import Path
 from unittest.mock import patch
 
 from kie.client import KIEConfig
@@ -9,20 +9,21 @@ from kie.settings import clear_api_key, credit_usage_status, get_api_key, public
 
 class TestSettings(unittest.TestCase):
     def test_saved_key_is_reused(self):
-        with tempfile.TemporaryDirectory() as tmp, patch.dict(os.environ, {"KIE_NODES_NEXT_CONFIG_DIR": tmp, "KIE_API_KEY": ""}, clear=False):
+        with tempfile.TemporaryDirectory() as tmp, patch("kie.settings._user_config_dir", return_value=Path(tmp)):
             save_api_key("kie-test-once")
             self.assertEqual(get_api_key(), "kie-test-once")
             self.assertEqual(KIEConfig.from_values().api_key, "kie-test-once")
             clear_api_key()
             self.assertEqual(get_api_key(), "")
 
-    def test_environment_has_priority(self):
-        with tempfile.TemporaryDirectory() as tmp, patch.dict(os.environ, {"KIE_NODES_NEXT_CONFIG_DIR": tmp, "KIE_API_KEY": "env-key"}, clear=False):
+    def test_api_key_is_read_from_comfy_settings(self):
+        with tempfile.TemporaryDirectory() as tmp, patch("kie.settings._user_config_dir", return_value=Path(tmp)):
             save_api_key("saved-key")
-            self.assertEqual(get_api_key(), "env-key")
+            self.assertEqual(get_api_key(), "saved-key")
+            self.assertEqual(public_status()["source"], "saved")
 
     def test_public_status_masks_saved_secret(self):
-        with tempfile.TemporaryDirectory() as tmp, patch.dict(os.environ, {"KIE_NODES_NEXT_CONFIG_DIR": tmp, "KIE_API_KEY": ""}, clear=False):
+        with tempfile.TemporaryDirectory() as tmp, patch("kie.settings._user_config_dir", return_value=Path(tmp)):
             secret = "kie-super-secret-ABCD"
             save_api_key(secret, credits=123.0, validation_state="connected")
             status = public_status()
@@ -32,14 +33,14 @@ class TestSettings(unittest.TestCase):
             self.assertNotIn(secret, str(status))
 
     def test_credit_usage_is_accumulated_and_balance_is_persisted(self):
-        with tempfile.TemporaryDirectory() as tmp, patch.dict(os.environ, {"KIE_NODES_NEXT_CONFIG_DIR": tmp, "KIE_API_KEY": ""}, clear=False):
+        with tempfile.TemporaryDirectory() as tmp, patch("kie.settings._user_config_dir", return_value=Path(tmp)):
             record_credit_usage(12.5, 87.5)
             summary = record_credit_usage(2.5, 85.0)
             self.assertEqual(summary["tracked_credits_spent"], 15.0)
             self.assertEqual(credit_usage_status()["last_credits"], 85.0)
 
     def test_credit_usage_deduplicates_a_completed_task(self):
-        with tempfile.TemporaryDirectory() as tmp, patch.dict(os.environ, {"KIE_NODES_NEXT_CONFIG_DIR": tmp, "KIE_API_KEY": ""}, clear=False):
+        with tempfile.TemporaryDirectory() as tmp, patch("kie.settings._user_config_dir", return_value=__import__("pathlib").Path(tmp)):
             record_credit_usage(8, 92, receipt_id="task-123")
             summary = record_credit_usage(8, 92, receipt_id="task-123")
             self.assertEqual(summary["tracked_credits_spent"], 8.0)

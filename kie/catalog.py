@@ -327,7 +327,7 @@ def _extract_endpoint(text: str) -> tuple[str, str]:
     # The current Apidog pages embed the page's OpenAPI specification in the
     # HTML. Once converted to plain text it appears as YAML under `paths:`.
     openapi = re.search(
-        r"(?is)\bpaths:\s*(/[^:\s]+):\s*(get|post|put|patch|delete):",
+        r"(?im)^\s{2}(/[^\r\n]+):\s*\r?\n\s{4}(get|post|put|patch|delete):",
         text,
     )
     if openapi:
@@ -401,6 +401,9 @@ def _authoritative_models(entry: dict[str, str], extracted: list[str]) -> list[s
     """
     url = str(entry.get("url") or "").lower()
     overrides = {
+        "gemini-3-8-flash-lite-tts": "google/gemini-3-8-flash-lite-tts",
+        "gemini-3-8-flash-tts": "google/gemini-3-8-flash-tts",
+        "market/gemini/gemini-3-8-flash.md": "gemini-3-8-flash",
         "v3-omni-text-to-video": "kling-3.0-omni/text-to-video",
         "v3-omni-image-to-video": "kling-3.0-omni/image-to-video",
         "v3-omni-reference-to-video": "kling-3.0-omni/reference-to-video",

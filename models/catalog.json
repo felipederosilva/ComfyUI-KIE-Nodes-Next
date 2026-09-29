@@ -1,10 +1,10 @@
 {
   "schema_version": 3,
-  "generated_at": 1790286415,
+  "generated_at": 1790695629,
   "source": "https://docs.kie.ai/llms.txt",
   "deep_sync_complete": true,
-  "documents_indexed": 223,
-  "documents_scanned": 223,
+  "documents_indexed": 229,
+  "documents_scanned": 229,
   "documents_failed": 0,
   "models": [
     {
@@ -62,13 +62,13 @@
       "transport": "direct"
     },
     {
-      "name": "Claude Opus 5",
-      "model": "claude-opus-5",
+      "name": "Claude Opus 5.5",
+      "model": "claude-opus-5-5",
       "family": "Chat Models > Claude",
-      "transport": "direct",
-      "docs_url": "https://docs.kie.ai/market/claude/claude-opus-5.md",
+      "docs_url": "https://docs.kie.ai/market/claude/claude-opus-5-5.md",
       "method": "POST",
-      "endpoint": "/claude/v1/messages"
+      "endpoint": "/claude/v1/messages",
+      "transport": "direct"
     },
     {
       "name": "Claude Sonnet 4.5",
@@ -113,6 +113,15 @@
       "docs_url": "https://docs.kie.ai/market/chat/gpt-5-2.md",
       "method": "POST",
       "endpoint": "/gpt-5-2/v1/chat/completions",
+      "transport": "direct"
+    },
+    {
+      "name": "Gemini 3.8 Flash",
+      "model": "gemini-3-8-flash",
+      "family": "Chat Models > Gemini",
+      "docs_url": "https://docs.kie.ai/market/gemini/gemini-3-8-flash.md",
+      "method": "POST",
+      "endpoint": "/gemini/v1/models/gemini-3-8-flash:streamGenerateContent",
       "transport": "direct"
     },
     {
@@ -494,15 +503,6 @@
       "transport": "market_task"
     },
     {
-      "name": "Seedream 5.0 Pro -  Layer Decomposition",
-      "model": "seedream/5-pro-layer-decomposition",
-      "family": "Image Models > Seedream",
-      "docs_url": "https://docs.kie.ai/market/seedream/5-pro-layer-decomposition.md",
-      "method": "POST",
-      "endpoint": "/api/v1/jobs/createTask",
-      "transport": "market_task"
-    },
-    {
       "name": "Seedream3.0 - Text to Image",
       "model": "bytedance/seedream",
       "family": "Image Models > Seedream",
@@ -548,6 +548,33 @@
       "transport": "market_task"
     },
     {
+      "name": "Seedream5.0 Flash -  Layer Decomposition",
+      "model": "seedream/5-flash-layer-decomposition",
+      "family": "Image Models > Seedream",
+      "docs_url": "https://docs.kie.ai/market/seedream/5-flash-layer-decomposition.md",
+      "method": "POST",
+      "endpoint": "/api/v1/jobs/createTask",
+      "transport": "market_task"
+    },
+    {
+      "name": "Seedream5.0 Flash - Image to Image",
+      "model": "seedream/5-flash-image-to-image",
+      "family": "Image Models > Seedream",
+      "docs_url": "https://docs.kie.ai/market/seedream/5-flash-image-to-image.md",
+      "method": "POST",
+      "endpoint": "/api/v1/jobs/createTask",
+      "transport": "market_task"
+    },
+    {
+      "name": "Seedream5.0 Flash - Text to Image",
+      "model": "seedream/5-flash-text-to-image",
+      "family": "Image Models > Seedream",
+      "docs_url": "https://docs.kie.ai/market/seedream/5-flash-text-to-image.md",
+      "method": "POST",
+      "endpoint": "/api/v1/jobs/createTask",
+      "transport": "market_task"
+    },
+    {
       "name": "Seedream5.0 Lite - Image to Image",
       "model": "seedream/5-lite-image-to-image",
       "family": "Image Models > Seedream",
@@ -561,6 +588,15 @@
       "model": "seedream/5-lite-text-to-image",
       "family": "Image Models > Seedream",
       "docs_url": "https://docs.kie.ai/market/seedream/5-lite-text-to-image.md",
+      "method": "POST",
+      "endpoint": "/api/v1/jobs/createTask",
+      "transport": "market_task"
+    },
+    {
+      "name": "Seedream5.0 Pro -  Layer Decomposition",
+      "model": "seedream/5-pro-layer-decomposition",
+      "family": "Image Models > Seedream",
+      "docs_url": "https://docs.kie.ai/market/seedream/5-pro-layer-decomposition.md",
       "method": "POST",
       "endpoint": "/api/v1/jobs/createTask",
       "transport": "market_task"
@@ -629,6 +665,15 @@
       "transport": "direct"
     },
     {
+      "name": "Claude Opus 5",
+      "model": "claude-opus-5",
+      "family": "LLM / Claude / Opus",
+      "transport": "direct",
+      "docs_url": "https://docs.kie.ai/market/claude/claude-opus-5.md",
+      "method": "POST",
+      "endpoint": "/claude/v1/messages"
+    },
+    {
       "name": "GPT 5.6 Sol",
       "model": "gpt-5-6-sol",
       "family": "LLM / OpenAI / GPT",
@@ -684,6 +729,24 @@
       "model": "google/gemini-3-1-flash-tts",
       "family": "Music Models > Gemini",
       "docs_url": "https://docs.kie.ai/market/google/gemini-3-1-flash-tts.md",
+      "method": "POST",
+      "endpoint": "/api/v1/jobs/createTask",
+      "transport": "market_task"
+    },
+    {
+      "name": "Gemini 3.8 Flash Lite Text to speech",
+      "model": "google/gemini-3-8-flash-lite-tts",
+      "family": "Music Models > Gemini",
+      "docs_url": "https://docs.kie.ai/market/google/gemini-3-8-flash-lite-tts.md",
+      "method": "POST",
+      "endpoint": "/api/v1/jobs/createTask",
+      "transport": "market_task"
+    },
+    {
+      "name": "Gemini 3.8 Flash Text to speech",
+      "model": "google/gemini-3-8-flash-tts",
+      "family": "Music Models > Gemini",
+      "docs_url": "https://docs.kie.ai/market/google/gemini-3-8-flash-tts.md",
       "method": "POST",
       "endpoint": "/api/v1/jobs/createTask",
       "transport": "market_task"
@@ -2057,6 +2120,7 @@
           "type": "array",
           "required": true,
           "description": "Conversation messages in chronological order.",
+          "minItems": 1,
           "items": {
             "type": "object",
             "properties": {
@@ -2256,6 +2320,7 @@
           "type": "array",
           "required": true,
           "description": "Conversation messages in chronological order.",
+          "minItems": 1,
           "items": {
             "type": "object",
             "properties": {
@@ -2455,6 +2520,7 @@
           "type": "array",
           "required": true,
           "description": "Conversation messages in chronological order.",
+          "minItems": 1,
           "items": {
             "type": "object",
             "properties": {
@@ -2800,6 +2866,206 @@
         }
       },
       "summary": "Claude Opus 5 OpenAPI Specification"
+    },
+    {
+      "label": "Chat Models > Claude • Claude Opus 5.5",
+      "title": "Claude Opus 5.5",
+      "family": "Chat Models > Claude",
+      "method": "POST",
+      "endpoint": "/claude/v1/messages",
+      "docs_url": "https://docs.kie.ai/market/claude/claude-opus-5-5.md",
+      "resolved": true,
+      "example_body": {
+        "model": "claude-opus-5-5",
+        "messages": [
+          {
+            "role": "user",
+            "content": "What is the weather like in Boston today?"
+          }
+        ],
+        "tools": [
+          {
+            "name": "get_current_weather",
+            "description": "Get the current weather in a given location",
+            "input_schema": {
+              "type": "object",
+              "properties": {
+                "location": {
+                  "type": "string",
+                  "description": "The city and state, e.g. Boston, MA"
+                }
+              },
+              "required": [
+                "location"
+              ]
+            }
+          }
+        ],
+        "thinkingFlag": true,
+        "stream": false,
+        "max_tokens": 4096
+      },
+      "parameter_hints": {
+        "model": {
+          "type": "string",
+          "required": true,
+          "description": "Model name. It must match the current document.",
+          "enum": [
+            "claude-opus-5-5"
+          ],
+          "default": "claude-opus-5-5"
+        },
+        "messages": {
+          "type": "array",
+          "required": true,
+          "description": "Conversation messages in chronological order.",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "properties": {
+              "role": {
+                "type": "string",
+                "enum": [
+                  "user",
+                  "assistant"
+                ],
+                "description": "Message role.",
+                "examples": [
+                  "user"
+                ]
+              },
+              "content": {
+                "oneOf": [
+                  {
+                    "type": "string",
+                    "description": "Plain text content."
+                  },
+                  {
+                    "type": "array",
+                    "description": "Structured content blocks.",
+                    "items": {
+                      "type": "object",
+                      "additionalProperties": true,
+                      "x-apidog-orders": []
+                    }
+                  }
+                ],
+                "description": "Message content.",
+                "examples": [
+                  "What is the weather like in Boston today?"
+                ]
+              }
+            },
+            "required": [
+              "role",
+              "content"
+            ],
+            "x-apidog-orders": [
+              "role",
+              "content"
+            ]
+          }
+        },
+        "tools": {
+          "type": "array",
+          "required": false,
+          "description": "Optional callable tools. Each tool includes a name, description, and input_schema.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string",
+                "description": "Function name.",
+                "examples": [
+                  "get_current_weather"
+                ]
+              },
+              "description": {
+                "type": "string",
+                "description": "Human-readable function description.",
+                "examples": [
+                  "Get the current weather in a given location"
+                ]
+              },
+              "input_schema": {
+                "type": "object",
+                "description": "JSON Schema for function parameters.",
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "description": "Schema type.",
+                    "examples": [
+                      "object"
+                    ]
+                  },
+                  "properties": {
+                    "type": "object",
+                    "description": "Function parameter definitions.",
+                    "additionalProperties": true,
+                    "x-apidog-orders": [],
+                    "properties": {}
+                  },
+                  "required": {
+                    "type": "array",
+                    "description": "Required parameter names.",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "x-apidog-orders": [
+                  "type",
+                  "properties",
+                  "required"
+                ],
+                "examples": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "location": {
+                        "type": "string",
+                        "description": "The city and state, e.g. Boston, MA"
+                      }
+                    },
+                    "required": [
+                      "location"
+                    ]
+                  }
+                ]
+              }
+            },
+            "required": [
+              "name",
+              "description",
+              "input_schema"
+            ],
+            "x-apidog-orders": [
+              "name",
+              "description",
+              "input_schema"
+            ]
+          }
+        },
+        "thinkingFlag": {
+          "type": "boolean",
+          "required": false,
+          "description": "Project-specific thinking flag used by the current Claude adapter.",
+          "default": true
+        },
+        "stream": {
+          "type": "boolean",
+          "required": false,
+          "description": "If set to true, the response is returned as an SSE stream.",
+          "default": true
+        },
+        "max_tokens": {
+          "type": "number",
+          "required": false,
+          "description": "Optional Claude output token limit. Leave empty to use the default of 4096.",
+          "default": 4096
+        }
+      },
+      "summary": "Claude Opus 5.5 OpenAPI Specification"
     },
     {
       "label": "Chat Models > Claude • Claude Sonnet 4.5",
@@ -3272,6 +3538,7 @@
           "type": "array",
           "required": true,
           "description": "Conversation messages in chronological order.",
+          "minItems": 1,
           "items": {
             "type": "object",
             "properties": {
@@ -3601,10 +3868,308 @@
       "label": "Chat Models > Gemini • Gemini 3.5 Flash",
       "title": "Gemini 3.5 Flash",
       "family": "Chat Models > Gemini",
-      "method": "",
-      "endpoint": "",
+      "method": "POST",
+      "endpoint": "/gemini/v1/models/gemini-3-5-flash:streamGenerateContent",
       "docs_url": "https://docs.kie.ai/market/gemini/gemini-3-5-flash.md",
-      "resolved": false,
+      "resolved": true,
+      "example_body": {
+        "stream": true,
+        "contents": [
+          {
+            "role": "user",
+            "parts": [
+              {
+                "text": "What is the weather in Beijing today?"
+              }
+            ]
+          }
+        ],
+        "tools": [
+          {
+            "functionDeclarations": [
+              {
+                "name": "get_weather_forecast",
+                "description": "Get the weather forecast for a given location",
+                "parameters": {
+                  "type": "OBJECT",
+                  "properties": {
+                    "location": {
+                      "type": "STRING",
+                      "description": "The city name, e.g. Beijing"
+                    }
+                  },
+                  "required": [
+                    "location"
+                  ]
+                }
+              }
+            ]
+          }
+        ],
+        "generationConfig": {
+          "thinkingConfig": {
+            "includeThoughts": true,
+            "thinkingLevel": "high"
+          }
+        }
+      },
+      "path_params": [
+        "streamGenerateContent"
+      ],
+      "parameter_hints": {
+        "contents": {
+          "type": "array",
+          "required": true,
+          "description": "Conversation input for Gemini.",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "properties": {
+              "role": {
+                "type": "string",
+                "enum": [
+                  "user",
+                  "model"
+                ],
+                "description": "Content role.",
+                "examples": [
+                  "user"
+                ]
+              },
+              "parts": {
+                "type": "array",
+                "description": "Content parts. Use text, inline_data, or provider-specific blocks.",
+                "items": {
+                  "oneOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "text": {
+                          "type": "string",
+                          "description": "Plain text input.",
+                          "examples": [
+                            "What is the weather in Beijing today?"
+                          ]
+                        }
+                      },
+                      "x-apidog-orders": [
+                        "text"
+                      ]
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "inline_data": {
+                          "type": "object",
+                          "description": "Inline binary payload.",
+                          "properties": {
+                            "mime_type": {
+                              "type": "string",
+                              "examples": [
+                                "image/jpeg"
+                              ]
+                            },
+                            "data": {
+                              "type": "string",
+                              "description": "Base64 content."
+                            }
+                          },
+                          "x-apidog-orders": [
+                            "mime_type",
+                            "data"
+                          ]
+                        }
+                      },
+                      "x-apidog-orders": [
+                        "inline_data"
+                      ]
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "file_data": {
+                          "type": "object",
+                          "properties": {
+                            "mime_type": {
+                              "type": "string",
+                              "description": "file mime type"
+                            },
+                            "file_uri": {
+                              "type": "string"
+                            }
+                          },
+                          "x-apidog-orders": [
+                            "mime_type",
+                            "file_uri"
+                          ]
+                        }
+                      },
+                      "x-apidog-orders": [
+                        "file_data"
+                      ]
+                    }
+                  ]
+                }
+              }
+            },
+            "required": [
+              "role",
+              "parts"
+            ],
+            "x-apidog-orders": [
+              "role",
+              "parts"
+            ]
+          }
+        },
+        "tools": {
+          "type": "array",
+          "required": false,
+          "description": "Optional Gemini tools. Supports googleSearch and functionDeclarations.",
+          "items": {
+            "oneOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "googleSearch": {
+                    "type": "object",
+                    "description": "Google Search grounding tool.",
+                    "additionalProperties": false,
+                    "x-apidog-orders": []
+                  }
+                },
+                "x-apidog-orders": [
+                  "googleSearch"
+                ]
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "functionDeclarations": {
+                    "type": "array",
+                    "description": "Function declaration list.",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "name": {
+                          "type": "string",
+                          "description": "Function name.",
+                          "examples": [
+                            "get_weather_forecast"
+                          ]
+                        },
+                        "description": {
+                          "type": "string",
+                          "description": "Function description.",
+                          "examples": [
+                            "Get the weather forecast for a given location"
+                          ]
+                        },
+                        "parameters": {
+                          "type": "object",
+                          "description": "Function parameter schema.",
+                          "properties": {
+                            "type": {
+                              "type": "string",
+                              "examples": [
+                                "OBJECT"
+                              ]
+                            },
+                            "properties": {
+                              "type": "object",
+                              "additionalProperties": true,
+                              "x-apidog-orders": []
+                            },
+                            "required": {
+                              "type": "array",
+                              "items": {
+                                "type": "string"
+                              }
+                            }
+                          },
+                          "x-apidog-orders": [
+                            "type",
+                            "properties",
+                            "required"
+                          ],
+                          "examples": [
+                            {
+                              "type": "OBJECT",
+                              "properties": {
+                                "location": {
+                                  "type": "STRING",
+                                  "description": "The city name, e.g. Beijing"
+                                }
+                              },
+                              "required": [
+                                "location"
+                              ]
+                            }
+                          ]
+                        }
+                      },
+                      "required": [
+                        "name",
+                        "description",
+                        "parameters"
+                      ],
+                      "x-apidog-orders": [
+                        "name",
+                        "description",
+                        "parameters"
+                      ]
+                    }
+                  }
+                },
+                "x-apidog-orders": [
+                  "functionDeclarations"
+                ]
+              }
+            ]
+          }
+        },
+        "generationConfig": {
+          "type": "object",
+          "required": false,
+          "description": "Generation configuration.",
+          "properties": {
+            "thinkingConfig": {
+              "type": "object",
+              "description": "Thinking configuration.",
+              "properties": {
+                "includeThoughts": {
+                  "type": "boolean",
+                  "description": "Whether to include thought output.",
+                  "examples": [
+                    true
+                  ]
+                },
+                "thinkingLevel": {
+                  "type": "string",
+                  "enum": [
+                    "low",
+                    "high"
+                  ],
+                  "description": "Thinking level.",
+                  "examples": [
+                    "high"
+                  ]
+                }
+              },
+              "x-apidog-orders": [
+                "includeThoughts",
+                "thinkingLevel"
+              ]
+            }
+          }
+        },
+        "stream": {
+          "type": "boolean",
+          "required": false,
+          "description": "If set to true, the provider returns stream chunks.",
+          "default": true
+        }
+      },
       "summary": "Gemini 3.5 Flash OpenAPI Specification"
     },
     {
@@ -3621,10 +4186,308 @@
       "label": "Chat Models > Gemini • Gemini 3.6 Flash",
       "title": "Gemini 3.6 Flash",
       "family": "Chat Models > Gemini",
-      "method": "",
-      "endpoint": "",
+      "method": "POST",
+      "endpoint": "/gemini/v1/models/gemini-3-6-flash:streamGenerateContent",
       "docs_url": "https://docs.kie.ai/market/gemini/gemini-3-6-flash.md",
-      "resolved": false,
+      "resolved": true,
+      "example_body": {
+        "stream": true,
+        "contents": [
+          {
+            "role": "user",
+            "parts": [
+              {
+                "text": "What is the weather in Beijing today?"
+              }
+            ]
+          }
+        ],
+        "tools": [
+          {
+            "functionDeclarations": [
+              {
+                "name": "get_weather_forecast",
+                "description": "Get the weather forecast for a given location",
+                "parameters": {
+                  "type": "OBJECT",
+                  "properties": {
+                    "location": {
+                      "type": "STRING",
+                      "description": "The city name, e.g. Beijing"
+                    }
+                  },
+                  "required": [
+                    "location"
+                  ]
+                }
+              }
+            ]
+          }
+        ],
+        "generationConfig": {
+          "thinkingConfig": {
+            "includeThoughts": true,
+            "thinkingLevel": "high"
+          }
+        }
+      },
+      "path_params": [
+        "streamGenerateContent"
+      ],
+      "parameter_hints": {
+        "contents": {
+          "type": "array",
+          "required": true,
+          "description": "Conversation input for Gemini.",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "properties": {
+              "role": {
+                "type": "string",
+                "enum": [
+                  "user",
+                  "model"
+                ],
+                "description": "Content role.",
+                "examples": [
+                  "user"
+                ]
+              },
+              "parts": {
+                "type": "array",
+                "description": "Content parts. Use text, inline_data, or provider-specific blocks.",
+                "items": {
+                  "oneOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "text": {
+                          "type": "string",
+                          "description": "Plain text input.",
+                          "examples": [
+                            "What is the weather in Beijing today?"
+                          ]
+                        }
+                      },
+                      "x-apidog-orders": [
+                        "text"
+                      ]
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "inline_data": {
+                          "type": "object",
+                          "description": "Inline binary payload.",
+                          "properties": {
+                            "mime_type": {
+                              "type": "string",
+                              "examples": [
+                                "image/jpeg"
+                              ]
+                            },
+                            "data": {
+                              "type": "string",
+                              "description": "Base64 content."
+                            }
+                          },
+                          "x-apidog-orders": [
+                            "mime_type",
+                            "data"
+                          ]
+                        }
+                      },
+                      "x-apidog-orders": [
+                        "inline_data"
+                      ]
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "file_data": {
+                          "type": "object",
+                          "properties": {
+                            "mime_type": {
+                              "type": "string",
+                              "description": "file mime type"
+                            },
+                            "file_uri": {
+                              "type": "string"
+                            }
+                          },
+                          "x-apidog-orders": [
+                            "mime_type",
+                            "file_uri"
+                          ]
+                        }
+                      },
+                      "x-apidog-orders": [
+                        "file_data"
+                      ]
+                    }
+                  ]
+                }
+              }
+            },
+            "required": [
+              "role",
+              "parts"
+            ],
+            "x-apidog-orders": [
+              "role",
+              "parts"
+            ]
+          }
+        },
+        "tools": {
+          "type": "array",
+          "required": false,
+          "description": "Optional Gemini tools. Supports googleSearch and functionDeclarations.",
+          "items": {
+            "oneOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "googleSearch": {
+                    "type": "object",
+                    "description": "Google Search grounding tool.",
+                    "additionalProperties": false,
+                    "x-apidog-orders": []
+                  }
+                },
+                "x-apidog-orders": [
+                  "googleSearch"
+                ]
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "functionDeclarations": {
+                    "type": "array",
+                    "description": "Function declaration list.",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "name": {
+                          "type": "string",
+                          "description": "Function name.",
+                          "examples": [
+                            "get_weather_forecast"
+                          ]
+                        },
+                        "description": {
+                          "type": "string",
+                          "description": "Function description.",
+                          "examples": [
+                            "Get the weather forecast for a given location"
+                          ]
+                        },
+                        "parameters": {
+                          "type": "object",
+                          "description": "Function parameter schema.",
+                          "properties": {
+                            "type": {
+                              "type": "string",
+                              "examples": [
+                                "OBJECT"
+                              ]
+                            },
+                            "properties": {
+                              "type": "object",
+                              "additionalProperties": true,
+                              "x-apidog-orders": []
+                            },
+                            "required": {
+                              "type": "array",
+                              "items": {
+                                "type": "string"
+                              }
+                            }
+                          },
+                          "x-apidog-orders": [
+                            "type",
+                            "properties",
+                            "required"
+                          ],
+                          "examples": [
+                            {
+                              "type": "OBJECT",
+                              "properties": {
+                                "location": {
+                                  "type": "STRING",
+                                  "description": "The city name, e.g. Beijing"
+                                }
+                              },
+                              "required": [
+                                "location"
+                              ]
+                            }
+                          ]
+                        }
+                      },
+                      "required": [
+                        "name",
+                        "description",
+                        "parameters"
+                      ],
+                      "x-apidog-orders": [
+                        "name",
+                        "description",
+                        "parameters"
+                      ]
+                    }
+                  }
+                },
+                "x-apidog-orders": [
+                  "functionDeclarations"
+                ]
+              }
+            ]
+          }
+        },
+        "generationConfig": {
+          "type": "object",
+          "required": false,
+          "description": "Generation configuration.",
+          "properties": {
+            "thinkingConfig": {
+              "type": "object",
+              "description": "Thinking configuration.",
+              "properties": {
+                "includeThoughts": {
+                  "type": "boolean",
+                  "description": "Whether to include thought output.",
+                  "examples": [
+                    true
+                  ]
+                },
+                "thinkingLevel": {
+                  "type": "string",
+                  "enum": [
+                    "low",
+                    "high"
+                  ],
+                  "description": "Thinking level.",
+                  "examples": [
+                    "high"
+                  ]
+                }
+              },
+              "x-apidog-orders": [
+                "includeThoughts",
+                "thinkingLevel"
+              ]
+            }
+          }
+        },
+        "stream": {
+          "type": "boolean",
+          "required": false,
+          "description": "If set to true, the provider returns stream chunks.",
+          "default": true
+        }
+      },
       "summary": "Gemini 3.6 Flash OpenAPI Specification"
     },
     {
@@ -3641,10 +4504,308 @@
       "label": "Chat Models > Gemini • Gemini 3.7 Flash",
       "title": "Gemini 3.7 Flash",
       "family": "Chat Models > Gemini",
-      "method": "",
-      "endpoint": "",
+      "method": "POST",
+      "endpoint": "/gemini/v1/models/gemini-3-7-flash:streamGenerateContent",
       "docs_url": "https://docs.kie.ai/market/gemini/gemini-3-7-flash.md",
-      "resolved": false,
+      "resolved": true,
+      "example_body": {
+        "stream": true,
+        "contents": [
+          {
+            "role": "user",
+            "parts": [
+              {
+                "text": "What is the weather in Beijing today?"
+              }
+            ]
+          }
+        ],
+        "tools": [
+          {
+            "functionDeclarations": [
+              {
+                "name": "get_weather_forecast",
+                "description": "Get the weather forecast for a given location",
+                "parameters": {
+                  "type": "OBJECT",
+                  "properties": {
+                    "location": {
+                      "type": "STRING",
+                      "description": "The city name, e.g. Beijing"
+                    }
+                  },
+                  "required": [
+                    "location"
+                  ]
+                }
+              }
+            ]
+          }
+        ],
+        "generationConfig": {
+          "thinkingConfig": {
+            "includeThoughts": true,
+            "thinkingLevel": "high"
+          }
+        }
+      },
+      "path_params": [
+        "streamGenerateContent"
+      ],
+      "parameter_hints": {
+        "contents": {
+          "type": "array",
+          "required": true,
+          "description": "Conversation input for Gemini.",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "properties": {
+              "role": {
+                "type": "string",
+                "enum": [
+                  "user",
+                  "model"
+                ],
+                "description": "Content role.",
+                "examples": [
+                  "user"
+                ]
+              },
+              "parts": {
+                "type": "array",
+                "description": "Content parts. Use text, inline_data, or provider-specific blocks.",
+                "items": {
+                  "oneOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "text": {
+                          "type": "string",
+                          "description": "Plain text input.",
+                          "examples": [
+                            "What is the weather in Beijing today?"
+                          ]
+                        }
+                      },
+                      "x-apidog-orders": [
+                        "text"
+                      ]
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "inline_data": {
+                          "type": "object",
+                          "description": "Inline binary payload.",
+                          "properties": {
+                            "mime_type": {
+                              "type": "string",
+                              "examples": [
+                                "image/jpeg"
+                              ]
+                            },
+                            "data": {
+                              "type": "string",
+                              "description": "Base64 content."
+                            }
+                          },
+                          "x-apidog-orders": [
+                            "mime_type",
+                            "data"
+                          ]
+                        }
+                      },
+                      "x-apidog-orders": [
+                        "inline_data"
+                      ]
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "file_data": {
+                          "type": "object",
+                          "properties": {
+                            "mime_type": {
+                              "type": "string",
+                              "description": "file mime type"
+                            },
+                            "file_uri": {
+                              "type": "string"
+                            }
+                          },
+                          "x-apidog-orders": [
+                            "mime_type",
+                            "file_uri"
+                          ]
+                        }
+                      },
+                      "x-apidog-orders": [
+                        "file_data"
+                      ]
+                    }
+                  ]
+                }
+              }
+            },
+            "required": [
+              "role",
+              "parts"
+            ],
+            "x-apidog-orders": [
+              "role",
+              "parts"
+            ]
+          }
+        },
+        "tools": {
+          "type": "array",
+          "required": false,
+          "description": "Optional Gemini tools. Supports googleSearch and functionDeclarations.",
+          "items": {
+            "oneOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "googleSearch": {
+                    "type": "object",
+                    "description": "Google Search grounding tool.",
+                    "additionalProperties": false,
+                    "x-apidog-orders": []
+                  }
+                },
+                "x-apidog-orders": [
+                  "googleSearch"
+                ]
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "functionDeclarations": {
+                    "type": "array",
+                    "description": "Function declaration list.",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "name": {
+                          "type": "string",
+                          "description": "Function name.",
+                          "examples": [
+                            "get_weather_forecast"
+                          ]
+                        },
+                        "description": {
+                          "type": "string",
+                          "description": "Function description.",
+                          "examples": [
+                            "Get the weather forecast for a given location"
+                          ]
+                        },
+                        "parameters": {
+                          "type": "object",
+                          "description": "Function parameter schema.",
+                          "properties": {
+                            "type": {
+                              "type": "string",
+                              "examples": [
+                                "OBJECT"
+                              ]
+                            },
+                            "properties": {
+                              "type": "object",
+                              "additionalProperties": true,
+                              "x-apidog-orders": []
+                            },
+                            "required": {
+                              "type": "array",
+                              "items": {
+                                "type": "string"
+                              }
+                            }
+                          },
+                          "x-apidog-orders": [
+                            "type",
+                            "properties",
+                            "required"
+                          ],
+                          "examples": [
+                            {
+                              "type": "OBJECT",
+                              "properties": {
+                                "location": {
+                                  "type": "STRING",
+                                  "description": "The city name, e.g. Beijing"
+                                }
+                              },
+                              "required": [
+                                "location"
+                              ]
+                            }
+                          ]
+                        }
+                      },
+                      "required": [
+                        "name",
+                        "description",
+                        "parameters"
+                      ],
+                      "x-apidog-orders": [
+                        "name",
+                        "description",
+                        "parameters"
+                      ]
+                    }
+                  }
+                },
+                "x-apidog-orders": [
+                  "functionDeclarations"
+                ]
+              }
+            ]
+          }
+        },
+        "generationConfig": {
+          "type": "object",
+          "required": false,
+          "description": "Generation configuration.",
+          "properties": {
+            "thinkingConfig": {
+              "type": "object",
+              "description": "Thinking configuration.",
+              "properties": {
+                "includeThoughts": {
+                  "type": "boolean",
+                  "description": "Whether to include thought output.",
+                  "examples": [
+                    true
+                  ]
+                },
+                "thinkingLevel": {
+                  "type": "string",
+                  "enum": [
+                    "low",
+                    "high"
+                  ],
+                  "description": "Thinking level.",
+                  "examples": [
+                    "high"
+                  ]
+                }
+              },
+              "x-apidog-orders": [
+                "includeThoughts",
+                "thinkingLevel"
+              ]
+            }
+          }
+        },
+        "stream": {
+          "type": "boolean",
+          "required": false,
+          "description": "If set to true, the provider returns stream chunks.",
+          "default": true
+        }
+      },
       "summary": "Gemini 3.7 Flash OpenAPI Specification"
     },
     {
@@ -3661,11 +4822,313 @@
       "label": "Chat Models > Gemini • Gemini 3.8 Flash",
       "title": "Gemini 3.8 Flash",
       "family": "Chat Models > Gemini",
-      "method": "",
-      "endpoint": "",
+      "method": "POST",
+      "endpoint": "/gemini/v1/models/gemini-3-8-flash:streamGenerateContent",
       "docs_url": "https://docs.kie.ai/market/gemini/gemini-3-8-flash.md",
-      "resolved": false,
-      "summary": "Gemini 3.8 Flash OpenAPI Specification"
+      "resolved": true,
+      "example_body": {
+        "stream": true,
+        "contents": [
+          {
+            "role": "user",
+            "parts": [
+              {
+                "text": "What is the weather in Beijing today?"
+              }
+            ]
+          }
+        ],
+        "tools": [
+          {
+            "functionDeclarations": [
+              {
+                "name": "get_weather_forecast",
+                "description": "Get the weather forecast for a given location",
+                "parameters": {
+                  "type": "OBJECT",
+                  "properties": {
+                    "location": {
+                      "type": "STRING",
+                      "description": "The city name, e.g. Beijing"
+                    }
+                  },
+                  "required": [
+                    "location"
+                  ]
+                }
+              }
+            ]
+          }
+        ],
+        "generationConfig": {
+          "thinkingConfig": {
+            "includeThoughts": true,
+            "thinkingLevel": "high"
+          }
+        }
+      },
+      "path_params": [
+        "streamGenerateContent"
+      ],
+      "models": [
+        "gemini-3-8-flash"
+      ],
+      "parameter_hints": {
+        "contents": {
+          "type": "array",
+          "required": true,
+          "description": "Conversation input for Gemini.",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "properties": {
+              "role": {
+                "type": "string",
+                "enum": [
+                  "user",
+                  "model"
+                ],
+                "description": "Content role.",
+                "examples": [
+                  "user"
+                ]
+              },
+              "parts": {
+                "type": "array",
+                "description": "Content parts. Use text, inline_data, or provider-specific blocks.",
+                "items": {
+                  "oneOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "text": {
+                          "type": "string",
+                          "description": "Plain text input.",
+                          "examples": [
+                            "What is the weather in Beijing today?"
+                          ]
+                        }
+                      },
+                      "x-apidog-orders": [
+                        "text"
+                      ]
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "inline_data": {
+                          "type": "object",
+                          "description": "Inline binary payload.",
+                          "properties": {
+                            "mime_type": {
+                              "type": "string",
+                              "examples": [
+                                "image/jpeg"
+                              ]
+                            },
+                            "data": {
+                              "type": "string",
+                              "description": "Base64 content."
+                            }
+                          },
+                          "x-apidog-orders": [
+                            "mime_type",
+                            "data"
+                          ]
+                        }
+                      },
+                      "x-apidog-orders": [
+                        "inline_data"
+                      ]
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "file_data": {
+                          "type": "object",
+                          "properties": {
+                            "mime_type": {
+                              "type": "string",
+                              "description": "file mime type"
+                            },
+                            "file_uri": {
+                              "type": "string"
+                            }
+                          },
+                          "x-apidog-orders": [
+                            "mime_type",
+                            "file_uri"
+                          ]
+                        }
+                      },
+                      "x-apidog-orders": [
+                        "file_data"
+                      ]
+                    }
+                  ]
+                }
+              }
+            },
+            "required": [
+              "role",
+              "parts"
+            ],
+            "x-apidog-orders": [
+              "role",
+              "parts"
+            ]
+          }
+        },
+        "tools": {
+          "type": "array",
+          "required": false,
+          "description": "Optional Gemini tools. Supports googleSearch and functionDeclarations.",
+          "items": {
+            "oneOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "googleSearch": {
+                    "type": "object",
+                    "description": "Google Search grounding tool.",
+                    "additionalProperties": false,
+                    "x-apidog-orders": []
+                  }
+                },
+                "x-apidog-orders": [
+                  "googleSearch"
+                ]
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "functionDeclarations": {
+                    "type": "array",
+                    "description": "Function declaration list.",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "name": {
+                          "type": "string",
+                          "description": "Function name.",
+                          "examples": [
+                            "get_weather_forecast"
+                          ]
+                        },
+                        "description": {
+                          "type": "string",
+                          "description": "Function description.",
+                          "examples": [
+                            "Get the weather forecast for a given location"
+                          ]
+                        },
+                        "parameters": {
+                          "type": "object",
+                          "description": "Function parameter schema.",
+                          "properties": {
+                            "type": {
+                              "type": "string",
+                              "examples": [
+                                "OBJECT"
+                              ]
+                            },
+                            "properties": {
+                              "type": "object",
+                              "additionalProperties": true,
+                              "x-apidog-orders": []
+                            },
+                            "required": {
+                              "type": "array",
+                              "items": {
+                                "type": "string"
+                              }
+                            }
+                          },
+                          "x-apidog-orders": [
+                            "type",
+                            "properties",
+                            "required"
+                          ],
+                          "examples": [
+                            {
+                              "type": "OBJECT",
+                              "properties": {
+                                "location": {
+                                  "type": "STRING",
+                                  "description": "The city name, e.g. Beijing"
+                                }
+                              },
+                              "required": [
+                                "location"
+                              ]
+                            }
+                          ]
+                        }
+                      },
+                      "required": [
+                        "name",
+                        "description",
+                        "parameters"
+                      ],
+                      "x-apidog-orders": [
+                        "name",
+                        "description",
+                        "parameters"
+                      ]
+                    }
+                  }
+                },
+                "x-apidog-orders": [
+                  "functionDeclarations"
+                ]
+              }
+            ]
+          }
+        },
+        "generationConfig": {
+          "type": "object",
+          "required": false,
+          "description": "Generation configuration.",
+          "properties": {
+            "thinkingConfig": {
+              "type": "object",
+              "description": "Thinking configuration.",
+              "properties": {
+                "includeThoughts": {
+                  "type": "boolean",
+                  "description": "Whether to include thought output.",
+                  "examples": [
+                    true
+                  ]
+                },
+                "thinkingLevel": {
+                  "type": "string",
+                  "enum": [
+                    "low",
+                    "high"
+                  ],
+                  "description": "Thinking level.",
+                  "examples": [
+                    "high"
+                  ]
+                }
+              },
+              "x-apidog-orders": [
+                "includeThoughts",
+                "thinkingLevel"
+              ]
+            }
+          }
+        },
+        "stream": {
+          "type": "boolean",
+          "required": false,
+          "description": "If set to true, the provider returns stream chunks.",
+          "default": true
+        }
+      },
+      "summary": "Gemini 3.8 Flash OpenAPI Specification",
+      "default_model": "gemini-3-8-flash"
     },
     {
       "label": "Chat Models > Gemini • Gemini 3.8 Flash (openai)",
@@ -3983,6 +5446,7 @@
           "type": "array",
           "required": true,
           "description": "Input reference images (1-8 images). (File URL after upload, not file content; Accepted types: image/jpeg, image/png, image/webp; Max size: 10.0MB)",
+          "maxItems": 8,
           "default": [
             "https://static.aiquickdraw.com/tools/example/1764235158281_tABmx723.png",
             "https://static.aiquickdraw.com/tools/example/1764235165079_8fIR5MEF.png"
@@ -4059,6 +5523,7 @@
           "type": "array",
           "required": true,
           "description": "Input reference images (1-8 images). (File URL after upload, not file content; Accepted types: image/jpeg, image/png, image/webp; Max size: 10.0MB)",
+          "maxItems": 8,
           "default": [
             "https://static.aiquickdraw.com/tools/example/1764235041265_kjJ2sTMR.png",
             "https://static.aiquickdraw.com/tools/example/1764235045490_9SjAUr4Z.png"
@@ -4254,6 +5719,7 @@
           "type": "array",
           "required": true,
           "description": "Array of input image URLs.",
+          "maxItems": 16,
           "default": [
             "https://example.com/"
           ],
@@ -4339,6 +5805,7 @@
           "type": "array",
           "required": true,
           "description": "Array of input image URLs.",
+          "maxItems": 16,
           "default": [
             "https://example.com/"
           ],
@@ -4490,6 +5957,7 @@
           "type": "array",
           "required": true,
           "description": "Array of input image URLs.",
+          "maxItems": 16,
           "default": [
             "https://example.com/"
           ],
@@ -4634,6 +6102,7 @@
           "type": "array",
           "required": true,
           "description": "Upload an image file to use as input for the API (File URL after upload, not file content; Accepted types: image/jpeg, image/png, image/webp; Max size: 10.0MB)",
+          "maxItems": 16,
           "default": [
             "https://static.aiquickdraw.com/tools/example/1765962794374_GhtqB9oX.webp"
           ],
@@ -4899,6 +6368,7 @@
           "type": "array",
           "required": false,
           "description": "Input images to transform or use as reference (supports up to 14 images) (File URL after upload, not file content; Accepted types: image/jpeg, image/png, image/webp; Max size: 30.0MB)",
+          "maxItems": 14,
           "default": [],
           "items": {
             "type": "string",
@@ -4976,6 +6446,7 @@
           "required": false,
           "description": "Input image URL array. Optional parameter. Set to an empty array or omit it for pure text-to-image generation. Supports up to 10 images.\n\n- Please provide uploaded file URLs, not raw file content\n- Accepted types: `image/jpeg`, `image/png`, `image/webp`\n- Max size: 30.0MB",
           "default": [],
+          "maxItems": 10,
           "items": {
             "type": "string",
             "format": "uri"
@@ -5045,6 +6516,7 @@
           "type": "array",
           "required": true,
           "description": "List of URLs of input images for editing,up to 10 images. (File URL after upload, not file content; Accepted types: image/jpeg, image/png, image/webp; Max size: 10.0MB)",
+          "maxItems": 10,
           "default": [
             "https://file.aiquickdraw.com/custom-page/akr/section-images/1756223420389w8xa2jfe.png"
           ],
@@ -5134,6 +6606,7 @@
           "type": "array",
           "required": false,
           "description": "Input images to transform or use as reference (supports up to 8 images) (File URL after upload, not file content; Accepted types: image/jpeg, image/png, image/webp; Max size: 30.0MB)",
+          "maxItems": 8,
           "default": [],
           "items": {
             "type": "string",
@@ -5425,6 +6898,7 @@
           "type": "array",
           "required": true,
           "description": "An array containing up to 1 URL string pointing to reference images. (Use file URLs after upload, not raw file content. Accepted types: image/jpeg, image/png, image/webp. Max size: 10.0MB per image.) In your prompt, reference the uploaded image by typing @image(n) followed by a space (for example: @image1 a sunset over the ocean).",
+          "maxItems": 5,
           "default": [
             "https://static.aiquickdraw.com/tools/example/1767602105243_0MmMCrwq.png"
           ],
@@ -5484,6 +6958,7 @@
           "type": "array",
           "required": true,
           "description": "An array containing up to 5 and at least 1 URL strings pointing to a reference image.",
+          "maxItems": 5,
           "default": [
             "https://static.aiquickdraw.com/tools/example/1767602105243_0MmMCrwq.png"
           ],
@@ -5532,6 +7007,7 @@
           "type": "array",
           "required": false,
           "description": "Please enter the index numbers of the segment array items you want to use. ",
+          "minItems": 1,
           "default": [
             1,
             2
@@ -6592,6 +8068,8 @@
           "type": "array",
           "required": true,
           "description": "Reference images, given as an array of 1 to 10 http(s) URLs. Required. The order of the array is the order the prompt refers to (\"the first image\", \"the second image\"). JPEG, PNG and WebP are supported, up to 30MB and 25MP each, and every URL must be directly retrievable with a GET — a reference the origin refuses with 4xx, or whose domain does not resolve, fails the request with 400. More than 10 entries returns 422. The more references you supply the less detail each individual one keeps, so stay within 4 when fidelity matters. When combining several people or objects into a single picture, a landscape ratio such as `3:2` or `16:9` usually gives better results.",
+          "minItems": 1,
+          "maxItems": 10,
           "default": [
             "https://example.com/a.jpg",
             "https://example.com/b.jpg"
@@ -6940,6 +8418,8 @@
           "type": "array",
           "required": true,
           "description": "Input image URL array. Upload images and provide their URLs rather than the file content. Supports up to 3 images. Supported file types: `image/jpeg`, `image/png`, `image/webp`, `image/bmp`, and `image/gif`,`image/tiff`. Maximum file size: 10 MB per image.",
+          "minItems": 1,
+          "maxItems": 3,
           "default": [
             "https://example.com/input.png"
           ],
@@ -7052,6 +8532,8 @@
           "type": "array",
           "required": true,
           "description": "Input image URL array. Upload images and provide their URLs rather than the file content. Supports up to 3 images. Supported file types: `image/jpeg`, `image/png`, `image/webp`, `image/bmp`, and `image/gif`,`image/tiff`. Maximum file size: 10 MB per image.",
+          "minItems": 1,
+          "maxItems": 3,
           "default": [
             "https://example.com/input.png"
           ],
@@ -7378,58 +8860,6 @@
       "summary": "Recraft - Remove Background OpenAPI Specification"
     },
     {
-      "label": "Image Models > Seedream • Seedream 5.0 Pro -  Layer Decomposition",
-      "title": "Seedream 5.0 Pro -  Layer Decomposition",
-      "family": "Image Models > Seedream",
-      "method": "POST",
-      "endpoint": "/api/v1/jobs/createTask",
-      "docs_url": "https://docs.kie.ai/market/seedream/5-pro-layer-decomposition.md",
-      "resolved": true,
-      "models": [
-        "seedream/5-pro-layer-decomposition"
-      ],
-      "parameter_hints": {
-        "prompt": {
-          "type": "string",
-          "required": false,
-          "description": "Optional prompt for layer separation.\n\n- When a prompt is provided, the model separates the specified elements based on the prompt\n- When no prompt is provided, the model automatically identifies the main elements in the image\n- Supports using `<bbox>x1 y1 x2 y2</bbox>` to precisely specify element positions, recommending the use of normalized coordinates in the 0-1000 range",
-          "minLength": 0,
-          "maxLength": 5000,
-          "default": "Separate the title text <bbox>179 58 809 197</bbox> and the parrot <bbox>330 274 641 991</bbox> into independent layers"
-        },
-        "image_url": {
-          "type": "string",
-          "required": true,
-          "description": "The source image URL for layer separation.\n\n- Must upload exactly 1 image\n- Supports PNG, JPEG, WebP, BMP, TIFF, GIF\n- Does not support HEIC, HEIF\n- Image size must not exceed 30 MB\n- Total pixel range is 262,144-36,000,000\n- Aspect ratio range is 1:16-16:1",
-          "format": "uri",
-          "default": "https://static.aiquickdraw.com/tools/example/1786019968051_cKRYLHHu.png"
-        },
-        "size": {
-          "type": "string",
-          "required": false,
-          "description": "Resolution level of the output image. The base image maintains the aspect ratio of the input image, and each separated layer maintains the aspect ratio of the corresponding element in the original image.\n\n- `auto`: Automatically selected based on the input image size\n- `1K`: 1K resolution level\n- `1.5K`: 1.5K resolution level\n- `2K`: 2K resolution level",
-          "enum": [
-            "auto",
-            "1K",
-            "1.5K",
-            "2K"
-          ],
-          "default": "auto"
-        },
-        "output_format": {
-          "type": "string",
-          "required": false,
-          "description": "Output format of the base image. This parameter only controls the base image format; all separated layers are fixed to output as PNG.",
-          "enum": [
-            "png",
-            "jpeg"
-          ],
-          "default": "jpeg"
-        }
-      },
-      "summary": "Seedream 5.0 Pro - Layer Decomposition OpenAPI Specification"
-    },
-    {
       "label": "Image Models > Seedream • Seedream3.0 - Text to Image",
       "title": "Seedream3.0 - Text to Image",
       "family": "Image Models > Seedream",
@@ -7512,6 +8942,7 @@
           "type": "array",
           "required": true,
           "description": "List of URLs of input images for editing. Presently, up to 10 image inputs are allowed. (File URL after upload, not file content; Accepted types: image/jpeg, image/png, image/webp; Max size: 30.0MB)",
+          "maxItems": 10,
           "default": [
             "https://file.aiquickdraw.com/custom-page/akr/section-images/1757930552966e7f2on7s.png"
           ],
@@ -7677,6 +9108,7 @@
           "type": "array",
           "required": true,
           "description": "Upload an image file to use as input for the API (File URL after upload, not file content; Accepted types: image/jpeg, image/png, image/webp; Max size: 30.0MB)",
+          "maxItems": 14,
           "default": [
             "https://static.aiquickdraw.com/tools/example/1764851484363_ScV1s2aq.webp"
           ],
@@ -7779,6 +9211,222 @@
       "summary": "Seedream4.5 - Text to Image OpenAPI Specification"
     },
     {
+      "label": "Image Models > Seedream • Seedream5.0 Flash -  Layer Decomposition",
+      "title": "Seedream5.0 Flash -  Layer Decomposition",
+      "family": "Image Models > Seedream",
+      "method": "POST",
+      "endpoint": "/api/v1/jobs/createTask",
+      "docs_url": "https://docs.kie.ai/market/seedream/5-flash-layer-decomposition.md",
+      "resolved": true,
+      "example_body": {
+        "prompt": "Separate the title text <bbox>179 58 809 197</bbox> and the parrot <bbox>330 274 641 991</bbox> into independent layers",
+        "image_url": "https://static.aiquickdraw.com/tools/example/1786019968051_cKRYLHHu.png",
+        "size": "2K",
+        "output_format": "jpeg"
+      },
+      "models": [
+        "seedream/5-flash-layer-decomposition"
+      ],
+      "parameter_hints": {
+        "prompt": {
+          "type": "string",
+          "required": false,
+          "description": "Optional prompt for layer separation.\n\n- When a prompt is provided, the model separates the specified elements based on the prompt\n- When no prompt is provided, the model automatically identifies the main elements in the image\n- Supports using `<bbox>x1 y1 x2 y2</bbox>` to precisely specify element positions, recommending the use of normalized coordinates in the 0-1000 range",
+          "minLength": 3,
+          "maxLength": 5000,
+          "default": "Separate the title text <bbox>179 58 809 197</bbox> and the parrot <bbox>330 274 641 991</bbox> into independent layers"
+        },
+        "image_url": {
+          "type": "string",
+          "required": true,
+          "description": "The source image URL for layer separation.\n\n- Must upload exactly 1 image\n- Supports PNG, JPEG, WebP, BMP, TIFF, GIF\n- Does not support HEIC, HEIF\n- Image size must not exceed 30 MB\n- Total pixel range is 262,144-36,000,000\n- Aspect ratio range is 1:16-16:1",
+          "format": "uri",
+          "default": "https://static.aiquickdraw.com/tools/example/1786019968051_cKRYLHHu.png"
+        },
+        "size": {
+          "type": "string",
+          "required": false,
+          "description": "Resolution level of the output image. The base image maintains the aspect ratio of the input image, and each separated layer maintains the aspect ratio of the corresponding element in the original image.\n\n- `auto`: Automatically selected based on the input image size\n- `1K`: 1K resolution level\n- `1.5K`: 1.5K resolution level\n- `2K`: 2K resolution level",
+          "enum": [
+            "auto",
+            "1K",
+            "1.5K",
+            "2K"
+          ],
+          "default": "auto"
+        },
+        "output_format": {
+          "type": "string",
+          "required": false,
+          "description": "Output format of the base image. This parameter only controls the base image format; all separated layers are fixed to output as PNG.",
+          "enum": [
+            "png",
+            "jpeg"
+          ],
+          "default": "jpeg"
+        }
+      },
+      "summary": "Seedream5.0 Flash - Layer Decomposition OpenAPI Specification"
+    },
+    {
+      "label": "Image Models > Seedream • Seedream5.0 Flash - Image to Image",
+      "title": "Seedream5.0 Flash - Image to Image",
+      "family": "Image Models > Seedream",
+      "method": "POST",
+      "endpoint": "/api/v1/jobs/createTask",
+      "docs_url": "https://docs.kie.ai/market/seedream/5-flash-image-to-image.md",
+      "resolved": true,
+      "example_body": {
+        "prompt": "Keep the model's pose and the flowing shape of the liquid dress unchanged. Change the clothing material from silver metal to completely transparent clear water (or glass). Through the liquid water, the model's skin details are visible. Lighting changes from reflection to refraction.",
+        "image_urls": [
+          "https://static.aiquickdraw.com/tools/example/1764851484363_ScV1s2aq.webp"
+        ],
+        "aspect_ratio": "1:1",
+        "quality": "basic",
+        "output_format": "png",
+        "nsfw_checker": false
+      },
+      "models": [
+        "seedream/5-flash-image-to-image"
+      ],
+      "parameter_hints": {
+        "prompt": {
+          "type": "string",
+          "required": true,
+          "description": "A text description of the image you want to generate (Max length: 3-5000 characters)",
+          "minLength": 3,
+          "maxLength": 5000,
+          "default": "Keep the model's pose and the flowing shape of the liquid dress unchanged. Change the clothing material from silver metal to completely transparent clear water (or glass). Through the liquid water, the model's skin details are visible. Lighting changes from reflection to refraction."
+        },
+        "image_urls": {
+          "type": "array",
+          "required": true,
+          "description": "Upload an image file to use as input for the API (File URL after upload, not file content; Accepted types: image/jpeg, image/png, image/webp; Max size: 30.0MB)",
+          "maxItems": 10,
+          "default": [
+            "https://static.aiquickdraw.com/tools/example/1764851484363_ScV1s2aq.webp"
+          ],
+          "items": {
+            "type": "string",
+            "format": "uri"
+          }
+        },
+        "aspect_ratio": {
+          "type": "string",
+          "required": true,
+          "description": "Width-height ratio of the image, determining its visual form. ",
+          "enum": [
+            "1:1",
+            "4:3",
+            "3:4",
+            "16:9",
+            "9:16",
+            "2:3",
+            "3:2",
+            "21:9"
+          ],
+          "default": "1:1"
+        },
+        "quality": {
+          "type": "string",
+          "required": true,
+          "description": "Basic outputs 1K images, while High outputs 2K images.",
+          "enum": [
+            "basic",
+            "high"
+          ],
+          "default": "basic"
+        },
+        "output_format": {
+          "type": "string",
+          "required": false,
+          "description": "Format of the output image",
+          "enum": [
+            "png",
+            "jpeg"
+          ],
+          "default": "png"
+        },
+        "nsfw_checker": {
+          "type": "boolean",
+          "required": false,
+          "description": "Defaults to false. You can set it to false based on your needs. If set to false, our content filtering will be disabled, and all results will be returned directly by the model itself.\nNote: There is no guarantee that everything can be filtered out; if you are not satisfied with the results, you will need to make your own arrangements."
+        }
+      },
+      "summary": "Seedream5.0 Flash - Image to Image OpenAPI Specification"
+    },
+    {
+      "label": "Image Models > Seedream • Seedream5.0 Flash - Text to Image",
+      "title": "Seedream5.0 Flash - Text to Image",
+      "family": "Image Models > Seedream",
+      "method": "POST",
+      "endpoint": "/api/v1/jobs/createTask",
+      "docs_url": "https://docs.kie.ai/market/seedream/5-flash-text-to-image.md",
+      "resolved": true,
+      "example_body": {
+        "prompt": "A full-process cafe design tool for entrepreneurs and designers. It covers core needs including store layout, functional zoning, decoration style, equipment selection, and customer group adaptation, supporting integrated planning of \"commercial attributes + aesthetic design.\" Suitable as a promotional image for a cafe design SaaS product, with a 16:9 aspect ratio.",
+        "aspect_ratio": "1:1",
+        "quality": "basic",
+        "output_format": "png",
+        "nsfw_checker": false
+      },
+      "models": [
+        "seedream/5-flash-text-to-image"
+      ],
+      "parameter_hints": {
+        "prompt": {
+          "type": "string",
+          "required": true,
+          "description": "A text description of the image you want to generate (Max length: 3-5000 characters)",
+          "minLength": 3,
+          "maxLength": 5000,
+          "default": "A full-process cafe design tool for entrepreneurs and designers. It covers core needs including store layout, functional zoning, decoration style, equipment selection, and customer group adaptation, supporting integrated planning of \"commercial attributes + aesthetic design.\" Suitable as a promotional image for a cafe design SaaS product, with a 16:9 aspect ratio."
+        },
+        "aspect_ratio": {
+          "type": "string",
+          "required": true,
+          "description": "Width-height ratio of the image, determining its visual form.",
+          "enum": [
+            "1:1",
+            "4:3",
+            "3:4",
+            "16:9",
+            "9:16",
+            "2:3",
+            "3:2",
+            "21:9"
+          ],
+          "default": "1:1"
+        },
+        "quality": {
+          "type": "string",
+          "required": true,
+          "description": "Basic outputs 1K images, while High outputs 2K images.",
+          "enum": [
+            "basic",
+            "high"
+          ],
+          "default": "basic"
+        },
+        "output_format": {
+          "type": "string",
+          "required": false,
+          "description": "Format of the output image",
+          "enum": [
+            "png",
+            "jpeg"
+          ],
+          "default": "png"
+        },
+        "nsfw_checker": {
+          "type": "boolean",
+          "required": false,
+          "description": "Defaults to false. You can set it to false based on your needs. If set to false, our content filtering will be disabled, and all results will be returned directly by the model itself.\nNote: There is no guarantee that everything can be filtered out; if you are not satisfied with the results, you will need to make your own arrangements."
+        }
+      },
+      "summary": "Seedream5.0 Flash - Text to Image OpenAPI Specification"
+    },
+    {
       "label": "Image Models > Seedream • Seedream5.0 Lite - Image to Image",
       "title": "Seedream5.0 Lite - Image to Image",
       "family": "Image Models > Seedream",
@@ -7812,6 +9460,7 @@
           "type": "array",
           "required": true,
           "description": "Upload an image file to use as input for the API (File URL after upload, not file content; Accepted types: image/jpeg, image/png, image/webp; Max size: 30.0MB)",
+          "maxItems": 14,
           "default": [
             "https://static.aiquickdraw.com/tools/example/1764851484363_ScV1s2aq.webp"
           ],
@@ -7938,6 +9587,58 @@
       "summary": "Seedream5.0 Lite - Text to Image OpenAPI Specification"
     },
     {
+      "label": "Image Models > Seedream • Seedream5.0 Pro -  Layer Decomposition",
+      "title": "Seedream5.0 Pro -  Layer Decomposition",
+      "family": "Image Models > Seedream",
+      "method": "POST",
+      "endpoint": "/api/v1/jobs/createTask",
+      "docs_url": "https://docs.kie.ai/market/seedream/5-pro-layer-decomposition.md",
+      "resolved": true,
+      "models": [
+        "seedream/5-pro-layer-decomposition"
+      ],
+      "parameter_hints": {
+        "prompt": {
+          "type": "string",
+          "required": false,
+          "description": "Optional prompt for layer separation.\n\n- When a prompt is provided, the model separates the specified elements based on the prompt\n- When no prompt is provided, the model automatically identifies the main elements in the image\n- Supports using `<bbox>x1 y1 x2 y2</bbox>` to precisely specify element positions, recommending the use of normalized coordinates in the 0-1000 range",
+          "minLength": 0,
+          "maxLength": 5000,
+          "default": "Separate the title text <bbox>179 58 809 197</bbox> and the parrot <bbox>330 274 641 991</bbox> into independent layers"
+        },
+        "image_url": {
+          "type": "string",
+          "required": true,
+          "description": "The source image URL for layer separation.\n\n- Must upload exactly 1 image\n- Supports PNG, JPEG, WebP, BMP, TIFF, GIF\n- Does not support HEIC, HEIF\n- Image size must not exceed 30 MB\n- Total pixel range is 262,144-36,000,000\n- Aspect ratio range is 1:16-16:1",
+          "format": "uri",
+          "default": "https://static.aiquickdraw.com/tools/example/1786019968051_cKRYLHHu.png"
+        },
+        "size": {
+          "type": "string",
+          "required": false,
+          "description": "Resolution level of the output image. The base image maintains the aspect ratio of the input image, and each separated layer maintains the aspect ratio of the corresponding element in the original image.\n\n- `auto`: Automatically selected based on the input image size\n- `1K`: 1K resolution level\n- `1.5K`: 1.5K resolution level\n- `2K`: 2K resolution level",
+          "enum": [
+            "auto",
+            "1K",
+            "1.5K",
+            "2K"
+          ],
+          "default": "auto"
+        },
+        "output_format": {
+          "type": "string",
+          "required": false,
+          "description": "Output format of the base image. This parameter only controls the base image format; all separated layers are fixed to output as PNG.",
+          "enum": [
+            "png",
+            "jpeg"
+          ],
+          "default": "jpeg"
+        }
+      },
+      "summary": "Seedream5.0 Pro - Layer Decomposition OpenAPI Specification"
+    },
+    {
       "label": "Image Models > Seedream • Seedream5.0 Pro - Image to Image",
       "title": "Seedream5.0 Pro - Image to Image",
       "family": "Image Models > Seedream",
@@ -7971,6 +9672,7 @@
           "type": "array",
           "required": true,
           "description": "Upload an image file to use as input for the API (File URL after upload, not file content; Accepted types: image/jpeg, image/png, image/webp; Max size: 30.0MB)",
+          "maxItems": 10,
           "default": [
             "https://static.aiquickdraw.com/tools/example/1764851484363_ScV1s2aq.webp"
           ],
@@ -8153,6 +9855,7 @@
           "type": "array",
           "required": false,
           "description": "(Optional) Array of input image URLs. The current project uses `input_urls` as a wrapper field.",
+          "maxItems": 9,
           "default": [
             "https://static.aiquickdraw.com/tools/example/1775122744247_eSHwJX1k.jpg"
           ],
@@ -8210,6 +9913,8 @@
           "type": "array",
           "required": false,
           "description": "(Optional) Custom color theme. Only available when `enable_sequential=false`. Requires 3-10 colors, 8 recommended.",
+          "minItems": 3,
+          "maxItems": 10,
           "items": {
             "type": "object",
             "properties": {
@@ -8306,6 +10011,7 @@
           "type": "array",
           "required": false,
           "description": "(Optional) Array of input image URLs. The current project uses `input_urls` as a wrapper field.",
+          "maxItems": 9,
           "default": [
             "https://static.aiquickdraw.com/tools/example/1775122744247_eSHwJX1k.jpg"
           ],
@@ -8363,6 +10069,8 @@
           "type": "array",
           "required": false,
           "description": "(Optional) Custom color theme. Only available when `enable_sequential=false`. Requires 3-10 colors, 8 recommended.",
+          "minItems": 3,
+          "maxItems": 10,
           "items": {
             "type": "object",
             "properties": {
@@ -10403,6 +12111,894 @@
       "summary": "Gemini 3.1 Flash Text to speech OpenAPI Specification"
     },
     {
+      "label": "Music Models > Gemini • Gemini 3.8 Flash Lite Text to speech",
+      "title": "Gemini 3.8 Flash Lite Text to speech",
+      "family": "Music Models > Gemini",
+      "method": "POST",
+      "endpoint": "/api/v1/jobs/createTask",
+      "docs_url": "https://docs.kie.ai/market/google/gemini-3-8-flash-lite-tts.md",
+      "resolved": true,
+      "example_body": {
+        "temperature": 0.30098763369632153,
+        "scene": "ut",
+        "sample_context": "ipsum minim",
+        "speakers": [
+          {
+            "speaker_id": "Speaker 1",
+            "voice_name": "Iapetus",
+            "audio_profile": "exercitation",
+            "accent": "American (Valley)",
+            "style": "Newscaster",
+            "pace": "Rapid Fire"
+          },
+          {
+            "speaker_id": "Speaker 2",
+            "voice_name": "Schedar",
+            "audio_profile": "ex Lorem ut non",
+            "accent": "British (RP)",
+            "style": "Whisper",
+            "pace": "The Drift"
+          }
+        ],
+        "dialogue_turns": [
+          {
+            "speaker_id": "Speaker 1",
+            "text": "Varietas votum cerno aspernatur communis utrum tempora apostolus usque demitto. Supra charisma desipio. Bellicus deorsum speciosus coepi excepturi tres timor. Attollo caecus spargo repudiandae cohors occaecati vespillo vulgaris cometes. Synagoga capillus verus universe. Canis una uxor annus desino causa templum."
+          }
+        ]
+      },
+      "models": [
+        "google/gemini-3-8-flash-lite-tts"
+      ],
+      "parameter_hints": {
+        "temperature": {
+          "type": "number",
+          "required": false,
+          "description": "Sampling temperature, e.g., 1",
+          "default": 1,
+          "minimum": 0,
+          "maximum": 2
+        },
+        "scene": {
+          "type": "string",
+          "required": false,
+          "description": "Scene description, e.g., \"A quiet, warm room with a fireplace crackling softly.\"",
+          "default": ""
+        },
+        "sample_context": {
+          "type": "string",
+          "required": false,
+          "description": "Sample context/overall tone, e.g., \"Audiobook style narration. Tone is gentle and inviting.\"",
+          "default": ""
+        },
+        "speakers": {
+          "type": "array",
+          "required": true,
+          "description": "List of speaker configurations",
+          "items": {
+            "type": "object",
+            "properties": {
+              "speaker_id": {
+                "type": "string",
+                "description": "Speaker identifier, e.g., \"Speaker 1\" or \"Speaker 2\";Must be 「Speaker N」format"
+              },
+              "voice_name": {
+                "type": "string",
+                "description": "Voice name, e.g., \"Zephyr\", \"Fenrir\", \"Puck\"",
+                "enum": [
+                  "Achernar",
+                  "Achird",
+                  "Algenib",
+                  "Algieba",
+                  "Alnilam",
+                  "Aoede",
+                  "Autonoe",
+                  "Callirrhoe",
+                  "Charon",
+                  "Despina",
+                  "Enceladus",
+                  "Erinome",
+                  "Fenrir",
+                  "Gacrux",
+                  "Iapetus",
+                  "Kore",
+                  "Laomedeia",
+                  "Leda",
+                  "Orus",
+                  "Puck",
+                  "Pulcherrima",
+                  "Rasalgethi",
+                  "Sadachbia",
+                  "Sadaltager",
+                  "Schedar",
+                  "Sulafat",
+                  "Umbriel",
+                  "Vindemiatrix",
+                  "Zephyr",
+                  "Zubenelgenubi"
+                ],
+                "x-apidog-enum": [
+                  {
+                    "value": "Achernar",
+                    "name": "",
+                    "description": ""
+                  },
+                  {
+                    "value": "Achird",
+                    "name": "",
+                    "description": ""
+                  },
+                  {
+                    "value": "Algenib",
+                    "name": "",
+                    "description": ""
+                  },
+                  {
+                    "value": "Algieba",
+                    "name": "",
+                    "description": ""
+                  },
+                  {
+                    "value": "Alnilam",
+                    "name": "",
+                    "description": ""
+                  },
+                  {
+                    "value": "Aoede",
+                    "name": "",
+                    "description": ""
+                  },
+                  {
+                    "value": "Autonoe",
+                    "name": "",
+                    "description": ""
+                  },
+                  {
+                    "value": "Callirrhoe",
+                    "name": "",
+                    "description": ""
+                  },
+                  {
+                    "value": "Charon",
+                    "name": "",
+                    "description": ""
+                  },
+                  {
+                    "value": "Despina",
+                    "name": "",
+                    "description": ""
+                  },
+                  {
+                    "value": "Enceladus",
+                    "name": "",
+                    "description": ""
+                  },
+                  {
+                    "value": "Erinome",
+                    "name": "",
+                    "description": ""
+                  },
+                  {
+                    "value": "Fenrir",
+                    "name": "",
+                    "description": ""
+                  },
+                  {
+                    "value": "Gacrux",
+                    "name": "",
+                    "description": ""
+                  },
+                  {
+                    "value": "Iapetus",
+                    "name": "",
+                    "description": ""
+                  },
+                  {
+                    "value": "Kore",
+                    "name": "",
+                    "description": ""
+                  },
+                  {
+                    "value": "Laomedeia",
+                    "name": "",
+                    "description": ""
+                  },
+                  {
+                    "value": "Leda",
+                    "name": "",
+                    "description": ""
+                  },
+                  {
+                    "value": "Orus",
+                    "name": "",
+                    "description": ""
+                  },
+                  {
+                    "value": "Puck",
+                    "name": "",
+                    "description": ""
+                  },
+                  {
+                    "value": "Pulcherrima",
+                    "name": "",
+                    "description": ""
+                  },
+                  {
+                    "value": "Rasalgethi",
+                    "name": "",
+                    "description": ""
+                  },
+                  {
+                    "value": "Sadachbia",
+                    "name": "",
+                    "description": ""
+                  },
+                  {
+                    "value": "Sadaltager",
+                    "name": "",
+                    "description": ""
+                  },
+                  {
+                    "value": "Schedar",
+                    "name": "",
+                    "description": ""
+                  },
+                  {
+                    "value": "Sulafat",
+                    "name": "",
+                    "description": ""
+                  },
+                  {
+                    "value": "Umbriel",
+                    "name": "",
+                    "description": ""
+                  },
+                  {
+                    "value": "Vindemiatrix",
+                    "name": "",
+                    "description": ""
+                  },
+                  {
+                    "value": "Zephyr",
+                    "name": "",
+                    "description": ""
+                  },
+                  {
+                    "value": "Zubenelgenubi",
+                    "name": "",
+                    "description": ""
+                  }
+                ]
+              },
+              "audio_profile": {
+                "type": "string",
+                "description": "Audio profile description, e.g., \"A warm and soothing narrator\" or \"A stern and weary gatekeeper\""
+              },
+              "accent": {
+                "type": "string",
+                "description": "Accent, e.g., \"British (RP)\" or \"American (Gen)\"",
+                "enum": [
+                  "Neutral",
+                  "American (Gen)",
+                  "American (Valley)",
+                  "American (South)",
+                  "British (RP)",
+                  "British (Brixton)",
+                  "Transatlantic",
+                  "Australian"
+                ],
+                "x-apidog-enum": [
+                  {
+                    "value": "Neutral",
+                    "name": "",
+                    "description": ""
+                  },
+                  {
+                    "value": "American (Gen)",
+                    "name": "",
+                    "description": ""
+                  },
+                  {
+                    "value": "American (Valley)",
+                    "name": "",
+                    "description": ""
+                  },
+                  {
+                    "value": "American (South)",
+                    "name": "",
+                    "description": ""
+                  },
+                  {
+                    "value": "British (RP)",
+                    "name": "",
+                    "description": ""
+                  },
+                  {
+                    "value": "British (Brixton)",
+                    "name": "",
+                    "description": ""
+                  },
+                  {
+                    "value": "Transatlantic",
+                    "name": "",
+                    "description": ""
+                  },
+                  {
+                    "value": "Australian",
+                    "name": "",
+                    "description": ""
+                  }
+                ]
+              },
+              "style": {
+                "type": "string",
+                "description": "Emotional style, e.g., \"Gentle\" or \"Deadpan\"",
+                "enum": [
+                  "Vocal Smile",
+                  "Newscaster",
+                  "Whisper",
+                  "Empathetic",
+                  "Promo/Hype",
+                  "Deadpan"
+                ],
+                "x-apidog-enum": [
+                  {
+                    "value": "Vocal Smile",
+                    "name": "",
+                    "description": ""
+                  },
+                  {
+                    "value": "Newscaster",
+                    "name": "",
+                    "description": ""
+                  },
+                  {
+                    "value": "Whisper",
+                    "name": "",
+                    "description": ""
+                  },
+                  {
+                    "value": "Empathetic",
+                    "name": "",
+                    "description": ""
+                  },
+                  {
+                    "value": "Promo/Hype",
+                    "name": "",
+                    "description": ""
+                  },
+                  {
+                    "value": "Deadpan",
+                    "name": "",
+                    "description": ""
+                  }
+                ]
+              },
+              "pace": {
+                "type": "string",
+                "description": "Pace, e.g., \"Slow\" or \"Natural\"",
+                "enum": [
+                  "Natural",
+                  "Rapid Fire",
+                  "The Drift",
+                  "Staccato"
+                ],
+                "x-apidog-enum": [
+                  {
+                    "value": "Natural",
+                    "name": "",
+                    "description": ""
+                  },
+                  {
+                    "value": "Rapid Fire",
+                    "name": "",
+                    "description": ""
+                  },
+                  {
+                    "value": "The Drift",
+                    "name": "",
+                    "description": ""
+                  },
+                  {
+                    "value": "Staccato",
+                    "name": "",
+                    "description": ""
+                  }
+                ]
+              }
+            },
+            "x-apidog-orders": [
+              "speaker_id",
+              "voice_name",
+              "audio_profile",
+              "accent",
+              "style",
+              "pace"
+            ],
+            "required": [
+              "speaker_id",
+              "voice_name",
+              "accent"
+            ],
+            "x-apidog-ignore-properties": []
+          }
+        },
+        "dialogue_turns": {
+          "type": "array",
+          "required": true,
+          "description": "List of dialogue turns, output in sequential order",
+          "items": {
+            "type": "object",
+            "properties": {
+              "speaker_id": {
+                "type": "string",
+                "description": "Corresponding speaker identifier, e.g., \"Speaker 1\""
+              },
+              "text": {
+                "type": "string",
+                "description": "The text spoken by the speaker, which may contain tone tags, e.g., \"Once upon a time, in a quiet valley hidden away...\"",
+                "maxLength": 10000
+              }
+            },
+            "x-apidog-orders": [
+              "speaker_id",
+              "text"
+            ],
+            "required": [
+              "speaker_id",
+              "text"
+            ],
+            "x-apidog-ignore-properties": []
+          }
+        }
+      },
+      "summary": "Gemini 3.8 Flash Lite Text to speech OpenAPI Specification"
+    },
+    {
+      "label": "Music Models > Gemini • Gemini 3.8 Flash Text to speech",
+      "title": "Gemini 3.8 Flash Text to speech",
+      "family": "Music Models > Gemini",
+      "method": "POST",
+      "endpoint": "/api/v1/jobs/createTask",
+      "docs_url": "https://docs.kie.ai/market/google/gemini-3-8-flash-tts.md",
+      "resolved": true,
+      "example_body": {
+        "temperature": 1.491465660275829,
+        "scene": "minim mollit ullamco in",
+        "sample_context": "anim veniam Lorem voluptate exercitation",
+        "speakers": [
+          {
+            "speaker_id": "Speaker 2",
+            "voice_name": "Fenrir",
+            "audio_profile": "ea Lorem sed",
+            "accent": "Transatlantic",
+            "style": "Whisper",
+            "pace": "Natural"
+          },
+          {
+            "speaker_id": "Speaker 1",
+            "voice_name": "Rasalgethi",
+            "audio_profile": "ut Ut consectetur tempor",
+            "accent": "British (Brixton)",
+            "style": "Whisper",
+            "pace": "Staccato"
+          }
+        ],
+        "dialogue_turns": [
+          {
+            "speaker_id": "Speaker 1",
+            "text": "Tero universe ad tremo utroque depulso valde molestiae antea. Certe deficio quidem cupio. Videlicet utrum sursum quas abduco conturbo currus conforto. Ustulo vereor abstergo adfectus arcus carpo subito careo. Voluntarius defluo virtus voluptatibus varius cornu tutamen canis vilis. Auctor adsuesco calcar bellicus dens aggredior aperio testimonium."
+          }
+        ]
+      },
+      "models": [
+        "google/gemini-3-8-flash-tts"
+      ],
+      "parameter_hints": {
+        "temperature": {
+          "type": "number",
+          "required": false,
+          "description": "Sampling temperature, e.g., 1",
+          "default": 1,
+          "minimum": 0,
+          "maximum": 2
+        },
+        "scene": {
+          "type": "string",
+          "required": false,
+          "description": "Scene description, e.g., \"A quiet, warm room with a fireplace crackling softly.\"",
+          "default": ""
+        },
+        "sample_context": {
+          "type": "string",
+          "required": false,
+          "description": "Sample context/overall tone, e.g., \"Audiobook style narration. Tone is gentle and inviting.\"",
+          "default": ""
+        },
+        "speakers": {
+          "type": "array",
+          "required": true,
+          "description": "List of speaker configurations",
+          "items": {
+            "type": "object",
+            "properties": {
+              "speaker_id": {
+                "type": "string",
+                "description": "Speaker identifier, e.g., \"Speaker 1\" or \"Speaker 2\";Must be 「Speaker N」format"
+              },
+              "voice_name": {
+                "type": "string",
+                "description": "Voice name, e.g., \"Zephyr\", \"Fenrir\", \"Puck\"",
+                "enum": [
+                  "Achernar",
+                  "Achird",
+                  "Algenib",
+                  "Algieba",
+                  "Alnilam",
+                  "Aoede",
+                  "Autonoe",
+                  "Callirrhoe",
+                  "Charon",
+                  "Despina",
+                  "Enceladus",
+                  "Erinome",
+                  "Fenrir",
+                  "Gacrux",
+                  "Iapetus",
+                  "Kore",
+                  "Laomedeia",
+                  "Leda",
+                  "Orus",
+                  "Puck",
+                  "Pulcherrima",
+                  "Rasalgethi",
+                  "Sadachbia",
+                  "Sadaltager",
+                  "Schedar",
+                  "Sulafat",
+                  "Umbriel",
+                  "Vindemiatrix",
+                  "Zephyr",
+                  "Zubenelgenubi"
+                ],
+                "x-apidog-enum": [
+                  {
+                    "value": "Achernar",
+                    "name": "",
+                    "description": ""
+                  },
+                  {
+                    "value": "Achird",
+                    "name": "",
+                    "description": ""
+                  },
+                  {
+                    "value": "Algenib",
+                    "name": "",
+                    "description": ""
+                  },
+                  {
+                    "value": "Algieba",
+                    "name": "",
+                    "description": ""
+                  },
+                  {
+                    "value": "Alnilam",
+                    "name": "",
+                    "description": ""
+                  },
+                  {
+                    "value": "Aoede",
+                    "name": "",
+                    "description": ""
+                  },
+                  {
+                    "value": "Autonoe",
+                    "name": "",
+                    "description": ""
+                  },
+                  {
+                    "value": "Callirrhoe",
+                    "name": "",
+                    "description": ""
+                  },
+                  {
+                    "value": "Charon",
+                    "name": "",
+                    "description": ""
+                  },
+                  {
+                    "value": "Despina",
+                    "name": "",
+                    "description": ""
+                  },
+                  {
+                    "value": "Enceladus",
+                    "name": "",
+                    "description": ""
+                  },
+                  {
+                    "value": "Erinome",
+                    "name": "",
+                    "description": ""
+                  },
+                  {
+                    "value": "Fenrir",
+                    "name": "",
+                    "description": ""
+                  },
+                  {
+                    "value": "Gacrux",
+                    "name": "",
+                    "description": ""
+                  },
+                  {
+                    "value": "Iapetus",
+                    "name": "",
+                    "description": ""
+                  },
+                  {
+                    "value": "Kore",
+                    "name": "",
+                    "description": ""
+                  },
+                  {
+                    "value": "Laomedeia",
+                    "name": "",
+                    "description": ""
+                  },
+                  {
+                    "value": "Leda",
+                    "name": "",
+                    "description": ""
+                  },
+                  {
+                    "value": "Orus",
+                    "name": "",
+                    "description": ""
+                  },
+                  {
+                    "value": "Puck",
+                    "name": "",
+                    "description": ""
+                  },
+                  {
+                    "value": "Pulcherrima",
+                    "name": "",
+                    "description": ""
+                  },
+                  {
+                    "value": "Rasalgethi",
+                    "name": "",
+                    "description": ""
+                  },
+                  {
+                    "value": "Sadachbia",
+                    "name": "",
+                    "description": ""
+                  },
+                  {
+                    "value": "Sadaltager",
+                    "name": "",
+                    "description": ""
+                  },
+                  {
+                    "value": "Schedar",
+                    "name": "",
+                    "description": ""
+                  },
+                  {
+                    "value": "Sulafat",
+                    "name": "",
+                    "description": ""
+                  },
+                  {
+                    "value": "Umbriel",
+                    "name": "",
+                    "description": ""
+                  },
+                  {
+                    "value": "Vindemiatrix",
+                    "name": "",
+                    "description": ""
+                  },
+                  {
+                    "value": "Zephyr",
+                    "name": "",
+                    "description": ""
+                  },
+                  {
+                    "value": "Zubenelgenubi",
+                    "name": "",
+                    "description": ""
+                  }
+                ]
+              },
+              "audio_profile": {
+                "type": "string",
+                "description": "Audio profile description, e.g., \"A warm and soothing narrator\" or \"A stern and weary gatekeeper\""
+              },
+              "accent": {
+                "type": "string",
+                "description": "Accent, e.g., \"British (RP)\" or \"American (Gen)\"",
+                "enum": [
+                  "Neutral",
+                  "American (Gen)",
+                  "American (Valley)",
+                  "American (South)",
+                  "British (RP)",
+                  "British (Brixton)",
+                  "Transatlantic",
+                  "Australian"
+                ],
+                "x-apidog-enum": [
+                  {
+                    "value": "Neutral",
+                    "name": "",
+                    "description": ""
+                  },
+                  {
+                    "value": "American (Gen)",
+                    "name": "",
+                    "description": ""
+                  },
+                  {
+                    "value": "American (Valley)",
+                    "name": "",
+                    "description": ""
+                  },
+                  {
+                    "value": "American (South)",
+                    "name": "",
+                    "description": ""
+                  },
+                  {
+                    "value": "British (RP)",
+                    "name": "",
+                    "description": ""
+                  },
+                  {
+                    "value": "British (Brixton)",
+                    "name": "",
+                    "description": ""
+                  },
+                  {
+                    "value": "Transatlantic",
+                    "name": "",
+                    "description": ""
+                  },
+                  {
+                    "value": "Australian",
+                    "name": "",
+                    "description": ""
+                  }
+                ]
+              },
+              "style": {
+                "type": "string",
+                "description": "Emotional style, e.g., \"Gentle\" or \"Deadpan\"",
+                "enum": [
+                  "Vocal Smile",
+                  "Newscaster",
+                  "Whisper",
+                  "Empathetic",
+                  "Promo/Hype",
+                  "Deadpan"
+                ],
+                "x-apidog-enum": [
+                  {
+                    "value": "Vocal Smile",
+                    "name": "",
+                    "description": ""
+                  },
+                  {
+                    "value": "Newscaster",
+                    "name": "",
+                    "description": ""
+                  },
+                  {
+                    "value": "Whisper",
+                    "name": "",
+                    "description": ""
+                  },
+                  {
+                    "value": "Empathetic",
+                    "name": "",
+                    "description": ""
+                  },
+                  {
+                    "value": "Promo/Hype",
+                    "name": "",
+                    "description": ""
+                  },
+                  {
+                    "value": "Deadpan",
+                    "name": "",
+                    "description": ""
+                  }
+                ]
+              },
+              "pace": {
+                "type": "string",
+                "description": "Pace, e.g., \"Slow\" or \"Natural\"",
+                "enum": [
+                  "Natural",
+                  "Rapid Fire",
+                  "The Drift",
+                  "Staccato"
+                ],
+                "x-apidog-enum": [
+                  {
+                    "value": "Natural",
+                    "name": "",
+                    "description": ""
+                  },
+                  {
+                    "value": "Rapid Fire",
+                    "name": "",
+                    "description": ""
+                  },
+                  {
+                    "value": "The Drift",
+                    "name": "",
+                    "description": ""
+                  },
+                  {
+                    "value": "Staccato",
+                    "name": "",
+                    "description": ""
+                  }
+                ]
+              }
+            },
+            "x-apidog-orders": [
+              "speaker_id",
+              "voice_name",
+              "audio_profile",
+              "accent",
+              "style",
+              "pace"
+            ],
+            "required": [
+              "speaker_id",
+              "voice_name",
+              "accent"
+            ],
+            "x-apidog-ignore-properties": []
+          }
+        },
+        "dialogue_turns": {
+          "type": "array",
+          "required": true,
+          "description": "List of dialogue turns, output in sequential order",
+          "items": {
+            "type": "object",
+            "properties": {
+              "speaker_id": {
+                "type": "string",
+                "description": "Corresponding speaker identifier, e.g., \"Speaker 1\""
+              },
+              "text": {
+                "type": "string",
+                "description": "The text spoken by the speaker, which may contain tone tags, e.g., \"Once upon a time, in a quiet valley hidden away...\"",
+                "maxLength": 10000
+              }
+            },
+            "x-apidog-orders": [
+              "speaker_id",
+              "text"
+            ],
+            "required": [
+              "speaker_id",
+              "text"
+            ],
+            "x-apidog-ignore-properties": []
+          }
+        }
+      },
+      "summary": "Gemini 3.8 Flash Text to speech OpenAPI Specification"
+    },
+    {
       "label": "Music Models > Suno > Lyrics Generation • Generate Lyrics",
       "title": "Generate Lyrics",
       "family": "Music Models > Suno > Lyrics Generation",
@@ -10893,6 +13489,7 @@
           "type": "array",
           "required": true,
           "description": "Array of audio file URLs to mashup. Provide 2 audio URLs. Upstream uses only the first 2. Each URL must be publicly accessible.",
+          "minItems": 2,
           "default": [
             "https://example.com/audio1.mp3",
             "https://example.com/audio2.mp3"
@@ -11130,6 +13727,7 @@
           "type": "array",
           "required": false,
           "description": "Image references. Only effective when `custom_mode=false`.\n- Optional\n- Up to 5 images; each image must not exceed 10 MB\n- Supported formats: `jpeg`, `png`, `webp`, and `bmp`",
+          "maxItems": 5,
           "items": {
             "type": "string"
           }
@@ -11159,6 +13757,7 @@
           "type": "array",
           "required": false,
           "description": "Video references. Only effective when `custom_mode=false`.\n- Optional\n- Up to 1 video file; each file must not exceed 100 MB, duration must not exceed 241 seconds, with no minimum duration\n- Supported formats: mp4, mov, and webm",
+          "maxItems": 1,
           "items": {
             "type": "string"
           }
@@ -12564,6 +15163,7 @@
           "type": "array",
           "required": false,
           "description": "URLs of input images for image-to-video generation. Optional field.\n\n- Accepts 0-2 images\n- If not provided, the model will perform text-to-video generation\n- File URLs after upload, not file content\n- Accepted types: image/jpeg, image/png, image/webp\n- Max size per image: 10.0MB",
+          "maxItems": 2,
           "default": [
             "https://file.aiquickdraw.com/custom-page/akr/section-images/example1.png"
           ],
@@ -12812,6 +15412,7 @@
           "type": "array",
           "required": false,
           "description": "Enter a list of image URLs or asset://{assetId} (for example: asset://asset-20260404242101-76djj).\nSingle image requirements:\nFormat: jpeg, png, webp, bmp, tiff, gif.\nAspect ratio (width/height): (0.4, 2.5)\nWidth and height (px): (300, 6000)\nSize: Single image less than 30 MB.\nMaximum number of files: The sum of the number of frames at the beginning and end must not exceed 9..",
+          "maxItems": 9,
           "default": [
             "https://file.aiquickdraw.com/custom-page/akr/section-images/example1.png"
           ],
@@ -12824,6 +15425,7 @@
           "type": "array",
           "required": false,
           "description": "Enter a list of video URLs or asset://{assetId} (for example: asset://asset-20260404242101-76djj).\nSingle video requirements:\nVideo format: mp4, mov.\nResolution: 480p, 720p\nDuration: Single video duration [2, 15] s, maximum 3 reference videos, total duration of all videos not exceeding 15 seconds.\nDimensions:\nAspect ratio (width/height): [0.4, 2.5]\nWidth/height (px): [300, 6000]\nTotal pixels: [640×640=409600, 834×1112=927408], i.e., the product of width and height must meet the range requirement of [409600, 927408].\nSize: Single video not exceeding 50 MB.\nFrame rate (FPS): [24, 60]",
+          "maxItems": 3,
           "items": {
             "type": "string",
             "format": "uri"
@@ -12833,6 +15435,7 @@
           "type": "array",
           "required": false,
           "description": "Enter a list of audio URLs or asset://{assetId} (for example: asset://asset-20260404242101-76djj).\nSingle audio requirements:\nFormat: wav, mp3\nDuration: Single audio duration [2, 15] s, maximum 3 reference audios, total duration of all audios not exceeding 15 s.\nSize: Single audio file size not exceeding 15 MB.",
+          "maxItems": 3,
           "items": {
             "type": "string",
             "format": "uri"
@@ -12921,6 +15524,7 @@
           "type": "array",
           "required": false,
           "description": "Enter a list of image URLs or asset://{assetId} (for example: asset://asset-20260404242101-76djj).\nSingle image requirements:\nFormat: jpeg, png, webp, bmp, tiff, gif.\nAspect ratio (width/height): (0.4, 2.5)\nWidth and height (px): (300, 6000)\nSize: Single image less than 30 MB.\nMaximum number of files: The sum of the number of frames at the beginning and end must not exceed 30.\nMutually exclusive with the first/last-frame scenario;",
+          "maxItems": 30,
           "default": [
             "https://file.aiquickdraw.com/custom-page/akr/section-images/example1.png"
           ],
@@ -12933,6 +15537,7 @@
           "type": "array",
           "required": false,
           "description": "Enter a list of video URLs or asset://{assetId} (for example: asset://asset-20260404242101-76djj) .\nSingle video requirements:\nVideo format: mp4, mov.\nResolution: 480p, 720p\nDimensions:\nAspect ratio (width/height): [0.4, 2.5]\nWidth/height (px): [300, 6000]\nTotal pixels: [640×640=409600, 834×1112=927408], i.e., the product of width and height must meet the range requirement of [409600, 927408].\nSize: Single video not exceeding 200 MB.\nFrame rate (FPS): [24, 60]\nSingle video duration: [2, 30] seconds; \nMutually exclusive with the first/last-frame scenario; Total duration of reference videos must not exceed 30 seconds.",
+          "maxItems": 10,
           "items": {
             "type": "string",
             "format": "uri"
@@ -12942,6 +15547,7 @@
           "type": "array",
           "required": false,
           "description": "Enter a list of audio URLs or asset://{assetId} (for example: asset://asset-20260404242101-76djj) .\nSingle audio requirements:\nFormat: wav, mp3\nSize: Single audio file size not exceeding 15 MB.\nSingle audio duration: [2, 30] seconds; \nMutually exclusive with the first/last-frame scenario; Total duration of reference videos must not exceed 30 seconds.",
+          "maxItems": 10,
           "items": {
             "type": "string",
             "format": "uri"
@@ -13212,6 +15818,7 @@
           "type": "array",
           "required": false,
           "description": "Enter a list of image URLs or asset://{assetId} (for example: asset://asset-20260404242101-76djj).\nSingle image requirements:\nFormat: jpeg, png, webp, bmp, tiff, gif.\nAspect ratio (width/height): (0.4, 2.5)\nWidth and height (px): (300, 6000)\nSize: Single image less than 30 MB.\nMaximum number of files: The sum of the number of frames at the beginning and end must not exceed 9..",
+          "maxItems": 9,
           "default": [
             "https://file.aiquickdraw.com/custom-page/akr/section-images/example1.png"
           ],
@@ -13224,6 +15831,7 @@
           "type": "array",
           "required": false,
           "description": "Enter a list of video URLs or asset://{assetId} (for example: asset://asset-20260404242101-76djj) .\nSingle video requirements:\nVideo format: mp4, mov.\nResolution: 480p, 720p\nDuration: Single video duration [2, 15] s, maximum 3 reference videos, total duration of all videos not exceeding 15 seconds.\nDimensions:\nAspect ratio (width/height): [0.4, 2.5]\nWidth/height (px): [300, 6000]\nTotal pixels: [640×640=409600, 834×1112=927408], i.e., the product of width and height must meet the range requirement of [409600, 927408].\nSize: Single video not exceeding 50 MB.\nFrame rate (FPS): [24, 60]",
+          "maxItems": 3,
           "items": {
             "type": "string",
             "format": "uri"
@@ -13233,6 +15841,7 @@
           "type": "array",
           "required": false,
           "description": "Enter a list of audio URLs or asset://{assetId} (for example: asset://asset-20260404242101-76djj) .\nSingle audio requirements:\nFormat: wav, mp3\nDuration: Single audio duration [2, 15] s, maximum 3 reference audios, total duration of all audios not exceeding 15 s.\nSize: Single audio file size not exceeding 15 MB.",
+          "maxItems": 3,
           "items": {
             "type": "string",
             "format": "uri"
@@ -13534,6 +16143,8 @@
           "type": "array",
           "required": true,
           "description": "Array of character reference image URLs. Up to 2 images are supported. Index 0 is the portrait image, and index 1 is the body image. The body image is optional, but if provided, the portrait image must be present at index 0.\n\nImage limits:\n- Each image must be no larger than `20MB`\n- Use a publicly accessible image URL",
+          "minItems": 1,
+          "maxItems": 2,
           "default": [
             "https://example.com/assets/character-portrait.png",
             "https://example.com/assets/character-body.png"
@@ -13825,6 +16436,7 @@
           "type": "array",
           "required": false,
           "description": "Provide an external image URL as a reference for video generation. Up to 7 images are supported. Do not use it simultaneously with task_id. In your prompt, reference an uploaded image by typing @image(n) followed by a space (for example: @image1 a sunset over the ocean).\n- Supports JPEG, PNG, and WEBP formats\n- Maximum file size for each image: 10MB\n- The Spicy mode is not available when using external images\n- The array can contain a maximum of seven URLs\n- Only one is supported when the resolution is 1080p.",
+          "maxItems": 7,
           "default": [
             "https://file.aiquickdraw.com/custom-page/akr/section-images/1762247692373tw5di116.png"
           ],
@@ -13997,6 +16609,7 @@
           "type": "array",
           "required": false,
           "description": "Upload image files to be used as API input. Supported file types: image/jpeg, image/png, image/webp, image/jpg. Maximum file size: 20MB. Supports multi-file upload, up to 7 file.Only one is supported when the resolution is 1080p.",
+          "maxItems": 7,
           "items": {
             "type": "string",
             "format": "uri"
@@ -14404,6 +17017,7 @@
           "default": [
             ""
           ],
+          "maxItems": 1,
           "items": {
             "type": "string",
             "format": "uri"
@@ -14463,6 +17077,7 @@
           "required": true,
           "description": "The URL  of a reference image. \nImage requirements: \n1. Formats: JPEG, JPG, PNG, WEBP. \n2. Resolution: The shortest side must be at least 400 pixels. A clear image with a resolution of 720P or higher is recommended. Avoid using images that are too small, blurry, or overly compressed, as this can degrade the output quality. \n3. Maximum file size: 20 MB.",
           "default": [],
+          "maxItems": 9,
           "items": {
             "type": "string",
             "format": "uri"
@@ -14601,6 +17216,7 @@
           "type": "array",
           "required": true,
           "description": "First-frame image URL list. Exactly one image is required.\n\nImage constraints:\nFormat: JPEG, JPG, PNG, WEBP.\nResolution: Width and height must be at least 300 pixels.\nAspect ratio: 1:2.5 to 2.5:1.\nFile size: Up to 10 MB.",
+          "maxItems": 1,
           "items": {
             "type": "string"
           }
@@ -14736,6 +17352,8 @@
           "type": "array",
           "required": true,
           "description": "Reference image URL list. Provide 1–9 images. The order defines which image is character1, character2, etc.\n\nImage limits:\nFormat: JPEG, JPG, PNG, and WEBP.\nResolution: shortest side at least 400 px. 720P or higher recommended. Avoid small, blurry, or heavily compressed images, as they degrade output quality.\nFile size: 10 MB maximum.",
+          "minItems": 1,
+          "maxItems": 9,
           "items": {
             "type": "string"
           }
@@ -14824,6 +17442,8 @@
           "type": "array",
           "required": false,
           "description": "Optional reference image URL list (0–5).\nImage requirements:\nFormat: JPEG, JPG, PNG, WEBP.\nResolution: both width and height must be at least 300 px.\nAspect ratio: 1:2.5–2.5:1.\nFile size: up to 10 MB.",
+          "minItems": 0,
+          "maxItems": 5,
           "items": {
             "type": "string"
           }
@@ -15182,6 +17802,7 @@
           "type": "array",
           "required": true,
           "description": "Image URLs for video generation. (Uploaded file URLs, not file content; supported types: image/jpeg, image/png; maximum file size: 10.0MB)",
+          "maxItems": 1,
           "default": [
             "https://static.aiquickdraw.com/tools/example/1764851002741_i0lEiI8I.png"
           ],
@@ -15298,6 +17919,7 @@
           "type": "array",
           "required": true,
           "description": "An array containing a single image URL. The photo must clearly show the subject's head, shoulders, and torso. (File URL after upload, not file content; Accepted types: image/jpeg, image/png, image/jpg; Max size: 10.0MB,size needs to be greater than 300px, aspect ratio 2:5 to 5:2.)",
+          "maxItems": 1,
           "default": [
             "https://static.aiquickdraw.com/tools/example/1767694885407_pObJoMcy.png"
           ],
@@ -15310,6 +17932,7 @@
           "type": "array",
           "required": true,
           "description": "An array containing a single video URL. The duration must be between 3 to 30 seconds, and the video must clearly show the subject's head, shoulders, and torso. (File URL after upload, not file content; Accepted types: video/mp4, video/quicktime; Max size: 100.0MB)",
+          "maxItems": 1,
           "default": [
             "https://static.aiquickdraw.com/tools/example/1767525918769_QyvTNib2.mp4"
           ],
@@ -15399,23 +18022,57 @@
           "minLength": 1,
           "maxLength": 3072
         },
-        "customize_multi_shots": {
-          "type": "boolean",
+        "duration": {
+          "type": "integer",
           "required": false,
-          "description": "Whether to enable multi-shot mode. Explicitly specifying this value is recommended. `true` enables multiple shots; `false` uses a single shot.",
-          "default": true
+          "description": "Total video duration in seconds. The supported range is 3 to 15 seconds, and the default is 5 seconds.",
+          "enum": [
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15
+          ],
+          "default": 5,
+          "minimum": 3,
+          "maximum": 15
         },
-        "prefer_multi_shots": {
-          "type": "boolean",
+        "resolution": {
+          "type": "string",
           "required": false,
-          "description": "Whether to enable intelligent shot planning. This field is mutually exclusive with `customize_multi_shots`.\n\nBoth fields may be `false`, but they cannot both be `true`.",
-          "default": true
+          "description": "Resolution of the generated video. Available values are `720p` (outputs a 720p video), `1080p` (outputs a 1080p video), and `4k` (outputs a 4K video).",
+          "enum": [
+            "720p",
+            "1080p",
+            "4k"
+          ],
+          "default": "720p"
+        },
+        "aspect_ratio": {
+          "type": "string",
+          "required": false,
+          "description": "Aspect ratio of the generated video. Supported values are `16:9`, `9:16`, and `1:1`.",
+          "enum": [
+            "16:9",
+            "9:16",
+            "1:1"
+          ],
+          "default": "16:9"
         },
         "multi_prompt": {
           "type": "array",
           "required": false,
           "description": "List of custom shots. When `customize_multi_shots` is `true`, this field is required, must not be empty, and supports up to 6 shots. When `customize_multi_shots` is `false`, it must be an empty array or omitted.",
           "default": [],
+          "maxItems": 6,
           "items": {
             "type": "object",
             "required": [
@@ -15446,7 +18103,11 @@
               "prompt",
               "duration"
             ],
-            "x-apidog-ignore-properties": []
+            "x--orders": [
+              "prompt",
+              "duration"
+            ],
+            "x--ignore-properties": []
           }
         },
         "elements": {
@@ -15515,7 +18176,13 @@
               "element_input_urls",
               "element_input_audio_urls"
             ],
-            "x-apidog-ignore-properties": []
+            "x--orders": [
+              "name",
+              "description",
+              "element_input_urls",
+              "element_input_audio_urls"
+            ],
+            "x--ignore-properties": []
           }
         },
         "audio": {
@@ -15524,50 +18191,17 @@
           "description": "Whether to add audio to the generated video. `true` enables audio; `false` disables audio.",
           "default": false
         },
-        "resolution": {
-          "type": "string",
+        "customize_multi_shots": {
+          "type": "boolean",
           "required": false,
-          "description": "Resolution of the generated video. Available values are `720p` (outputs a 720p video), `1080p` (outputs a 1080p video), and `4k` (outputs a 4K video).",
-          "enum": [
-            "720p",
-            "1080p",
-            "4k"
-          ],
-          "default": "720p"
+          "description": "Whether to enable multi-shot mode. Explicitly specifying this value is recommended. `true` enables multiple shots; `false` uses a single shot.",
+          "default": true
         },
-        "aspect_ratio": {
-          "type": "string",
+        "prefer_multi_shots": {
+          "type": "boolean",
           "required": false,
-          "description": "Aspect ratio of the generated video. Supported values are `16:9`, `9:16`, and `1:1`.",
-          "enum": [
-            "16:9",
-            "9:16",
-            "1:1"
-          ],
-          "default": "16:9"
-        },
-        "duration": {
-          "type": "integer",
-          "required": false,
-          "description": "Total video duration in seconds. The supported range is 3 to 15 seconds, and the default is 5 seconds.",
-          "enum": [
-            3,
-            4,
-            5,
-            6,
-            7,
-            8,
-            9,
-            10,
-            11,
-            12,
-            13,
-            14,
-            15
-          ],
-          "default": 5,
-          "minimum": 3,
-          "maximum": 15
+          "description": "Whether to enable intelligent shot planning. This field is mutually exclusive with `customize_multi_shots`.\n\nBoth fields may be `false`, but they cannot both be `true`.",
+          "default": true
         }
       },
       "summary": "Kling 3.0 Omni Text to Video OpenAPI Specification"
@@ -15596,6 +18230,8 @@
           "type": "array",
           "required": false,
           "description": "Array of video URLs. Exactly 1 video is required. HTTP, HTTPS, and OSS URLs are supported. Videos must be in MP4 or MOV format; each file must not exceed 200 MB; duration must be between 3 and 15.5 seconds; width and height must each be between 700 and 4,553 px; total pixels must not exceed 8,294,400; the aspect ratio must be between 0.4 and 2; and the frame rate must be between 24 and 60 fps.",
+          "minItems": 1,
+          "maxItems": 1,
           "default": [
             "https://example.com/source-video.mp4"
           ],
@@ -15609,6 +18245,7 @@
           "type": "array",
           "required": false,
           "description": "Array of image URLs. The maximum number of images depends on the number and types of reference subjects. When using only multi-image subjects, the combined number of reference images and multi-image subjects must not exceed 4. Video character subjects cannot be used together with multi-image subjects or reference images. HTTP, HTTPS, and OSS URLs are supported. Images must be in JPG, JPEG, or PNG format; each file must not exceed 50 MB; both width and height must be at least 300 px; and the aspect ratio must be between 0.4 and 2.5.",
+          "maxItems": 4,
           "default": [
             "https://example.com/reference-image.jpg"
           ],
@@ -16215,6 +18852,7 @@
           "type": "array",
           "required": false,
           "description": "Array of reference image URLs. Supports up to 9 images. Supports HTTP, HTTPS, and OSS addresses; supported image formats include JPG, JPEG, PNG, WEBP, HEIC, and HEIF; a single image size cannot exceed 30 MB; the side length of the image must be between 256 and 5760 pixels, and the aspect ratio must be between 0.4 and 2.5.",
+          "maxItems": 9,
           "default": [
             "https://example.com/reference-image-1.jpg",
             "https://example.com/reference-image-2.jpg"
@@ -16229,6 +18867,7 @@
           "type": "array",
           "required": false,
           "description": "Array of reference video URLs. Supports up to 3 videos. Supports MP4, MOV; video encoding supports H.264, H.265, audio encoding supports AAC, MP3; a single file size cannot exceed 50 MB; the duration of a single segment is 2 to 15 seconds, and the total duration of all reference videos cannot exceed 15 seconds; the video side length must be between 256 and 5760 pixels, the aspect ratio must be between 0.4 and 2.5, and the frame rate must be between 23.976 and 60.",
+          "maxItems": 3,
           "default": [
             "https://example.com/reference-video.mp4"
           ],
@@ -16242,6 +18881,7 @@
           "type": "array",
           "required": false,
           "description": "Array of reference audio URLs. Supports up to 3 audios. Supports WAV, MP3; a single file size cannot exceed 15 MB; the duration of a single segment is 2 to 15 seconds, and the total duration of all reference audios cannot exceed 15 seconds. reference_audio cannot be used alone, it must be accompanied by reference_image or reference_video.",
+          "maxItems": 3,
           "default": [
             "https://example.com/reference-audio.mp3"
           ],
@@ -16426,6 +19066,7 @@
           "type": "array",
           "required": false,
           "description": "Optional mask image URL(s). To have a specific subject in the image speak, use 'Subject Detection' to get the corresponding mask image and pass it as input. Accepted file types: image/jpeg, image/png, image/webp. Max file size: 10MB. Multiple file upload is supported, up to 5 files.",
+          "maxItems": 5,
           "items": {
             "type": "string",
             "format": "uri"
@@ -16587,6 +19228,8 @@
           "type": "array",
           "required": true,
           "description": "Fusion multi-reference image list. \n\n`ref_name` must be unique within the same list. You can reference the reference object in the prompt via `@ref_name`.",
+          "minItems": 1,
+          "maxItems": 7,
           "default": [
             {
               "image_url": "https://your-domain.com/images/dog.png",
@@ -17489,6 +20132,7 @@
           "type": "array",
           "required": true,
           "description": "The URL of the image used to generate video (File URL after upload, not file content; Accepted types: video/mp4, video/quicktime, video/x-matroska; Max size: 10.0MB)",
+          "maxItems": 3,
           "default": [],
           "items": {
             "type": "string",
@@ -17836,6 +20480,7 @@
           "type": "array",
           "required": true,
           "description": "A list of image URLs. All images must be at least 256x256px. (File URL after upload, not file content; Accepted types: image/jpeg, image/png, image/webp; Max size: 10.0MB)",
+          "maxItems": 1,
           "default": [],
           "items": {
             "type": "string",
@@ -18180,6 +20825,7 @@
           "type": "array",
           "required": true,
           "description": "Upload an image file to use as input for the API (File URL after upload, not file content; Accepted types: image/jpeg, image/png, image/webp; Max size: 10.0MB),All images must be at least 256x256px.",
+          "maxItems": 1,
           "default": [
             "https://static.aiquickdraw.com/tools/example/1765957673717_awiBAidD.webp"
           ],
@@ -18317,6 +20963,7 @@
           "type": "array",
           "required": true,
           "description": "The URL of the image used to generate video (File URL after upload, not file content; Accepted types: video/mp4, video/quicktime, video/x-matroska; Max size: 10.0MB)",
+          "maxItems": 3,
           "default": [
             "https://static.aiquickdraw.com/tools/example/1765957777782_cNJpvhRx.mp4"
           ],
@@ -18501,6 +21148,7 @@
           "type": "array",
           "required": false,
           "description": "Array of reference image URLs. At least one of `reference_image` or `reference_video` must be provided. The total number of images and videos cannot exceed 5.",
+          "maxItems": 5,
           "default": [
             "https://example.com/demo/ref-image-1.png",
             "https://example.com/demo/ref-image-2.png"
@@ -18514,6 +21162,7 @@
           "type": "array",
           "required": false,
           "description": "Array of reference video URLs. At least one of `reference_image` or `reference_video` must be provided. The total number of images and videos cannot exceed 5.",
+          "maxItems": 5,
           "default": [
             "https://example.com/demo/ref-video-1.mp4"
           ],
@@ -18839,17 +21488,20 @@
         "first_frame_url": {
           "type": "object",
           "required": false,
-          "description": "URL of the first-frame image. Up to 1 image, used strictly as the first frame of the video. Used for first-frame-to-video / first-and-last-frame-to-video generation. Cannot be provided together with `reference_*_urls`.\nFormats: JPEG/JPG, PNG (transparency not supported), BMP, WEBP; each side [240, 8000] px; aspect ratio ≤ 8:1; ≤ 20MB."
+          "description": "URL of the first-frame image. Up to 1 image, used strictly as the first frame of the video. Used for first-frame-to-video / first-and-last-frame-to-video generation. Cannot be provided together with `reference_*_urls`.\nFormats: JPEG/JPG, PNG (transparency not supported), BMP, WEBP; each side [240, 8000] px; aspect ratio ≤ 8:1; ≤ 20MB.",
+          "properties": {}
         },
         "last_frame_url": {
           "type": "object",
           "required": false,
-          "description": "URL of the first-frame image. Up to 1 image, used strictly as the first frame of the video. Used for first-frame-to-video / first-and-last-frame-to-video generation. Cannot be provided together with `reference_*_urls`.\nFormats: JPEG/JPG, PNG (transparency not supported), BMP, WEBP; each side [240, 8000] px; aspect ratio ≤ 8:1; ≤ 20MB."
+          "description": "URL of the first-frame image. Up to 1 image, used strictly as the first frame of the video. Used for first-frame-to-video / first-and-last-frame-to-video generation. Cannot be provided together with `reference_*_urls`.\nFormats: JPEG/JPG, PNG (transparency not supported), BMP, WEBP; each side [240, 8000] px; aspect ratio ≤ 8:1; ≤ 20MB.",
+          "properties": {}
         },
         "reference_image_urls": {
           "type": "array",
           "required": false,
           "description": "Reference images for the all-purpose reference mode, with up to 10 images. Correspond to Image1, Image2, … in the prompt according to array order. Specifications are the same as `first_frame_url`. Cannot be provided together with the first-frame/last-frame parameters.",
+          "maxItems": 10,
           "items": {
             "description": "URL of the first-frame image. Up to 1 image, used strictly as the first frame of the video. Used for first-frame-to-video / first-and-last-frame-to-video generation. Cannot be provided together with `reference_*_urls`.\nFormats: JPEG/JPG, PNG (transparency not supported), BMP, WEBP; each side [240, 8000] px; aspect ratio ≤ 8:1; ≤ 20MB.",
             "type": "object",
@@ -18860,6 +21512,7 @@
           "type": "array",
           "required": false,
           "description": "Reference videos for the all-purpose reference mode, with up to 5 clips. Each clip must be 1–15 seconds, with a total duration ≤ 15 seconds. Correspond to Video1, Video2, … according to array order.\nFormats: mp4, mov; each side [240, 4096] px; aspect ratio ≤ 8:1; each file ≤ 100MB.\nThere is an additional constraint on the output side: the input video duration + `duration` must not exceed 30 seconds.",
+          "maxItems": 5,
           "items": {
             "description": "URL of the first-frame image. Up to 1 image, used strictly as the first frame of the video. Used for first-frame-to-video / first-and-last-frame-to-video generation. Cannot be provided together with `reference_*_urls`.\nFormats: JPEG/JPG, PNG (transparency not supported), BMP, WEBP; each side [240, 8000] px; aspect ratio ≤ 8:1; ≤ 20MB.",
             "type": "object",
@@ -18870,6 +21523,7 @@
           "type": "array",
           "required": false,
           "description": "Reference audio for the all-purpose reference mode, with up to 5 clips. Each clip must be 1–15 seconds, with a total duration ≤ 15 seconds. Correspond to Audio1, Audio2, … according to array order. Formats: wav, mp3; ≤ 15MB. Audio should not be used alone as the only media input; pairing it with an image or video is still recommended.",
+          "maxItems": 5,
           "items": {
             "description": "URL of the first-frame image. Up to 1 image, used strictly as the first frame of the video. Used for first-frame-to-video / first-and-last-frame-to-video generation. Cannot be provided together with `reference_*_urls`.\nFormats: JPEG/JPG, PNG (transparency not supported), BMP, WEBP; each side [240, 8000] px; aspect ratio ≤ 8:1; ≤ 20MB.",
             "type": "object",
@@ -18880,6 +21534,7 @@
           "type": "array",
           "required": false,
           "description": "File-to-video generation. Up to 1 file. Cannot be provided together with `reference_link_urls`, or with the first-frame/last-frame parameters.\nFormats: docx/doc/xlsx/xls/pptx/ppt/pdf/txt/key/pages/numbers/md; ≤ 100MB; pdf/docx/ppt/key/pages, etc. ≤ 50 pages.",
+          "maxItems": 1,
           "items": {
             "description": "URL of the first-frame image. Up to 1 image, used strictly as the first frame of the video. Used for first-frame-to-video / first-and-last-frame-to-video generation. Cannot be provided together with `reference_*_urls`.\nFormats: JPEG/JPG, PNG (transparency not supported), BMP, WEBP; each side [240, 8000] px; aspect ratio ≤ 8:1; ≤ 20MB.",
             "type": "object",
@@ -18890,6 +21545,7 @@
           "type": "array",
           "required": false,
           "description": "Link-to-video generation. Up to 1 publicly accessible webpage that does not require login. Cannot be provided together with `reference_file_urls`, or with the first-frame/last-frame parameters.",
+          "maxItems": 1,
           "items": {
             "description": "URL of the first-frame image. Up to 1 image, used strictly as the first frame of the video. Used for first-frame-to-video / first-and-last-frame-to-video generation. Cannot be provided together with `reference_*_urls`.\nFormats: JPEG/JPG, PNG (transparency not supported), BMP, WEBP; each side [240, 8000] px; aspect ratio ≤ 8:1; ≤ 20MB.",
             "type": "object",
@@ -18970,17 +21626,20 @@
         "first_frame_url": {
           "type": "object",
           "required": false,
-          "description": "URL of the first-frame image. Up to 1 image, used strictly as the first frame of the video. Used for first-frame-to-video or first-and-last-frame-to-video generation. Cannot be provided together with `reference_*_urls`.\nFormats: JPEG/JPG, PNG (transparency not supported), BMP, WEBP; each side [240, 8000] px; aspect ratio ≤ 8:1; ≤ 20MB."
+          "description": "URL of the first-frame image. Up to 1 image, used strictly as the first frame of the video. Used for first-frame-to-video or first-and-last-frame-to-video generation. Cannot be provided together with `reference_*_urls`.\nFormats: JPEG/JPG, PNG (transparency not supported), BMP, WEBP; each side [240, 8000] px; aspect ratio ≤ 8:1; ≤ 20MB.",
+          "properties": {}
         },
         "last_frame_url": {
           "type": "object",
           "required": false,
-          "description": "URL of the first-frame image. Up to 1 image, used strictly as the first frame of the video. Used for first-frame-to-video or first-and-last-frame-to-video generation. Cannot be provided together with `reference_*_urls`.\nFormats: JPEG/JPG, PNG (transparency not supported), BMP, WEBP; each side [240, 8000] px; aspect ratio ≤ 8:1; ≤ 20MB."
+          "description": "URL of the first-frame image. Up to 1 image, used strictly as the first frame of the video. Used for first-frame-to-video or first-and-last-frame-to-video generation. Cannot be provided together with `reference_*_urls`.\nFormats: JPEG/JPG, PNG (transparency not supported), BMP, WEBP; each side [240, 8000] px; aspect ratio ≤ 8:1; ≤ 20MB.",
+          "properties": {}
         },
         "reference_image_urls": {
           "type": "array",
           "required": false,
           "description": "Reference images for all-purpose reference mode. Up to 10 images. Correspond to Image1, Image2, and so on in the prompt according to array order. Same specifications as `first_frame_url`. Cannot be provided together with the first-frame or last-frame image.",
+          "maxItems": 10,
           "items": {
             "description": "URL of the first-frame image. Up to 1 image, used strictly as the first frame of the video. Used for first-frame-to-video or first-and-last-frame-to-video generation. Cannot be provided together with `reference_*_urls`.\nFormats: JPEG/JPG, PNG (transparency not supported), BMP, WEBP; each side [240, 8000] px; aspect ratio ≤ 8:1; ≤ 20MB.",
             "type": "object",
@@ -18991,6 +21650,7 @@
           "type": "array",
           "required": false,
           "description": "Reference videos for all-purpose reference mode. Up to 5 videos. Each video must be 1–15s, with a combined duration of ≤ 15s. Correspond to Video1, Video2, and so on according to array order.\nFormats: mp4, mov; each side [240, 4096] px; aspect ratio ≤ 8:1; each file ≤ 100MB.\nThere is an additional output-side limit: the input video duration plus `duration` cannot exceed 30 seconds.",
+          "maxItems": 5,
           "items": {
             "description": "URL of the first-frame image. Up to 1 image, used strictly as the first frame of the video. Used for first-frame-to-video or first-and-last-frame-to-video generation. Cannot be provided together with `reference_*_urls`.\nFormats: JPEG/JPG, PNG (transparency not supported), BMP, WEBP; each side [240, 8000] px; aspect ratio ≤ 8:1; ≤ 20MB.",
             "type": "object",
@@ -19001,6 +21661,7 @@
           "type": "array",
           "required": false,
           "description": "Reference audio files for all-purpose reference mode. Up to 5 audio files. Each file must be 1–15s, with a combined duration of ≤ 15s. Correspond to Audio1, Audio2, and so on according to array order. Formats: wav, mp3; ≤ 15MB. Even when used as the only media input, it is still recommended to provide an image or video together with it.",
+          "maxItems": 5,
           "items": {
             "description": "URL of the first-frame image. Up to 1 image, used strictly as the first frame of the video. Used for first-frame-to-video or first-and-last-frame-to-video generation. Cannot be provided together with `reference_*_urls`.\nFormats: JPEG/JPG, PNG (transparency not supported), BMP, WEBP; each side [240, 8000] px; aspect ratio ≤ 8:1; ≤ 20MB.",
             "type": "object",
@@ -19011,6 +21672,7 @@
           "type": "array",
           "required": false,
           "description": "File-to-video generation. Up to 1 file. Cannot be provided together with `reference_link_urls`, or with the first-frame/last-frame image.\nFormats: docx/doc/xlsx/xls/pptx/ppt/pdf/txt/key/pages/numbers/md; ≤ 100MB; pdf/docx/ppt/key/pages, etc. ≤ 50 pages.",
+          "maxItems": 1,
           "items": {
             "description": "URL of the first-frame image. Up to 1 image, used strictly as the first frame of the video. Used for first-frame-to-video or first-and-last-frame-to-video generation. Cannot be provided together with `reference_*_urls`.\nFormats: JPEG/JPG, PNG (transparency not supported), BMP, WEBP; each side [240, 8000] px; aspect ratio ≤ 8:1; ≤ 20MB.",
             "type": "object",
@@ -19021,6 +21683,7 @@
           "type": "array",
           "required": false,
           "description": "Link-to-video generation. Up to 1 publicly accessible webpage that does not require login. Cannot be provided together with `reference_file_urls`, or with the first-frame/last-frame image.",
+          "maxItems": 1,
           "items": {
             "description": "URL of the first-frame image. Up to 1 image, used strictly as the first frame of the video. Used for first-frame-to-video or first-and-last-frame-to-video generation. Cannot be provided together with `reference_*_urls`.\nFormats: JPEG/JPG, PNG (transparency not supported), BMP, WEBP; each side [240, 8000] px; aspect ratio ≤ 8:1; ≤ 20MB.",
             "type": "object",
@@ -19084,13 +21747,13 @@
   "catalog_release": "2026-09-17 studio refresh",
   "catalog_refresh": {
     "source": "https://docs.kie.ai/llms.txt",
-    "synced_at": 1790286415,
-    "documents_indexed": 223,
-    "documents_scanned": 223,
+    "synced_at": 1790695629,
+    "documents_indexed": 229,
+    "documents_scanned": 229,
     "documents_failed": 0,
-    "current_document_model_ids": 146,
-    "merged_model_ids": 167,
-    "merged_operations": 241,
-    "note": "Merged with previous bundled schemas to preserve operations not listed in the current English docs index."
+    "current_document_model_ids": 168,
+    "merged_model_ids": 174,
+    "merged_operations": 247,
+    "note": "Merged with previous bundled schemas to preserve operations and model IDs absent from the current English docs index."
   }
 }

@@ -2,6 +2,7 @@ import importlib.util
 import json
 import pathlib
 import sys
+import tempfile
 import unittest
 from types import SimpleNamespace
 from unittest.mock import patch
@@ -16,9 +17,17 @@ def load_plugin():
     spec = importlib.util.spec_from_file_location(name, ROOT / "__init__.py", submodule_search_locations=[str(ROOT)])
     mod = importlib.util.module_from_spec(spec)
     sys.modules[name] = mod
+    settings_package = type(sys)(f"{name}.kie")
+    settings_package.__path__ = [str(ROOT / "kie")]
+    sys.modules[f"{name}.kie"] = settings_package
+    settings_module = importlib.import_module(f"{name}.kie.settings")
+    settings_module._user_config_dir = lambda: pathlib.Path(_TEST_CONFIG_DIR.name)
     assert spec.loader is not None
     spec.loader.exec_module(mod)
     return mod
+
+
+_TEST_CONFIG_DIR = tempfile.TemporaryDirectory(prefix="kie-next-test-config-")
 
 
 class TestGeneratedNodes(unittest.TestCase):
@@ -126,6 +135,40 @@ class TestGeneratedNodes(unittest.TestCase):
         self.assertIn("reasoning_effort", inputs["optional"])
         self.assertIn("web_search", inputs["optional"])
         self.assertIn("images", inputs["optional"])
+
+    def test_gemini_native_model_uses_contents_payload(self):
+        generated = self.plugin.nodes.generated
+        operation = {
+            "title": "Gemini 3.8 Flash",
+            "family": "Chat Models > Gemini",
+            "endpoint": "/gemini/v1/models/gemini-3-8-flash:streamGenerateContent",
+            "models": ["gemini-3-8-flash"],
+        }
+        widgets = generated._llm_input_types(operation)["optional"]
+        self.assertNotIn("images", widgets)
+
+        class FakeClient:
+            def raw_api_request(self, method, endpoint, body):
+                self.request = (method, endpoint, body)
+                return {"candidates": [{"content": {"parts": [{"text": "Hello"}]}}]}
+
+        client = FakeClient()
+        with patch.object(generated, "make_client", return_value=client), patch.object(generated, "_credit_balance", return_value=55), patch.object(generated, "_credit_receipt", side_effect=lambda _client, outputs, *_args, **_kwargs: outputs):
+            generated._execute_llm(operation, "gemini-3-8-flash", {
+                "prompt": "Say hello.",
+                "system_prompt": "Be concise.",
+                "history_json": '[{"role":"assistant","content":"Earlier reply"}]',
+                "tools_json": '[{"googleSearch":{}}]',
+                "expert_override_json": "{}",
+                "stream": True,
+            })
+        method, endpoint, body = client.request
+        self.assertEqual((method, endpoint), ("POST", operation["endpoint"]))
+        self.assertEqual(body["contents"][0], {"role": "model", "parts": [{"text": "Earlier reply"}]})
+        self.assertEqual(body["contents"][-1], {"role": "user", "parts": [{"text": "Say hello."}]})
+        self.assertEqual(body["systemInstruction"], {"parts": [{"text": "Be concise."}]})
+        self.assertEqual(body["tools"], [{"googleSearch": {}}])
+        self.assertTrue(body["stream"])
 
     def test_kie_openai_responses_models_use_responses_payload(self):
         generated = self.plugin.nodes.generated
