@@ -305,6 +305,15 @@ def _parse_llms_index(text: str) -> list[dict[str, str]]:
 def _extract_endpoint(text: str) -> tuple[str, str]:
     host = r"https://(?:api\.kie\.ai|kieai\.redpandaai\.co)"
     relative = r"/(?:api|v1|codex|claude|gemini|chat|openai)/[^\s`\"')]+"
+    # A page may mention a related URL in prose before showing its actual
+    # request example. Prefer the embedded OpenAPI operation when available.
+    openapi = re.search(
+        r"(?im)^\s{2}(/[^\r\n]+):\s*\r?\n\s{4}(get|post|put|patch|delete):",
+        text,
+    )
+    if openapi:
+        return openapi.group(2).upper(), openapi.group(1)
+
     # Apidog markdown normally renders method and path/URL together or on adjacent lines.
     block = re.search(
         rf"(?mi)^\s*(GET|POST|PUT|PATCH|DELETE)\s*$[\r\n]+\s*({host}[^\s`\"')]+|{relative})\s*$",
@@ -323,15 +332,6 @@ def _extract_endpoint(text: str) -> tuple[str, str]:
     )
     if inline:
         return inline.group(1).upper(), inline.group(2).rstrip(".,")
-
-    # The current Apidog pages embed the page's OpenAPI specification in the
-    # HTML. Once converted to plain text it appears as YAML under `paths:`.
-    openapi = re.search(
-        r"(?im)^\s{2}(/[^\r\n]+):\s*\r?\n\s{4}(get|post|put|patch|delete):",
-        text,
-    )
-    if openapi:
-        return openapi.group(2).upper(), openapi.group(1)
 
     # cURL fallback. --request/-X wins; a request carrying data/form is POST.
     curl = re.search(rf"curl[^\n]*?[\"']({host}[^\"']+)[\"']", text, re.I)
@@ -412,6 +412,15 @@ def _authoritative_models(entry: dict[str, str], extracted: list[str]) -> list[s
     for marker, model in overrides.items():
         if marker in url:
             return [model]
+    # Claude's current API pages document a shared /claude/v1/messages endpoint,
+    # but some pages omit the model field from their examples. The Market page
+    # slug is the stable model ID in that case (including two KIE typo slugs).
+    if "/market/claude/" in url:
+        slug = url.rsplit("/", 1)[-1].removesuffix(".md")
+        if slug.startswith("claude-"):
+            return [slug]
+        if slug.startswith("cluade-"):
+            return ["claude-" + slug[len("cluade-"):]]
     return extracted
 
 

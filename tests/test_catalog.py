@@ -27,6 +27,17 @@ class TestCatalog(unittest.TestCase):
             ["google/gemini-3-8-flash-lite-tts"],
         )
 
+    def test_claude_docs_slugs_recover_model_ids_when_examples_omit_them(self):
+        from kie.catalog import _authoritative_models
+        self.assertEqual(
+            _authoritative_models({"url": "https://docs.kie.ai/market/claude/claude-opus-5-5.md"}, []),
+            ["claude-opus-5-5"],
+        )
+        self.assertEqual(
+            _authoritative_models({"url": "https://docs.kie.ai/market/claude/cluade-sonnet-5.md"}, []),
+            ["claude-sonnet-5"],
+        )
+
     def test_index_only_keeps_every_api_page_without_fetching_each_doc(self):
         llms = """# docs\n## API Docs\n- Image Models > Demo [One](https://docs.kie.ai/market/demo/one.md): docs\n- Suno API [Two](https://docs.kie.ai/suno-api/two.md): docs\n- CN [三](https://docs.kie.ai/cn/demo/three.md): docs\n"""
 
@@ -85,6 +96,10 @@ class TestCatalog(unittest.TestCase):
             _extract_endpoint("openapi: 3.0.1\npaths:\n  /gemini/v1/models/gemini-3-8-flash:streamGenerateContent:\n    post:\n"),
             ("POST", "/gemini/v1/models/gemini-3-8-flash:streamGenerateContent"),
         )
+
+    def test_openapi_route_wins_over_unrelated_endpoint_in_prose(self):
+        text = """GET\nhttps://api.kie.ai/anthropic/v1/models\nopenapi: 3.0.1\npaths:\n  /claude/v1/messages:\n    post:\n"""
+        self.assertEqual(_extract_endpoint(text), ("POST", "/claude/v1/messages"))
 
     def test_extract_models(self):
         text = '{"model":"gpt-5-6-sol"}\n{"model": "veo3_fast"}\nmodel="veo3_fast"'

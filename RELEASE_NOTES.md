@@ -1,3 +1,10 @@
+# v0.6.2 — Expanded KIE Model Catalog
+
+- Refreshes the bundled catalog from KIE's official model documentation: 237 documentation pages scanned, 259 operations, and 190 model IDs after merging, with no documentation fetch failures and no dropped legacy model IDs.
+- Adds 16 newly documented model IDs across Seedance, Claude, Flux Kontext, Nano Banana, Qwen image, Runway, and Veo families.
+- Improves OpenAPI endpoint extraction and infers model IDs from authoritative documentation slugs where request examples omit them; corrects Claude endpoint parsing.
+- Verification: focused catalog tests passed (10/10); ZIP/package and Registry publication checks are performed for this release. No paid generation was submitted.
+
 # v0.6.1 — KIE Model Refresh & Registry Readiness
 
 - Refreshes the bundled catalog from KIE's official English docs: 229 pages scanned, 247 operations, 174 unique models after merging, and no dropped legacy model IDs.

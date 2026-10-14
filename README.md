@@ -1,8 +1,8 @@
 # KIE.ai Nodes Next for ComfyUI
 
-**Current version: 0.6.1 — KIE Model Refresh & Registry Readiness.** This release refreshes the shipped catalog from KIE's official docs while preserving IDs used by older workflows, and prepares credential handling for Registry review. It does not complete all 22 [roadmap commitments](ROADMAP.md). Paid provider workflows still require model-specific validation.
+**Current version: 0.6.2 — Expanded KIE Model Catalog.** This release refreshes the shipped catalog from KIE's official docs, adds newly documented model operations, and preserves IDs used by older workflows. It does not complete all 22 [roadmap commitments](ROADMAP.md). Paid provider workflows still require model-specific validation.
 
-- Latest package: [`ComfyUI-KIE-Nodes-Next-v0.6.1.zip`](dist/ComfyUI-KIE-Nodes-Next-v0.6.1.zip)
+- Latest package: [`ComfyUI-KIE-Nodes-Next-v0.6.2.zip`](dist/ComfyUI-KIE-Nodes-Next-v0.6.2.zip)
 - Release history: [`RELEASE_NOTES.md`](RELEASE_NOTES.md)
 
 ### Input checks and model controls
@@ -255,7 +255,7 @@ Task status/wait and upload/download helpers remain under Utility.
 
 ### Windows installer
 
-There is no one-click installer for v0.6.1. Use the v0.6.1 ZIP or ComfyUI Manager once the Registry lists an approved release. Do not use an old v0.3 installer for this release.
+Use the v0.6.2 ZIP or install from the Comfy Registry with `comfy node install kie-ai-nodes-next`. Do not use an old v0.3 installer for this release.
 
 ### Comfy Registry / Manager
 
