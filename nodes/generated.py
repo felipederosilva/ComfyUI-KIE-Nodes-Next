@@ -15,7 +15,7 @@ from ..kie.settings import record_credit_usage, save_last_credits
 from ..kie.capabilities import check_operation, operation_capabilities, require_valid
 from ..kie.task_history import record_task
 
-KIE_GENERATED_BUILD = "0.6.1"
+KIE_GENERATED_BUILD = "0.6.2"
 
 from ..kie.media import (
     download_audio_object,
