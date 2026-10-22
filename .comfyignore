@@ -2,6 +2,7 @@ tests/
 .github/
 *.sha256
 installer/
+dist/
 .catalog-refresh-cache/
 __pycache__/
 *.py[cod]

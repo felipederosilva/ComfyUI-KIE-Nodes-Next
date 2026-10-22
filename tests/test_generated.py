@@ -70,8 +70,8 @@ class TestGeneratedNodes(unittest.TestCase):
         node = self.find("Seedance 2.0")
         self.assertEqual(node.CATEGORY, "KIE Next/Video/ByteDance/Seedance")
         inputs = node.INPUT_TYPES()
-        self.assertEqual(inputs["required"]["prompt"][0], "STRING")
-        self.assertTrue(inputs["required"]["prompt"][1].get("multiline"))
+        self.assertEqual(inputs["optional"]["prompt"][0], "STRING")
+        self.assertTrue(inputs["optional"]["prompt"][1].get("multiline"))
         self.assertEqual(inputs["optional"]["first_frame_url"][0], "IMAGE")
         self.assertEqual(inputs["optional"]["last_frame_url"][0], "IMAGE")
         self.assertEqual(inputs["optional"]["reference_video_1"][0], "VIDEO")
@@ -221,7 +221,8 @@ class TestGeneratedNodes(unittest.TestCase):
         inputs = node.INPUT_TYPES()
         self.assertNotIn("model", inputs["required"])
         self.assertNotIn("model", inputs["optional"])
-        self.assertIn("prompt", inputs["required"])
+        # Suno allows instrumental Custom Mode without lyrics in prompt.
+        self.assertIn("prompt", inputs["optional"])
 
     def test_suno_market_envelope_and_payload_model_are_distinct(self):
         generated = self.plugin.nodes.generated

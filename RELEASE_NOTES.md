@@ -1,3 +1,18 @@
+# v0.6.3 — Model-specific Inputs & Market Schemas
+
+- Audits 240 KIE documentation pages and all 230 live Market entries. 229 Market schemas are available; Gemini 3.8 Flash TTS returns null and retains its last documented definition. The combined inventory contains 250 IDs (including legacy IDs/provider versions) and 266 operations.
+- Covers Kling 4.0 keyframe/reference video, Vidu Q4, Wan 2.6 Flash, Flux 3 Klein and Gemini 4 Argon, and recovers unresolved Grok Imagine Image 2.0 and direct chat definitions.
+- Reads model IDs from OpenAPI enums, defaults and examples; resolves local schema references, including encoded component names. Separates outer Market route IDs from inner provider versions such as Suno V6.
+- Adds authenticated, GET-only Market discovery to Refresh Live Catalog, with KIE's shared discovery rate limit respected and verified schemas cached for seven days.
+- Makes required/optional inputs follow the model schema, respects model-specific reference socket limits and defaults, and excludes unsupported resolutions from schema-driven choices. Adds native IMAGE batch keyframes and validation of Kling 4 frame counts/prompt references before upload.
+- Keeps node metadata discovery local and caches catalog reads, preventing unresolved documentation pages from blocking Comfy's node-list request on network timeouts.
+- Preserves alternative input schemas with an explicit input mode selector and checks that mode's required fields before upload. Retains all 318 previous generated node IDs; 337 generated nodes are registered in this release.
+- Adds a comparison with Comfy's current partner nodes and an implementation-priority review in `MODEL_CONTROLS_REVIEW.md`. Guided storyboard/character editors and fully dynamic input layouts remain future work.
+- Excludes historical ZIPs and Windows installers in `dist/` from the Registry package.
+- Verification: full Python tests, JavaScript UI tests, generated-input definitions and legacy-node-ID audit. No paid generation was submitted.
+
+After updating, restart ComfyUI and review saved widget values on nodes whose schemas changed. Node IDs are retained, but previously saved widget layouts may need those nodes to be recreated.
+
 # v0.6.2 — Expanded KIE Model Catalog
 
 - Refreshes the bundled catalog from KIE's official model documentation: 237 documentation pages scanned, 259 operations, and 190 model IDs after merging, with no documentation fetch failures and no dropped legacy model IDs.
