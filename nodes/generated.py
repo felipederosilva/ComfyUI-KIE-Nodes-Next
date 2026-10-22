@@ -8,14 +8,14 @@ import re
 import time
 from typing import Any
 
-from ..kie.catalog import load_catalog, resolve_operation
+from ..kie.catalog import load_catalog, operation_by_label, resolve_operation
 from ..kie.client import KIEAPIError, KIEClient, pretty_json
 from ..kie.helpers import make_client, parse_object_json
 from ..kie.settings import record_credit_usage, save_last_credits
 from ..kie.capabilities import check_operation, operation_capabilities, require_valid
 from ..kie.task_history import record_task
 
-KIE_GENERATED_BUILD = "0.6.2"
+KIE_GENERATED_BUILD = "0.6.3"
 
 from ..kie.media import (
     download_audio_object,
@@ -223,7 +223,7 @@ def _dedupe_default(default: str, values: list[str]) -> list[str]:
 
 def _is_image_field(name: str) -> bool:
     n = name.lower()
-    if n in {"first_frame_url", "last_frame_url", "firstframeurl", "lastframeurl", "input_urls",
+    if n in {"first_frame_url", "last_frame_url", "keyframe_urls", "firstframeurl", "lastframeurl", "input_urls",
              "reference_image", "reference_images"}:
         return True
     return "image" in n and ("url" in n or n in {"images", "image_input", "imageurls"})
@@ -254,7 +254,7 @@ def _is_plural_media_field(name: str, example: Any = None) -> bool:
     return isinstance(example, list) or "urls" in n or n.endswith("list") or n.endswith("s")
 
 
-def _media_aliases(name: str, example: Any = None) -> list[tuple[str, str, bool]]:
+def _media_aliases(name: str, example: Any = None, max_items: int | None = None) -> list[tuple[str, str, bool]]:
     """Friendly native sockets for plural VIDEO/AUDIO URL arrays.
 
     IMAGE already supports batches naturally in ComfyUI. VIDEO/AUDIO do not have a
@@ -262,14 +262,15 @@ def _media_aliases(name: str, example: Any = None) -> list[tuple[str, str, bool]
     than forcing users to paste URL JSON.
     """
     n = name.lower()
+    count = max(1, min(int(max_items), 16)) if isinstance(max_items, int) else 3
     if _is_video_field(name) and _is_plural_media_field(name, example):
         base = re.sub(r"_?urls?$|_?list$", "", name, flags=re.I).rstrip("_") or "video"
-        return [(f"{base}_{i}", "VIDEO", False) for i in range(1, 4)]
+        return [(f"{base}_{i}", "VIDEO", False) for i in range(1, count + 1)]
     if _is_audio_field(name) and _is_plural_media_field(name, example):
         if n == "uploadurllist":
             return [("audio_1", "AUDIO", True), ("audio_2", "AUDIO", True)]
         base = re.sub(r"_?urls?$|_?list$", "", name, flags=re.I).rstrip("_") or "audio"
-        return [(f"{base}_{i}", "AUDIO", False) for i in range(1, 4)]
+        return [(f"{base}_{i}", "AUDIO", False) for i in range(1, count + 1)]
     return []
 
 def _hint_default(hint: dict[str, Any]) -> Any:
@@ -324,6 +325,8 @@ def _scalar_widget(name: str, value: Any, op: dict[str, Any]):
         return ("BOOLEAN", {"default": _coerce_boolean(value, bool(hint.get("default", False))), **common})
     if hinted_enum:
         default = str(value) if value not in (None, "") else hinted_enum[0]
+        if default not in hinted_enum:
+            default = hinted_enum[0]
         return (_dedupe_default(default, hinted_enum), {"default": default, **common})
     if schema_type in {"integer", "int"}:
         default = int(value) if isinstance(value, (int, float)) and not isinstance(value, bool) else int(hint.get("default") or 0)
@@ -343,11 +346,11 @@ def _scalar_widget(name: str, value: Any, op: dict[str, Any]):
             "step": 0.01,
             **common,
         })
-    if n in {"aspect_ratio", "aspectratio"} and isinstance(value, str):
+    if n in {"aspect_ratio", "aspectratio"} and isinstance(value, str) and not hint:
         return (_dedupe_default(value or "auto", _ASPECTS), {"default": value or "auto", **common})
-    if n in {"resolution", "image_resolution", "resolution_type"} and isinstance(value, str):
+    if n in {"resolution", "image_resolution", "resolution_type"} and isinstance(value, str) and not hint:
         return (_dedupe_default(value or "720p", _RESOLUTIONS), {"default": value or "720p", **common})
-    if n in {"output_format", "outputformat"} and isinstance(value, str):
+    if n in {"output_format", "outputformat"} and isinstance(value, str) and not hint:
         return (_dedupe_default(value or "png", _OUTPUT_FORMATS), {"default": value or "png", **common})
     if n == "image_size" and isinstance(value, str):
         return (_dedupe_default(value or "square_hd", _IMAGE_SIZES), {"default": value or "square_hd", **common})
@@ -431,6 +434,8 @@ def _market_envelope_model(op: dict[str, Any], fallback_model: str = "") -> str:
     adapter also lets those nodes use their official Market envelope.
     """
     docs_url = str(op.get("docs_url") or "").lower().split("?", 1)[0].rstrip("/")
+    if op.get("market_model"):
+        return str(op["market_model"])
     for doc_path, envelope_model in _MARKET_ENVELOPE_MODELS_BY_DOC_PATH.items():
         if docs_url.endswith("/" + doc_path) or docs_url.endswith("/" + doc_path + ".md"):
             return envelope_model
@@ -446,12 +451,43 @@ def _all_parameter_names(op: dict[str, Any], body: dict[str, Any], query: dict[s
     return names
 
 
+def _input_variants(op: dict[str, Any]) -> list[dict[str, Any]]:
+    schema = op.get("input_schema") or {}
+    branches = schema.get("oneOf") or schema.get("anyOf") or []
+    return branches if any(branch.get("properties") for branch in branches) else []
+
+
+def _operation_for_variant(op: dict[str, Any], kwargs: dict[str, Any]) -> dict[str, Any]:
+    variants = _input_variants(op)
+    if not variants:
+        return op
+    titles = [str(branch.get("title") or f"Option {index + 1}") for index, branch in enumerate(variants)]
+    selected = str(kwargs.get("input_variant") or titles[0])
+    if selected not in titles:
+        raise ValueError("input_variant: choose one of " + ", ".join(titles))
+    branch = variants[titles.index(selected)]
+    from ..kie.catalog import _hint_from_schema
+    properties = branch.get("properties") or {}
+    required = set(branch.get("required") or [])
+    hints = {name: _hint_from_schema(value, required=name in required) for name, value in properties.items()}
+    body, _, _ = _request_templates(op)
+    for name in (op.get("parameter_hints") or {}):
+        if name not in properties and kwargs.get(name) is not None and (_is_image_field(name) or _is_video_field(name) or _is_audio_field(name)):
+            raise ValueError(f"{name}: this reference is not used in input mode '{selected}'. Disconnect it or choose its input mode.")
+    return {**op, "input_schema": branch, "parameter_hints": hints,
+            "example_body": {name: value for name, value in body.items() if name in properties}}
+
+
 def _friendly_input_types(op: dict[str, Any], *, model: str = "") -> dict[str, dict[str, Any]]:
     title = str(op.get("title") or "")
     body, query, market = _request_templates(op)
     required: dict[str, Any] = {}
     optional: dict[str, Any] = {}
     hints = op.get("parameter_hints") or {}
+    variants = _input_variants(op)
+    if variants:
+        titles = [str(branch.get("title") or f"Option {index + 1}") for index, branch in enumerate(variants)]
+        required["input_variant"] = (titles, {"default": titles[0], "tooltip": "Choose the provider's input mode. Only fields documented for that mode are submitted; its required inputs are checked before upload."})
 
     callback_names = {"callBackUrl", "callbackUrl", "callback_url"}
     has_callback = bool(callback_names.intersection(body) or callback_names.intersection(hints)) or market
@@ -465,15 +501,17 @@ def _friendly_input_types(op: dict[str, Any], *, model: str = "") -> dict[str, d
         if name in callback_names or (name == "model" and model):
             continue
         hint = hints.get(name) or {}
-        if name in body: value = body.get(name)
+        if "default" in hint: value = hint["default"]
+        elif name in body: value = body.get(name)
         elif name in query: value = query.get(name)
         else: value = _hint_default(hint)
 
         is_boolean = _is_boolean_hint(hint)
-        aliases = [] if is_boolean else _media_aliases(name, value)
+        aliases = [] if is_boolean else _media_aliases(name, value, hint.get("maxItems"))
         if aliases:
-            for alias, socket_type, force_required in aliases:
-                (required if force_required else optional)[alias] = (socket_type,)
+            for index, (alias, socket_type, force_required) in enumerate(aliases):
+                needed = force_required or (index == 0 and bool(hint.get("required")))
+                (required if needed else optional)[alias] = (socket_type, {"tooltip": str(hint.get("description") or "")})
             continue
         if is_boolean:
             widget = _scalar_widget(name, value, op)
@@ -485,9 +523,11 @@ def _friendly_input_types(op: dict[str, Any], *, model: str = "") -> dict[str, d
             widget = ("AUDIO",)
         else:
             widget = _scalar_widget(name, value, op)
+        if isinstance(widget[0], str) and widget[0] in {"IMAGE", "VIDEO", "AUDIO"} and hint.get("description"):
+            widget = (widget[0], {"tooltip": hint["description"]})
 
         is_path = name in (op.get("path_params") or [])
-        is_required = bool(hint.get("required")) or is_path or name in {"prompt", "text"} or _required_media(title, name)
+        is_required = is_path or (bool(hint.get("required")) if hint else name in {"prompt", "text"} or _required_media(title, name))
         (required if is_required else optional)[name] = widget
 
     # Skeleton docs remain recognizable/useful while the automatic deep sync runs.
@@ -576,8 +616,8 @@ def _coerce_widget_value(name: str, example: Any, value: Any, client: KIEClient,
 
 
 
-def _collect_media_aliases(client: KIEClient, field: str, example: Any, kwargs: dict[str, Any], *, dry_run: bool = False) -> list[str] | None:
-    aliases = _media_aliases(field, example)
+def _collect_media_aliases(client: KIEClient, field: str, example: Any, kwargs: dict[str, Any], *, dry_run: bool = False, hint: dict | None = None) -> list[str] | None:
+    aliases = _media_aliases(field, example, (hint or {}).get("maxItems"))
     if not aliases:
         return None
     urls: list[str] = []
@@ -596,6 +636,8 @@ def _collect_media_aliases(client: KIEClient, field: str, example: Any, kwargs: 
 
 
 def _build_payload(client: KIEClient, op: dict[str, Any], kwargs: dict[str, Any], *, model: str = "", dry_run: bool = False) -> dict[str, Any]:
+    model = (op.get("model_aliases") or {}).get(model, model)
+    op = _operation_for_variant(op, kwargs)
     body, query, market = _request_templates(op)
     hints = op.get("parameter_hints") or {}
     out: dict[str, Any] = {}
@@ -610,7 +652,7 @@ def _build_payload(client: KIEClient, op: dict[str, Any], kwargs: dict[str, Any]
         hint = hints.get(name) or {}
         is_boolean = _is_boolean_hint(hint)
         example = body.get(name, query.get(name, _hint_default(hint)))
-        aliased_urls = None if is_boolean else _collect_media_aliases(client, name, example, kwargs, dry_run=dry_run)
+        aliased_urls = None if is_boolean else _collect_media_aliases(client, name, example, kwargs, dry_run=dry_run, hint=hint)
         if aliased_urls is not None:
             if aliased_urls:
                 out[name] = aliased_urls
@@ -669,6 +711,7 @@ def _build_payload(client: KIEClient, op: dict[str, Any], kwargs: dict[str, Any]
 
 def preflight_model_inputs(op: dict[str, Any], model: str, kwargs: dict[str, Any], *, deferred_fields=()):
     """Use the same payload builder without uploading or creating an API client."""
+    op = _operation_for_variant(op, kwargs)
     payload = _build_payload(None, op, kwargs, model=model, dry_run=True)
     for name in op.get("path_params") or []:
         if name in kwargs:
@@ -1006,6 +1049,7 @@ def preflight_llm_inputs(op: dict[str, Any], model: str, kwargs: dict[str, Any],
 
 
 def _execute_llm(op: dict[str, Any], model: str, kwargs: dict[str, Any]):
+    model = (op.get("model_aliases") or {}).get(model, model)
     require_valid(preflight_llm_inputs(op, model, kwargs))
     client = make_client(None)
     credits_before = _credit_balance(client)
@@ -1344,9 +1388,9 @@ def make_model_node(op: dict[str, Any], model: str = ""):
         MODEL = resolved_model
         @classmethod
         def INPUT_TYPES(cls):
-            # Re-read the operation from live catalog so deep-sync improvements can
-            # enrich an already-registered node after a UI reload.
-            current = resolve_operation(str(cls.OP.get("label") or "")) or cls.OP
+            # Node metadata must be local: resolving missing docs here blocks
+            # ComfyUI's whole /object_info request on network timeouts.
+            current = operation_by_label(str(cls.OP.get("label") or "")) or cls.OP
             return _llm_input_types(current) if is_llm else _friendly_input_types(current, model=cls.MODEL)
 
         RETURN_TYPES = return_types
@@ -1418,10 +1462,19 @@ def generated_node_mappings() -> tuple[dict[str, type], dict[str, str]]:
         variants = _model_variants_for(op)
         if variants:
             for model in variants:
-                node_id = node_id_for(op, model)
+                node_id = node_id_for(op) if op.get("legacy_unversioned") and len(variants) == 1 else node_id_for(op, model)
                 classes[node_id] = make_model_node(op, model)
                 base = display_name_for(op, model)
                 names[node_id] = base if len(variants) == 1 else f"{base} · {_pretty_model_variant(model)}"
+                if model in (op.get("model_aliases") or {}):
+                    classes[node_id].CATEGORY = "KIE Next/Advanced/Compatibility"
+                    names[node_id] = base + " (legacy)"
+            if op.get("legacy_unversioned") and len(variants) > 1:
+                legacy_id = node_id_for(op)
+                legacy = make_model_node(op, variants[0])
+                legacy.CATEGORY = "KIE Next/Advanced/Compatibility"
+                classes[legacy_id] = legacy
+                names[legacy_id] = display_name_for(op) + " (legacy)"
         else:
             # Operations that are not model-versioned (upload, task detail, stems,
             # lyrics utilities, etc.) are still represented by one dedicated node.

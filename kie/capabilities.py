@@ -6,11 +6,13 @@ Missing documentation stays unknown; it is not interpreted as lack of support.
 from __future__ import annotations
 
 import math
+import re
 from typing import Any
 
 
 def operation_capabilities(op: dict[str, Any], model: str = "") -> dict[str, Any]:
     hints = op.get("parameter_hints") or {}
+
     body = op.get("example_body") or {}
     if isinstance(body.get("input"), dict):
         body = body["input"]
@@ -51,6 +53,12 @@ def check_operation(op: dict[str, Any], payload: dict[str, Any], *, model: str =
     warnings: list[str] = []
     media_fields, deferred_fields = set(media_fields), set(deferred_fields)
     hints = op.get("parameter_hints") or {}
+    input_schema = op.get("input_schema") or {}
+    alternatives = input_schema.get("anyOf") or input_schema.get("oneOf") or []
+    if alternatives and not any(branch.get("properties") for branch in alternatives):
+        if not any(all(_present(payload.get(key)) or key in deferred_fields for key in branch.get("required", [])) for branch in alternatives):
+            errors.append("Provide one of the documented input alternatives: " + " or ".join(
+                ", ".join(branch.get("required") or []) for branch in alternatives))
 
     def validate(name, value, schema, depth=0):
         if depth > 12 or not isinstance(schema, dict):
@@ -131,6 +139,19 @@ def check_operation(op: dict[str, Any], payload: dict[str, Any], *, model: str =
             errors.append("last_frame_url: connect a first frame as well.")
     if model in {"wan/3-0-video", "wan/3-0-video-prime"} and _present(payload.get("reference_file_urls")) and _present(payload.get("reference_link_urls")):
         errors.append("File and link references cannot be combined in this Wan operation.")
+    if model == "kling-4.0/keyframe-to-video":
+        keyframes = payload.get("keyframe_urls") or []
+        available = {f"keyframe_{index + 1}" for index in range(len(keyframes))}
+        for name in ("first_frame", "last_frame"):
+            if _present(payload.get(name + "_url")):
+                available.add(name)
+        duration = payload.get("duration", 5)
+        if isinstance(duration, int) and len(available) > min(duration + 1, 10):
+            errors.append("Kling 4.0: total first/middle/last frames cannot exceed min(duration + 1, 10).")
+        for mention in re.findall(r"@([A-Za-z_][A-Za-z_0-9]*)", str(payload.get("prompt") or "")):
+            field = "keyframe_urls" if mention.startswith("keyframe_") else mention + "_url"
+            if mention not in available and field not in deferred_fields:
+                errors.append(f"@{mention}: connect the corresponding Kling keyframe before generation.")
     if not hints:
         warnings.append("This catalog entry has no parameter schema; documented limits could not be checked.")
     else:

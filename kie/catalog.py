@@ -6,6 +6,7 @@ import re
 import threading
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from functools import lru_cache
 from pathlib import Path
 from typing import Any
 from urllib.parse import parse_qsl, urlsplit, urlunsplit
@@ -173,13 +174,20 @@ def bundled_catalog_path() -> Path:
     return Path(__file__).resolve().parents[1] / "models" / "catalog.json"
 
 
-def _read_catalog_file(path: Path) -> dict[str, Any] | None:
-    if not path.exists():
-        return None
+@lru_cache(maxsize=16)
+def _read_catalog_signature(path: str, modified_ns: int, size: int) -> dict[str, Any] | None:
     try:
-        data = json.loads(path.read_text(encoding="utf-8"))
+        data = json.loads(Path(path).read_text(encoding="utf-8"))
         return data if isinstance(data, dict) else None
     except Exception:
+        return None
+
+
+def _read_catalog_file(path: Path) -> dict[str, Any] | None:
+    try:
+        stat = path.stat()
+        return _read_catalog_signature(str(path.resolve()), stat.st_mtime_ns, stat.st_size)
+    except OSError:
         return None
 
 
@@ -220,8 +228,16 @@ def _merge_catalogs(bundled: dict[str, Any], generated: dict[str, Any]) -> dict[
         if not key:
             continue
         current = operations.get(key)
-        if current is None or _operation_quality(candidate) >= _operation_quality(current):
-            operations[key] = dict(candidate)
+        if current and candidate.get("market_model") and not current.get("market_model"):
+            current = {**current, "market_model": candidate["market_model"]}
+            operations[key] = current
+        current_verified = int((current or {}).get("schema_verified_at") or 0)
+        candidate_verified = int(candidate.get("schema_verified_at") or 0)
+        if current is None or candidate_verified > current_verified or (candidate_verified == current_verified and _operation_quality(candidate) >= _operation_quality(current)):
+            replacement = dict(candidate)
+            if current and (current.get("legacy_unversioned") or (not _operation_model_variants(current) and _operation_model_variants(candidate))):
+                replacement["legacy_unversioned"] = True
+            operations[key] = replacement
 
     merged["models"] = sorted(models.values(), key=lambda m: (str(m.get("family")), str(m.get("name")), str(m.get("model"))))
     merged["operations"] = sorted(operations.values(), key=lambda op: str(op.get("label") or op.get("title")))
@@ -484,37 +500,29 @@ def _hint_from_schema(schema: dict[str, Any], *, required: bool) -> dict[str, An
     return hint
 
 
+def _openapi_request_definition(text: str, endpoint: str, method: str) -> dict[str, Any]:
+    if yaml is None or "openapi:" not in text:
+        return {}
+    try:
+        from .market_catalog import request_definition
+        document = yaml.safe_load(text[text.find("openapi:"):].split("```", 1)[0])
+        return request_definition(document, endpoint, method) if isinstance(document, dict) else {}
+    except (ValueError, TypeError, AttributeError, yaml.YAMLError):
+        return {}
+
+
 def _extract_openapi_request(text: str, endpoint: str, method: str) -> tuple[dict[str, Any], dict[str, Any]]:
     """Read the OpenAPI YAML embedded by KIE's current Apidog HTML pages.
 
     Returns an example request body and field hints. For Market createTask APIs,
     the useful controls live in `input`, so the transport envelope is removed.
     """
-    if yaml is None:
-        return {}, {}
-    start = text.find("openapi:")
-    if start < 0:
-        return {}, {}
     try:
-        document = yaml.safe_load(text[start:].split("```", 1)[0])
-        paths = document.get("paths") if isinstance(document, dict) else {}
-        operation = (paths.get(endpoint) or {}).get(str(method or "post").lower())
-        content = ((operation or {}).get("requestBody") or {}).get("content") or {}
-        media = content.get("application/json") or next(iter(content.values()), {})
-        schema = media.get("schema") if isinstance(media, dict) else {}
-        if not isinstance(schema, dict):
-            return {}, {}
-        example = media.get("example") if isinstance(media.get("example"), dict) else {}
+        definition = _openapi_request_definition(text, endpoint, method)
+        schema = definition.get("schema") or {}
+        example = definition.get("example") or {}
         properties = schema.get("properties") if isinstance(schema.get("properties"), dict) else {}
         required = set(schema.get("required") or [])
-
-        # KIE Market APIs wrap model controls inside input. Keep that wrapper out
-        # of the visual node while retaining the original request example.
-        if endpoint == "/api/v1/jobs/createTask" and isinstance(properties.get("input"), dict):
-            input_schema = properties["input"]
-            properties = input_schema.get("properties") or {}
-            required = set(input_schema.get("required") or [])
-            example = example.get("input") if isinstance(example.get("input"), dict) else {}
 
         hints = {
             str(name): _hint_from_schema(value, required=str(name) in required)
@@ -637,6 +645,11 @@ def _fetch_doc(session: requests.Session, entry: dict[str, str]) -> dict[str, An
     clean_endpoint, endpoint_query = _split_endpoint_query(raw_endpoint)
     endpoint = _normalize_endpoint(clean_endpoint)
     schema_body, schema_hints = _extract_openapi_request(text, endpoint, method)
+    definition = _openapi_request_definition(text, endpoint, method)
+    # OpenAPI model enums survive even when examples omit the outer model.
+    # For versioned Suno inputs, retain the inner version as the visible variant.
+    nested_version = "model" in ((definition.get("schema") or {}).get("properties") or {})
+    schema_models = [] if definition.get("market_model") and nested_version else definition.get("model_ids", [])
     sample_body = schema_body or _extract_example_body(text)
     table_hints = _extract_parameter_hints(text)
     table_hints.update(schema_hints)
@@ -644,7 +657,8 @@ def _fetch_doc(session: requests.Session, entry: dict[str, str]) -> dict[str, An
         **entry,
         "method": method,
         "endpoint": endpoint,
-        "models": _authoritative_models(entry, _extract_models(text)),
+        "models": _authoritative_models(entry, schema_models or _extract_models(text)),
+        "market_model": definition.get("market_model") or "",
         "example_body": sample_body,
         "example_query": _extract_example_query(text, endpoint_query),
         "path_params": _extract_path_params(endpoint),
@@ -679,6 +693,8 @@ def _enrich_operation(op: dict[str, Any], doc: dict[str, Any]) -> dict[str, Any]
         updated["path_params"] = doc.get("path_params")
     if doc.get("models"):
         updated["models"] = list(doc.get("models") or [])
+    if doc.get("market_model"):
+        updated["market_model"] = doc["market_model"]
     if doc.get("parameter_hints"):
         updated["parameter_hints"] = doc.get("parameter_hints")
     if doc.get("summary"):
@@ -811,6 +827,16 @@ def sync_catalog(*, max_workers: int = 8, index_only: bool = False) -> dict[str,
             "models": sorted(models.values(), key=lambda m: (str(m.get("family")), str(m.get("name")), str(m.get("model")))),
             "operations": sorted(operations_by_url.values(), key=lambda op: str(op.get("label"))),
         }
+        payload = _merge_catalogs(load_catalog(), payload)
+        settings = _read_catalog_file(settings_path()) or {}
+        api_key = str(settings.get("api_key") or "").strip()
+        if api_key:
+            try:
+                from .market_catalog import sync_market_schemas
+                payload = sync_market_schemas(payload, api_key)
+            except (requests.RequestException, ValueError) as exc:
+                # Preserve the complete docs/bundle on discovery failures.
+                payload["market_sync_error"] = str(exc)
         _write_catalog(payload)
         return {"ok": True, **catalog_summary()}
     finally:
@@ -829,6 +855,9 @@ def catalog_summary() -> dict[str, Any]:
         "documents_indexed": int(catalog.get("documents_indexed") or 0),
         "documents_scanned": int(catalog.get("documents_scanned") or 0),
         "documents_failed": int(catalog.get("documents_failed") or 0),
+        "market_models_total": int(catalog.get("market_models_total") or 0),
+        "market_schemas_available": int(catalog.get("market_schemas_available") or 0),
+        "market_schemas_unavailable": list(catalog.get("market_schemas_unavailable") or []),
         "deep_sync_complete": bool(catalog.get("deep_sync_complete")),
         "path": str(generated_catalog_path()),
     }

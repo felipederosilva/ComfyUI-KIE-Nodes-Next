@@ -1,9 +1,14 @@
 # KIE.ai Nodes Next for ComfyUI
 
-**Current version: 0.6.2 — Expanded KIE Model Catalog.** This release refreshes the shipped catalog from KIE's official docs, adds newly documented model operations, and preserves IDs used by older workflows. It does not complete all 22 [roadmap commitments](ROADMAP.md). Paid provider workflows still require model-specific validation.
+**Current version: 0.6.3 — Model-specific Inputs & Market Schemas.** This release reconciles KIE's live Market catalog with its documentation, recovers missing model IDs and alternative input modes, and preserves existing workflow node IDs. It does not complete all 22 [roadmap commitments](ROADMAP.md). Paid provider workflows still require model-specific validation.
 
-- Latest package: [`ComfyUI-KIE-Nodes-Next-v0.6.2.zip`](dist/ComfyUI-KIE-Nodes-Next-v0.6.2.zip)
+- Latest package: [`ComfyUI-KIE-Nodes-Next-v0.6.3.zip`](dist/ComfyUI-KIE-Nodes-Next-v0.6.3.zip)
 - Release history: [`RELEASE_NOTES.md`](RELEASE_NOTES.md)
+- Model controls audit and next improvements: [`MODEL_CONTROLS_REVIEW.md`](MODEL_CONTROLS_REVIEW.md)
+
+The October 22 catalog checks 230 live Market entries. KIE supplies usable OpenAPI documents for 229; Gemini 3.8 Flash TTS currently returns a null schema, so its last documented definition is retained. The combined inventory has 250 IDs including legacy IDs and provider versions, and 266 operations. These numbers are different views of the catalog, not 250 newly released models.
+
+Model nodes use each schema's own required inputs, reference counts, enums and numeric limits. Kling 4 keyframes accept a native IMAGE batch; alternative request formats expose an `input_variant` selector and are validated before upload. Live catalog refresh now also checks the Market API using your saved KIE key, with discovery requests rate limited and verified schemas cached for seven days. Catalog discovery does not generate media or spend generation credits.
 
 ### Input checks and model controls
 
@@ -255,7 +260,7 @@ Task status/wait and upload/download helpers remain under Utility.
 
 ### Windows installer
 
-Use the v0.6.2 ZIP or install from the Comfy Registry with `comfy node install kie-ai-nodes-next`. Do not use an old v0.3 installer for this release.
+Use the v0.6.3 ZIP or install from the Comfy Registry with `comfy node install kie-ai-nodes-next`. A successful upload or a version-history entry does not establish Registry approval; check that the requested release is Active. Do not use an old v0.3 installer for this release.
 
 ### Comfy Registry / Manager
 
