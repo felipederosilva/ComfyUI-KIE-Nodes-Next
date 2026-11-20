@@ -75,6 +75,19 @@ def request_definition(document: dict, endpoint: str, method: str) -> dict:
             "model_ids": model_ids, "market_model": str(model_ids[0]) if market and model_ids else ""}
 
 
+def _normalize_model_id(value: Any) -> str:
+    return re.sub(r"[^a-z0-9]", "", str(value).lower())
+
+
+def _document_names_model(operation: dict, model_id: str) -> bool:
+    url = str(operation.get("docs_url") or "")
+    return (
+        url.endswith(".md")
+        and "/" not in model_id
+        and _normalize_model_id(url.rsplit("/", 1)[-1].removesuffix(".md")) == _normalize_model_id(model_id)
+    )
+
+
 def merge_market_schemas(catalog: dict, models: list[dict], schemas: dict, *, verified_at: int | None = None) -> dict:
     """Enrich existing nodes in place, preserving their documentation identity."""
     from .catalog import _hint_from_schema, _operation_model_variants
@@ -84,6 +97,7 @@ def merge_market_schemas(catalog: dict, models: list[dict], schemas: dict, *, ve
     operations = result.setdefault("operations", [])
     inventory = {row["model"]: row for row in result.get("models", [])}
     unavailable: list[str] = []
+    route_conflicts = dict(result.get("market_route_conflicts") or {})
     for model in models:
         model_id = model["model"]
         entry = schemas.get(model_id) or {}
@@ -102,17 +116,38 @@ def merge_market_schemas(catalog: dict, models: list[dict], schemas: dict, *, ve
         endpoint, method = next((item for item in paths if item[1] == "POST"), paths[0])
         definition = request_definition(document, endpoint, method)
         market_model = definition["market_model"]
-        inner_models = ((definition["schema"].get("properties") or {}).get("model") or {}).get("enum") or []
-        known_ids = {model_id, *definition["model_ids"], *inner_models}
-        normalize_id = lambda value: re.sub(r"[^a-z0-9]", "", str(value).lower())
-        normalized_ids = {normalize_id(value) for value in known_ids}
+        known_ids = {model_id, *definition["model_ids"]}
+        normalized_ids = {_normalize_model_id(value) for value in known_ids}
         op = next((candidate for candidate in operations
-                   if ((market_model and candidate.get("market_model") == market_model)
-                       or bool(known_ids.intersection(_operation_model_variants(candidate)))
-                       or any(normalize_id(value) in normalized_ids for value in _operation_model_variants(candidate))
-                       or any(str(candidate.get("docs_url") or "").endswith(path) and model_id == identifier for path, identifier in _UTILITY_DOC_MODELS.items())
-                       or ("/" not in model_id and normalize_id(str(candidate.get("docs_url") or "").rsplit("/", 1)[-1].removesuffix(".md")) == normalize_id(model_id))
-                       or (candidate.get("endpoint") == endpoint and not market_model and "/models/" in endpoint))), None)
+                   if market_model and candidate.get("market_model") == market_model), None)
+        named_doc = next((candidate for candidate in operations
+                          if candidate.get("resolved") and _document_names_model(candidate, model_id)), None)
+        op = op or named_doc
+        # Suno inner version enums are shared by separate operations. Match
+        # transport IDs first, and never match from a shared inner enum.
+        if op is None:
+            op = next((candidate for candidate in operations
+                       if (not market_model or not candidate.get("market_model")
+                           or _normalize_model_id(candidate["market_model"]) in normalized_ids)
+                       and (any(_normalize_model_id(value) in normalized_ids
+                                for value in _operation_model_variants(candidate))
+                            or any(str(candidate.get("docs_url") or "").endswith(path) and model_id == identifier
+                                   for path, identifier in _UTILITY_DOC_MODELS.items()))), None)
+
+        schema_source = "KIE model OpenAPI"
+        # Some Market schema envelopes point to a sibling model's hard-coded
+        # chat route. Use the model-specific official docs when they give a
+        # distinct endpoint and matching request schema.
+        route_conflicts.pop(model_id, None)
+        if (not market_model and named_doc and named_doc.get("input_schema")
+                and model_id in str(named_doc.get("endpoint") or "")
+                and model_id not in endpoint and named_doc["endpoint"] != endpoint):
+            route_conflicts[model_id] = {"market": endpoint, "documentation": named_doc["endpoint"]}
+            endpoint = named_doc["endpoint"]
+            method = named_doc["method"]
+            definition = {"schema": named_doc["input_schema"], "example": named_doc.get("example_body") or {},
+                          "model_ids": [model_id], "operation": {}}
+            schema_source = "KIE documentation OpenAPI"
         existing_operation = op is not None
         if op is None:
             tasks = model.get("taskType") or []
@@ -136,7 +171,7 @@ def merge_market_schemas(catalog: dict, models: list[dict], schemas: dict, *, ve
         aliases = dict(op.get("model_aliases") or {})
         for old in old_variants:
             for current in variants:
-                if old != current and normalize_id(old) == normalize_id(current):
+                if old != current and _normalize_model_id(old) == _normalize_model_id(current):
                     aliases[old] = current
         if aliases:
             op["model_aliases"] = aliases
@@ -144,7 +179,7 @@ def merge_market_schemas(catalog: dict, models: list[dict], schemas: dict, *, ve
                    "models": list(dict.fromkeys([*old_variants, *variants])),
                    "parameter_hints": hints, "example_body": definition["example"],
                    "input_schema": control_schema, "market_catalog_id": model_id,
-                   "schema_source": "KIE model OpenAPI", "schema_verified_at": now})
+                   "schema_source": schema_source, "schema_verified_at": now})
         if market_model:
             op["market_model"] = market_model
         description = definition["operation"].get("description") or model.get("description")
@@ -155,7 +190,8 @@ def merge_market_schemas(catalog: dict, models: list[dict], schemas: dict, *, ve
     result["models"] = sorted(inventory.values(), key=lambda row: (str(row.get("family")), row["model"]))
     result["operations"] = sorted(operations, key=lambda op: str(op.get("label", "")))
     result.update({"market_models_total": len(models), "market_schemas_available": len(models) - len(unavailable),
-                   "market_schemas_unavailable": unavailable, "market_checked_at": now})
+                   "market_schemas_unavailable": unavailable, "market_checked_at": now,
+                   "market_route_conflicts": route_conflicts})
     return result
 
 

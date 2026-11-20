@@ -54,6 +54,51 @@ class TestMarketCatalog(unittest.TestCase):
         self.assertEqual(result["operations"], [])
         self.assertEqual(result["market_schemas_unavailable"], [model["model"]])
 
+    def test_documented_chat_route_wins_when_market_points_to_sibling_model(self):
+        carbon = "/gemini/v1/models/gemini-4-carbon:streamGenerateContent"
+        argon = carbon.replace("carbon", "argon")
+        controls = {"properties": {"contents": {"type": "array"}}}
+        docs = [
+            {"docs_url": f"https://docs.kie.ai/market/gemini/{name}.md",
+             "models": [name], "endpoint": route, "resolved": True, "method": "POST",
+             "input_schema": controls, "family": "Chat Models > Gemini"}
+            for name, route in [("gemini-4-argon", argon), ("gemini-4-carbon", carbon)]
+        ]
+        body = {"application/json": {"schema": {"properties": {"tools": {"type": "array"}}}}}
+        schema = {"paths": {argon: {"post": {"requestBody": {"content": body}}}}}
+        result = merge_market_schemas(
+            {"operations": docs},
+            [{"model": "gemini-4-carbon", "taskType": ["Chat"]}],
+            {"gemini-4-carbon": {"openapi": schema}},
+        )
+        actual = next(op for op in result["operations"] if op["endpoint"] == carbon)
+        self.assertEqual(actual["input_schema"], controls)
+        self.assertEqual(actual["models"], ["gemini-4-carbon"])
+        self.assertEqual(result["market_route_conflicts"]["gemini-4-carbon"]["market"], argon)
+
+    def test_docs_yaml_keeps_indented_markdown_in_operation_description(self):
+        source = """```yaml
+openapi: 3.1.0
+paths:
+  /example:
+    post:
+      description: |
+        An inline example:
+        ```json
+        {}
+        ```
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                messages:
+                  type: array
+```
+"""
+        _, hints = _extract_openapi_request(source, "/example", "POST")
+        self.assertEqual(hints["messages"]["type"], "array")
+
     def test_oneof_keeps_mode_requirements_instead_of_losing_all_controls(self):
         schema = document('example/model', {'oneOf': [
             {'title': 'Existing task', 'required': ['task_id'], 'properties': {'task_id': {'type': 'string'}}},

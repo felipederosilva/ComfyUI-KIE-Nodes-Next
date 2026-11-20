@@ -395,6 +395,8 @@ if __name__ == "__main__":
 
 
 def test_topaz_video_payload_normalization():
+    load_plugin()
+    generated = importlib.import_module("kie_next_testpkg.nodes.generated")
     payload = {"video_url": "  https://example.com/input.mp4  ", "upscale_factor": "2x"}
     normalized = generated._normalize_topaz_video_payload("topaz/video-upscale", payload)
     assert normalized["video_url"] == "https://example.com/input.mp4"
@@ -402,6 +404,8 @@ def test_topaz_video_payload_normalization():
 
 
 def test_topaz_video_payload_rejects_invalid_scale():
+    load_plugin()
+    generated = importlib.import_module("kie_next_testpkg.nodes.generated")
     try:
         generated._normalize_topaz_video_payload(
             "topaz/video-upscale",
@@ -414,5 +418,7 @@ def test_topaz_video_payload_rejects_invalid_scale():
 
 
 def test_topaz_retry_signature_is_narrow():
+    load_plugin()
+    generated = importlib.import_module("kie_next_testpkg.nodes.generated")
     assert generated._retryable_topaz_internal_error(generated.KIEAPIError("internal error, please try again later"))
     assert not generated._retryable_topaz_internal_error(generated.KIEAPIError("insufficient credits"))

@@ -11,11 +11,22 @@ from typing import Any
 from ..kie.catalog import load_catalog, operation_by_label, resolve_operation
 from ..kie.client import KIEAPIError, KIEClient, pretty_json
 from ..kie.helpers import make_client, parse_object_json
+from ..kie.model_outputs import (
+    NEMOTRON_TRANSCRIBE,
+    direct_asset_output_names,
+    direct_asset_result,
+    model_image_result,
+    model_output_slots,
+    model_video_result,
+    nemotron_result,
+    primary_result_url,
+)
 from ..kie.settings import record_credit_usage, save_last_credits
 from ..kie.capabilities import check_operation, operation_capabilities, require_valid
+from ..kie.model_controls import GEMINI_OMNI_12, GPT_IMAGE_26, KIE_PROVIDER_DEFAULT, input_field_options, normalize_model_input
 from ..kie.task_history import record_task
 
-KIE_GENERATED_BUILD = "0.6.3"
+KIE_GENERATED_BUILD = "0.6.4"
 
 from ..kie.media import (
     download_audio_object,
@@ -224,7 +235,7 @@ def _dedupe_default(default: str, values: list[str]) -> list[str]:
 def _is_image_field(name: str) -> bool:
     n = name.lower()
     if n in {"first_frame_url", "last_frame_url", "keyframe_urls", "firstframeurl", "lastframeurl", "input_urls",
-             "reference_image", "reference_images"}:
+             "reference_image", "reference_images", "style_image", "subject_image"}:
         return True
     return "image" in n and ("url" in n or n in {"images", "image_input", "imageurls"})
 
@@ -254,7 +265,7 @@ def _is_plural_media_field(name: str, example: Any = None) -> bool:
     return isinstance(example, list) or "urls" in n or n.endswith("list") or n.endswith("s")
 
 
-def _media_aliases(name: str, example: Any = None, max_items: int | None = None) -> list[tuple[str, str, bool]]:
+def _media_aliases(name: str, example: Any = None, max_items: int | None = None, *, model: str = "") -> list[tuple[str, str, bool]]:
     """Friendly native sockets for plural VIDEO/AUDIO URL arrays.
 
     IMAGE already supports batches naturally in ComfyUI. VIDEO/AUDIO do not have a
@@ -262,6 +273,8 @@ def _media_aliases(name: str, example: Any = None, max_items: int | None = None)
     than forcing users to paste URL JSON.
     """
     n = name.lower()
+    if model == GEMINI_OMNI_12 and n == "video_list":
+        return [("video_1", "VIDEO", False)]
     count = max(1, min(int(max_items), 16)) if isinstance(max_items, int) else 3
     if _is_video_field(name) and _is_plural_media_field(name, example):
         base = re.sub(r"_?urls?$|_?list$", "", name, flags=re.I).rstrip("_") or "video"
@@ -308,9 +321,13 @@ def _enum_from_hint(hint: dict[str, Any]) -> list[str]:
     return [str(x) for x in values if str(x).strip()]
 
 
-def _scalar_widget(name: str, value: Any, op: dict[str, Any]):
+def _scalar_widget(name: str, value: Any, op: dict[str, Any], *, model: str = ""):
     n = name.lower()
     hint = (op.get("parameter_hints") or {}).get(name) or {}
+    adjustments = input_field_options(model, name, hint)
+    hint = {**hint, **adjustments}
+    if "default" in adjustments:
+        value = adjustments["default"]
     desc = str(hint.get("description") or "")
     hinted_enum = _enum_from_hint(hint)
     if value is None:
@@ -334,7 +351,7 @@ def _scalar_widget(name: str, value: Any, op: dict[str, Any]):
             "default": default,
             "min": int(hint.get("minimum", -2147483648)),
             "max": int(hint.get("maximum", 2147483647)),
-            "step": 1,
+            "step": hint.get("step", 1),
             **common,
         })
     if schema_type in {"number", "float", "double"}:
@@ -479,6 +496,7 @@ def _operation_for_variant(op: dict[str, Any], kwargs: dict[str, Any]) -> dict[s
 
 
 def _friendly_input_types(op: dict[str, Any], *, model: str = "") -> dict[str, dict[str, Any]]:
+    model = (op.get("model_aliases") or {}).get(model, model)
     title = str(op.get("title") or "")
     body, query, market = _request_templates(op)
     required: dict[str, Any] = {}
@@ -507,14 +525,24 @@ def _friendly_input_types(op: dict[str, Any], *, model: str = "") -> dict[str, d
         else: value = _hint_default(hint)
 
         is_boolean = _is_boolean_hint(hint)
-        aliases = [] if is_boolean else _media_aliases(name, value, hint.get("maxItems"))
+        aliases = [] if is_boolean else _media_aliases(name, value, hint.get("maxItems"), model=model)
         if aliases:
             for index, (alias, socket_type, force_required) in enumerate(aliases):
                 needed = force_required or (index == 0 and bool(hint.get("required")))
                 (required if needed else optional)[alias] = (socket_type, {"tooltip": str(hint.get("description") or "")})
             continue
+        if name == "svg" and model.startswith(GPT_IMAGE_26):
+            author = (hint.get("properties") or {}).get("model") or {}
+            if author.get("enum"):
+                options = _enum_from_hint(author)
+                default = str(author.get("default") or options[0])
+                optional["svg_model"] = (_dedupe_default(default, options), {
+                    "default": default,
+                    "tooltip": "SVG only. Choose the author model specified by KIE. " + str(author.get("description") or ""),
+                })
+                continue
         if is_boolean:
-            widget = _scalar_widget(name, value, op)
+            widget = _scalar_widget(name, value, op, model=model)
         elif _is_image_field(name):
             widget = ("IMAGE",)
         elif _is_video_field(name):
@@ -522,7 +550,7 @@ def _friendly_input_types(op: dict[str, Any], *, model: str = "") -> dict[str, d
         elif _is_audio_field(name):
             widget = ("AUDIO",)
         else:
-            widget = _scalar_widget(name, value, op)
+            widget = _scalar_widget(name, value, op, model=model)
         if isinstance(widget[0], str) and widget[0] in {"IMAGE", "VIDEO", "AUDIO"} and hint.get("description"):
             widget = (widget[0], {"tooltip": hint["description"]})
 
@@ -616,8 +644,8 @@ def _coerce_widget_value(name: str, example: Any, value: Any, client: KIEClient,
 
 
 
-def _collect_media_aliases(client: KIEClient, field: str, example: Any, kwargs: dict[str, Any], *, dry_run: bool = False, hint: dict | None = None) -> list[str] | None:
-    aliases = _media_aliases(field, example, (hint or {}).get("maxItems"))
+def _collect_media_aliases(client: KIEClient, field: str, example: Any, kwargs: dict[str, Any], *, dry_run: bool = False, hint: dict | None = None, model: str = "") -> list[str] | None:
+    aliases = _media_aliases(field, example, (hint or {}).get("maxItems"), model=model)
     if not aliases:
         return None
     urls: list[str] = []
@@ -652,7 +680,7 @@ def _build_payload(client: KIEClient, op: dict[str, Any], kwargs: dict[str, Any]
         hint = hints.get(name) or {}
         is_boolean = _is_boolean_hint(hint)
         example = body.get(name, query.get(name, _hint_default(hint)))
-        aliased_urls = None if is_boolean else _collect_media_aliases(client, name, example, kwargs, dry_run=dry_run, hint=hint)
+        aliased_urls = None if is_boolean else _collect_media_aliases(client, name, example, kwargs, dry_run=dry_run, hint=hint, model=model)
         if aliased_urls is not None:
             if aliased_urls:
                 out[name] = aliased_urls
@@ -662,8 +690,11 @@ def _build_payload(client: KIEClient, op: dict[str, Any], kwargs: dict[str, Any]
         value = kwargs[name]
         # Comfy combo widgets use strings even for numeric OpenAPI enums.
         # Restore the documented JSON value before validation and submission.
-        if not is_boolean and isinstance(value, str) and isinstance(hint.get("enum"), list):
-            value = next((candidate for candidate in hint["enum"] if str(candidate) == value), value)
+        choices = input_field_options(model, name, hint).get("enum", hint.get("enum"))
+        if not is_boolean and isinstance(value, str) and isinstance(choices, list):
+            if value == KIE_PROVIDER_DEFAULT and KIE_PROVIDER_DEFAULT in choices:
+                continue
+            value = next((candidate for candidate in choices if str(candidate) == value), value)
         # Empty optional strings are omitted instead of overriding provider defaults.
         if isinstance(value, str) and value == "" and not bool((hints.get(name) or {}).get("required")):
             continue
@@ -689,6 +720,9 @@ def _build_payload(client: KIEClient, op: dict[str, Any], kwargs: dict[str, Any]
         "expert_override_json",
     )
     out.update(advanced)
+    if model.startswith(GPT_IMAGE_26) and out.get("output_format") == "svg" and "svg" not in out and kwargs.get("svg_model"):
+        out["svg"] = {"model": kwargs["svg_model"]}
+    normalize_model_input(model, out)
     if model == "wan/2-7-videoedit":
         legacy_url = str(kwargs.get("reference_image_url") or "").strip()
         if legacy_url and kwargs.get("reference_image") is not None:
@@ -711,6 +745,7 @@ def _build_payload(client: KIEClient, op: dict[str, Any], kwargs: dict[str, Any]
 
 def preflight_model_inputs(op: dict[str, Any], model: str, kwargs: dict[str, Any], *, deferred_fields=()):
     """Use the same payload builder without uploading or creating an API client."""
+    model = (op.get("model_aliases") or {}).get(model, model)
     op = _operation_for_variant(op, kwargs)
     payload = _build_payload(None, op, kwargs, model=model, dry_run=True)
     for name in op.get("path_params") or []:
@@ -917,11 +952,27 @@ def _credit_receipt(client: KIEClient, outputs: tuple, credits: float, credits_b
     return {"ui": {"kie_credit_receipt": [f"{spent_label}: {shown_spent}  •  Credits left: {shown_remaining}"]}, "result": tuple(mutable)}
 
 
-def _result_for_kind(client: KIEClient, kind: str, payload: Any, task_id: str, credits: float = 0.0, credits_before: float | None = None):
+def _result_for_kind(
+    client: KIEClient, kind: str, payload: Any, task_id: str, credits: float = 0.0,
+    credits_before: float | None = None, *, model: str = "", output_format: str = "",
+):
     all_urls = _all_urls(payload)
     urls = _preferred_urls(all_urls, kind)
     url = urls[0] if urls else ""
     all_urls_json = json.dumps(all_urls, ensure_ascii=False, indent=2)
+    slots = model_output_slots(model, kind)
+    if slots and kind in {"image", "video"}:
+        url = primary_result_url(payload, urls, kind=kind)
+        if not url:
+            raise KIEAPIError(f"KIE task {task_id} completed but returned no {kind} URL.", payload=payload)
+        if kind == "image":
+            media, extra_outputs = model_image_result(client, model, payload, url, task_id, output_format)
+        else:
+            media, extra_outputs = model_video_result(client, model, payload, url, task_id)
+        outputs = (media, url, all_urls_json, task_id, pretty_json(payload), credits)
+        receipt = _credit_receipt(client, outputs, credits, credits_before, receipt_id=task_id)
+        receipt["result"] += extra_outputs
+        return receipt
     if kind == "image":
         if not url: raise KIEAPIError("KIE task completed but returned no image URL.", payload=payload)
         outputs = (download_image_tensor(client, url), url, all_urls_json, task_id, pretty_json(payload), credits)
@@ -935,9 +986,14 @@ def _result_for_kind(client: KIEClient, kind: str, payload: Any, task_id: str, c
         outputs = (download_audio_object(client, url), url, all_urls_json, task_id, pretty_json(payload), credits)
         return _credit_receipt(client, outputs, credits, credits_before, receipt_id=task_id)
     if kind == "text":
-        text = _extract_text(payload)
+        if model == NEMOTRON_TRANSCRIBE:
+            text, extra_outputs = nemotron_result(client, payload, task_id)
+        else:
+            text, extra_outputs = _extract_text(payload), ()
         outputs = (text, task_id, pretty_json(payload), credits or _credits_from(payload))
-        return _credit_receipt(client, outputs, credits or _credits_from(payload), credits_before, receipt_id=task_id)
+        receipt = _credit_receipt(client, outputs, credits or _credits_from(payload), credits_before, receipt_id=task_id)
+        receipt["result"] += extra_outputs
+        return receipt
     return (pretty_json(payload), url, task_id)
 
 
@@ -960,6 +1016,50 @@ def _extract_text(payload: Any) -> str:
 # ------------------------------- LLM adapter ---------------------------------
 
 
+def _llm_properties(op: dict[str, Any]) -> dict[str, Any]:
+    return (op.get("input_schema") or {}).get("properties") or {}
+
+
+def _llm_effort_schema(op: dict[str, Any]) -> dict[str, Any]:
+    properties = _llm_properties(op)
+    generation = (properties.get("generationConfig") or {}).get("properties") or {}
+    thinking = (generation.get("thinkingConfig") or {}).get("properties") or {}
+    reasoning = (properties.get("reasoning") or {}).get("properties") or {}
+    return thinking.get("thinkingLevel") or properties.get("reasoning_effort") or reasoning.get("effort") or {}
+
+
+def _llm_choices(schema: dict[str, Any]) -> tuple[list[str], dict[str, Any]]:
+    choices = list(schema.get("enum") or _REASONING)
+    default = schema.get("default")
+    if default not in choices:
+        default = "high" if "high" in choices else choices[0]
+    return choices, {"default": default, "tooltip": schema.get("description") or "Amount of reasoning to use."}
+
+
+def _llm_gemini_thoughts_schema(op: dict[str, Any]) -> dict[str, Any]:
+    properties = _llm_properties(op)
+    generation = (properties.get("generationConfig") or {}).get("properties") or {}
+    thinking = (generation.get("thinkingConfig") or {}).get("properties") or {}
+    return thinking.get("includeThoughts") or properties.get("include_thoughts") or {}
+
+
+def _llm_gemini_native_image_files(op: dict[str, Any]) -> bool:
+    contents = _llm_properties(op).get("contents") or {}
+    message = (contents.get("items") or {}).get("properties") or {}
+    parts = (message.get("parts") or {}).get("items") or {}
+    return any("file_data" in (part.get("properties") or {}) for part in parts.get("oneOf") or [])
+
+
+def _llm_text_format_schema(op: dict[str, Any]) -> dict[str, Any]:
+    properties = (_llm_properties(op).get("text") or {}).get("properties") or {}
+    fields = (properties.get("format") or {}).get("properties") or {}
+    return fields if {"type", "name", "strict", "schema"}.issubset(fields) else {}
+
+
+def _is_gpt_62(op: dict[str, Any]) -> bool:
+    return op.get("market_catalog_id") in {"gpt-6-2-sol", "gpt-6-2-astra"}
+
+
 def _llm_input_types(op: dict[str, Any]) -> dict[str, dict[str, Any]]:
     family = str(op.get("family") or "").lower()
     endpoint = str(op.get("endpoint") or "").lower()
@@ -968,6 +1068,9 @@ def _llm_input_types(op: dict[str, Any]) -> dict[str, dict[str, Any]]:
     is_gemini_native = endpoint.startswith("/gemini/v1/models/")
     is_openai_reasoning = any(x in family for x in ("gpt", "codex", "grok")) or endpoint.startswith("/codex/")
     is_responses_api = endpoint.endswith("/v1/responses")
+    properties = _llm_properties(op)
+    effort_schema = _llm_effort_schema(op)
+    thoughts_schema = _llm_gemini_thoughts_schema(op)
     mentions_images = "image" in summary or any("image" in str(k).lower() for k in (op.get("parameter_hints") or {}))
 
     required = {
@@ -975,18 +1078,20 @@ def _llm_input_types(op: dict[str, Any]) -> dict[str, dict[str, Any]]:
     }
     optional: dict[str, Any] = {
         "system_prompt": ("STRING", {"default": "", "multiline": True}),
-        "stream": ("BOOLEAN", {"default": False}),
+        "stream": ("BOOLEAN", {"default": bool((properties.get("stream") or {}).get("default", True)) if _is_gpt_62(op) else False}),
         "tools_json": ("STRING", {"default": "[]", "multiline": True, "tooltip": "Optional function/tool definitions supported by this model endpoint."}),
         "history_json": ("STRING", {"default": "[]", "multiline": True, "tooltip": "Optional prior message/input array as JSON."}),
     }
     if is_openai_reasoning or is_responses_api:
         optional["images"] = ("IMAGE",)
-        optional["reasoning_effort"] = (_REASONING, {"default": "high"})
+        optional["reasoning_effort"] = _llm_choices(effort_schema)
         if is_openai_reasoning:
             optional["web_search"] = ("BOOLEAN", {"default": False, "tooltip": "Use KIE's web-search tool where this endpoint supports it."})
-        if is_responses_api:
+        if is_responses_api and (not _is_gpt_62(op) or "max_output_tokens" in properties):
             optional["max_output_tokens"] = ("INT", {"default": 4096, "min": 1, "max": 131072, "step": 1})
-    elif mentions_images and not is_claude and not is_gemini_native:
+    elif is_gemini_native and _llm_gemini_native_image_files(op):
+        optional["images"] = ("IMAGE", {"tooltip": "Optional images in a batch. At most 10 files total."})
+    elif (mentions_images or (endpoint.startswith("/gemini-") and properties.get("messages"))) and not is_claude and not is_gemini_native:
         optional["images"] = ("IMAGE",)
     if is_claude:
         optional["max_tokens"] = ("INT", {"default": 4096, "min": 1, "max": 131072, "step": 1})
@@ -997,6 +1102,19 @@ def _llm_input_types(op: dict[str, Any]) -> dict[str, dict[str, Any]]:
         "STRING",
         {"default": "{}", "multiline": True, "tooltip": "Expert-only request overrides. Normal use does not require this."},
     )
+    # Append new widgets after existing ones to keep saved values in place.
+    if effort_schema.get("enum") and "reasoning_effort" not in optional:
+        optional["reasoning_effort"] = _llm_choices(effort_schema)
+    if thoughts_schema:
+        optional["include_thoughts"] = ("BOOLEAN", {
+            "default": bool(thoughts_schema.get("default", False)),
+            "tooltip": "Request provider-returned thought metadata in raw_json, where available.",
+        })
+    if _llm_text_format_schema(op):
+        optional["output_schema_json"] = ("STRING", {
+            "default": "{}", "multiline": True,
+            "tooltip": "Optional JSON Schema for a strict structured reply. An empty object keeps the normal text reply.",
+        })
     return {"required": required, "optional": optional}
 
 
@@ -1036,16 +1154,99 @@ def preflight_llm_inputs(op: dict[str, Any], model: str, kwargs: dict[str, Any],
             if isinstance(value, bool) or not isinstance(value, int) or not 1 <= value <= 131072:
                 errors.append(f"{name}: choose an integer from 1 to 131072.")
     if "reasoning_effort" in kwargs and "reasoning_effort" not in deferred:
-        if kwargs["reasoning_effort"] not in _REASONING:
-            errors.append("reasoning_effort: choose a listed level.")
+        choices, _ = _llm_choices(_llm_effort_schema(op))
+        if kwargs["reasoning_effort"] not in choices:
+            errors.append("reasoning_effort: choose " + ", ".join(choices) + ".")
+    if "output_schema_json" in kwargs and "output_schema_json" not in deferred:
+        try:
+            value = json.loads(str(kwargs["output_schema_json"] or "{}"))
+            if not isinstance(value, dict):
+                errors.append("output_schema_json: expected a JSON Schema object.")
+        except json.JSONDecodeError:
+            errors.append("output_schema_json: enter valid JSON.")
     if "images" in deferred or kwargs.get("images") is not None:
         warnings.append("Connected image content and provider support are not checked until execution.")
+    endpoint = str(op.get("endpoint") or "")
+    images = kwargs.get("images")
+    gemini_files = _llm_gemini_native_image_files(op) or (
+        endpoint.startswith("/gemini-") and "messages" in _llm_properties(op)
+    )
+    if gemini_files and "images" not in deferred and getattr(images, "ndim", 0) == 4 and images.shape[0] > 10:
+        errors.append("images: this Gemini endpoint accepts at most 10 files per request.")
     if deferred:
         warnings.append("Connected values need execution before final validation: " + ", ".join(sorted(deferred)))
     warnings.append("Provider-specific chat limits and tool schemas may require remote validation.")
     return {"valid": not errors, "errors": errors, "warnings": warnings,
             "capabilities": operation_capabilities(op, model),
             "scope": "Local chat structure only; no media uploaded and no generation submitted."}
+
+
+def _llm_response_fields(payload: Any) -> tuple[str, dict, str]:
+    """Return answer text, token usage and the response ID from KIE chat formats."""
+    events = payload.get("stream_events") if isinstance(payload, dict) else None
+    if not isinstance(events, list):
+        events = payload if isinstance(payload, list) else [payload]
+    answer: list[str] = []
+    final_text = ""
+    usage: dict = {}
+    response_id = ""
+    recognized = False
+    for event in events:
+        if not isinstance(event, dict):
+            continue
+        event_type = event.get("type") or ""
+        response = event.get("response")
+        if event_type in {"response.failed", "error"} or event.get("error"):
+            nested_error = response.get("error") if isinstance(response, dict) else None
+            error = event.get("error") or nested_error or event
+            message = error.get("message") if isinstance(error, dict) else str(error)
+            raise KIEAPIError(message or "KIE chat request failed.")
+        data = response if isinstance(response, dict) else event
+        if isinstance(event.get("message"), dict) and event_type == "message_start":
+            data = event["message"]
+        response_id = str(data.get("id") or data.get("responseId") or response_id)
+        token_usage = data.get("usage") or data.get("usageMetadata")
+        if isinstance(token_usage, dict):
+            usage.update(token_usage)
+        if "output" in data or isinstance(data.get("output_text"), str):
+            recognized = True
+            if event_type and event_type != "response.completed":
+                continue
+            final_text = data.get("output_text") or "".join(
+                part["text"]
+                for item in data.get("output") or [] if item.get("type") == "message"
+                for part in item.get("content") or [] if part.get("type") == "output_text"
+                and isinstance(part.get("text"), str)
+            )
+        elif event_type == "response.output_text.delta":
+            recognized = True
+            if isinstance(event.get("delta"), str):
+                answer.append(event["delta"])
+        elif "choices" in data:
+            recognized = True
+            choices = data["choices"] or []
+            if choices:
+                choice = choices[0]
+                content = (choice.get("delta") or choice.get("message") or {}).get("content", choice.get("text"))
+                if isinstance(content, str):
+                    answer.append(content)
+        elif "candidates" in data:
+            recognized = True
+            candidates = data["candidates"] or []
+            if candidates:
+                parts = (candidates[0].get("content") or {}).get("parts") or []
+                answer.extend(part["text"] for part in parts
+                              if not part.get("thought") and isinstance(part.get("text"), str))
+        elif event_type == "content_block_delta":
+            recognized = True
+            delta = event.get("delta") or {}
+            if delta.get("type") == "text_delta" and isinstance(delta.get("text"), str):
+                answer.append(delta["text"])
+        elif isinstance(data.get("content"), list):
+            recognized = True
+            answer.extend(part["text"] for part in data["content"]
+                          if part.get("type") == "text" and isinstance(part.get("text"), str))
+    return (final_text or "".join(answer) if recognized else _extract_text(payload)), usage, response_id
 
 
 def _execute_llm(op: dict[str, Any], model: str, kwargs: dict[str, Any]):
@@ -1055,7 +1256,7 @@ def _execute_llm(op: dict[str, Any], model: str, kwargs: dict[str, Any]):
     credits_before = _credit_balance(client)
     endpoint = str(op.get("endpoint") or "")
     if not endpoint:
-        resolved = resolve_operation(str(op.get("label") or "")) or op
+        resolved = resolve_operation(str(op.get("label") or ""), docs_url=str(op.get("docs_url") or "")) or op
         endpoint = str(resolved.get("endpoint") or "")
         op = resolved
     if not endpoint:
@@ -1068,6 +1269,10 @@ def _execute_llm(op: dict[str, Any], model: str, kwargs: dict[str, Any]):
     advanced = parse_object_json(str(kwargs.get("expert_override_json") or kwargs.get("advanced_json") or "{}"), "expert_override_json")
     image_urls = upload_image_batch(client, kwargs.get("images"), prefix="kie_llm") if kwargs.get("images") is not None else []
     family = str(op.get("family") or "").lower()
+    properties = _llm_properties(op)
+    effort_schema = _llm_effort_schema(op)
+    _, effort_widget = _llm_choices(effort_schema)
+    effort = str(kwargs.get("reasoning_effort") or effort_widget["default"])
 
     if endpoint.startswith("/gemini/v1/models/"):
         # KIE exposes Gemini's native contents/parts schema, not OpenAI chat
@@ -1085,12 +1290,23 @@ def _execute_llm(op: dict[str, Any], model: str, kwargs: dict[str, Any]):
             else:
                 continue
             contents.append({"role": role, "parts": parts})
-        contents.append({"role": "user", "parts": [{"text": prompt}]})
+        parts = [{"text": prompt}]
+        if _llm_gemini_native_image_files(op):
+            parts.extend({"file_data": {"file_uri": url, "mime_type": "image/png"}} for url in image_urls)
+        contents.append({"role": "user", "parts": parts})
         body = {"contents": contents, "stream": bool(kwargs.get("stream", True))}
         if system_prompt:
             body["systemInstruction"] = {"parts": [{"text": system_prompt}]}
         if tools:
             body["tools"] = tools
+        if effort_schema or _llm_gemini_thoughts_schema(op):
+            thinking = {}
+            if effort_schema:
+                thinking["thinkingLevel"] = effort
+            if "include_thoughts" in kwargs and _llm_gemini_thoughts_schema(op):
+                thinking["includeThoughts"] = bool(kwargs["include_thoughts"])
+            if thinking:
+                body["generationConfig"] = {"thinkingConfig": thinking}
     elif "claude" in family or endpoint.startswith("/claude/"):
         messages = list(history) if isinstance(history, list) else []
         # Keep simple text prompt first-class. Multimodal Claude payloads can still be supplied through history_json/expert_override_json.
@@ -1109,17 +1325,31 @@ def _execute_llm(op: dict[str, Any], model: str, kwargs: dict[str, Any]):
         content: list[dict[str, Any]] = [{"type": "input_text", "text": prompt}]
         content.extend({"type": "input_image", "image_url": url} for url in image_urls)
         input_items.append({"role": "user", "content": content})
-        body = {"model": model, "input": input_items, "reasoning": {"effort": str(kwargs.get("reasoning_effort") or "high")}}
+        body = {"model": model, "input": input_items, "reasoning": {"effort": effort}}
         if system_prompt:
-            body["instructions"] = system_prompt
-        if endpoint.endswith("/v1/responses") and kwargs.get("max_output_tokens"):
+            if _is_gpt_62(op) and "instructions" not in properties:
+                input_items.insert(0, {"role": "developer", "content": [{"type": "input_text", "text": system_prompt}]})
+            else:
+                body["instructions"] = system_prompt
+        if endpoint.endswith("/v1/responses") and kwargs.get("max_output_tokens") and (
+            not _is_gpt_62(op) or "max_output_tokens" in properties
+        ):
             body["max_output_tokens"] = int(kwargs["max_output_tokens"])
         if bool(kwargs.get("web_search")):
             body["tools"] = [{"type": "web_search"}]
         elif tools:
             body["tools"] = tools
-        if kwargs.get("stream"):
+        stream_default = (properties.get("stream") or {}).get("default", True) if _is_gpt_62(op) else False
+        if kwargs.get("stream", stream_default):
             body["stream"] = True
+        elif _is_gpt_62(op):
+            body["stream"] = False
+        if _llm_text_format_schema(op) and kwargs.get("output_schema_json"):
+            schema = parse_object_json(str(kwargs["output_schema_json"]), "output_schema_json")
+            if schema:
+                body["text"] = {"format": {
+                    "type": "json_schema", "name": "comfy_output", "strict": True, "schema": schema,
+                }}
     else:
         messages = list(history) if isinstance(history, list) else []
         if system_prompt: messages.insert(0, {"role": "system", "content": system_prompt})
@@ -1130,14 +1360,19 @@ def _execute_llm(op: dict[str, Any], model: str, kwargs: dict[str, Any]):
             ]
         messages.append({"role": "user", "content": user_content})
         body = {"model": model, "messages": messages, "stream": bool(kwargs.get("stream", False))}
+        if endpoint.startswith("/gemini-") and "messages" in properties and "model" not in properties:
+            body.pop("model")
+        if "reasoning_effort" in properties:
+            body["reasoning_effort"] = effort
+        if "include_thoughts" in properties and "include_thoughts" in kwargs:
+            body["include_thoughts"] = bool(kwargs["include_thoughts"])
         if tools: body["tools"] = tools
         if "max_tokens" in kwargs: body["max_tokens"] = int(kwargs.get("max_tokens") or 4096)
 
     body.update(advanced)
     payload = client.raw_api_request("POST", endpoint, body=body)
-    outputs = (_extract_text(payload), pretty_json(payload), _credits_from(payload), pretty_json(payload.get("usage") if isinstance(payload, dict) else {}))
-    # LLM nodes keep their existing usage_json output in place and append balance.
-    response_id = str(payload.get("id") or "") if isinstance(payload, dict) else ""
+    answer, usage, response_id = _llm_response_fields(payload)
+    outputs = (answer, pretty_json(payload), _credits_from(payload), pretty_json(usage))
     return _credit_receipt(client, outputs, outputs[2], credits_before, consumed_index=2, receipt_id=response_id)
 
 
@@ -1335,12 +1570,15 @@ def _market_execute(op: dict[str, Any], model: str, kind: str, kwargs: dict[str,
     task_id = task_ids[-1]
     payload_out = result.raw
     if kind in {"image", "video", "audio", "text"}:
-        return _result_for_kind(client, kind, payload_out, task_id, result.credits_consumed, credits_before)
+        return _result_for_kind(
+            client, kind, payload_out, task_id, result.credits_consumed, credits_before,
+            model=payload_model or model, output_format=str(payload.get("output_format") or ""),
+        )
     return (pretty_json(payload_out), result.urls[0] if result.urls else "", task_id)
 
 
 def _direct_execute(op: dict[str, Any], model: str, kind: str, kwargs: dict[str, Any]):
-    resolved = resolve_operation(str(op.get("label") or "")) or op
+    resolved = resolve_operation(str(op.get("label") or ""), docs_url=str(op.get("docs_url") or "")) or op
     require_valid(preflight_model_inputs(resolved, model, kwargs))
     client = make_client(None)
     credits_before = _credit_balance(client)
@@ -1358,6 +1596,21 @@ def _direct_execute(op: dict[str, Any], model: str, kind: str, kwargs: dict[str,
         return _result_for_kind(client, kind if kind == "text" else "utility", payload, _extract_task_id(payload), _credits_from(payload), credits_before)
 
     body = _build_payload(client, resolved, kwargs, model=model)
+    if direct_asset_output_names(endpoint):
+        # These endpoints synchronously register a reusable asset ID.
+        body.pop("model", None)
+        payload = client.raw_api_request(method, endpoint, body=body)
+        asset = direct_asset_result(endpoint, payload)
+        if not asset[0]:
+            raise KIEAPIError("KIE did not return an asset ID.", payload=payload)
+        urls = [url for url in asset[2:] if url.startswith("https://")]
+        credits = _credits_from(payload)
+        # Retain the old socket positions for saved workflows. Creating an
+        # asset returns its ID and metadata, so the legacy video slot is empty.
+        outputs = (None, next(iter(urls), ""), pretty_json(urls), "", pretty_json(payload), credits)
+        receipt = _credit_receipt(client, outputs, credits, credits_before, receipt_id=asset[0])
+        receipt["result"] += asset
+        return receipt
     callback = str(kwargs.get("callback_url") or "").strip()
     if callback:
         body.setdefault("callBackUrl", callback)
@@ -1375,13 +1628,21 @@ def _direct_execute(op: dict[str, Any], model: str, kind: str, kwargs: dict[str,
 
 
 def make_model_node(op: dict[str, Any], model: str = ""):
-    kind = kind_for(op)
     title = display_name_for(op, model)
     category = category_for(op)
     resolved_model = model or _model_from_op(op)
+    kind = "text" if resolved_model == NEMOTRON_TRANSCRIBE else kind_for(op)
     is_llm = kind == "llm"
-    market = str(op.get("endpoint") or "") == "/api/v1/jobs/createTask"
+    endpoint = str(op.get("endpoint") or "")
+    market = endpoint == "/api/v1/jobs/createTask"
     return_types, return_names = (("STRING", "STRING", "FLOAT", "STRING", "FLOAT"), ("text", "raw_json", "credits_consumed", "usage_json", "credits_left")) if is_llm else _output_signature(kind)
+    asset_names = direct_asset_output_names(endpoint)
+    if asset_names:
+        return_types += ("STRING",) * len(asset_names)
+        return_names += asset_names
+    for output_type, output_name in model_output_slots(resolved_model, kind) if market else ():
+        return_types += (output_type,)
+        return_names += (output_name,)
 
     class GeneratedKIEModelNode:
         OP = op
@@ -1390,17 +1651,18 @@ def make_model_node(op: dict[str, Any], model: str = ""):
         def INPUT_TYPES(cls):
             # Node metadata must be local: resolving missing docs here blocks
             # ComfyUI's whole /object_info request on network timeouts.
-            current = operation_by_label(str(cls.OP.get("label") or "")) or cls.OP
+            current = operation_by_label(str(cls.OP.get("label") or ""), docs_url=str(cls.OP.get("docs_url") or "")) or cls.OP
             return _llm_input_types(current) if is_llm else _friendly_input_types(current, model=cls.MODEL)
 
         RETURN_TYPES = return_types
         RETURN_NAMES = return_names
+        OUTPUT_IS_LIST = tuple(name == "result_urls" for name in return_names)
         FUNCTION = "execute"
         CATEGORY = category
         DESCRIPTION = str(op.get("summary") or f"KIE.ai • {title}")[:700]
 
         def execute(self, **kwargs):
-            current = resolve_operation(str(self.OP.get("label") or "")) or self.OP
+            current = resolve_operation(str(self.OP.get("label") or ""), docs_url=str(self.OP.get("docs_url") or "")) or self.OP
             fixed_model = self.MODEL or _model_from_op(current)
             if is_llm:
                 return _execute_llm(current, fixed_model, kwargs)

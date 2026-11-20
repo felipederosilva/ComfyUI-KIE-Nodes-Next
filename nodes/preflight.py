@@ -40,11 +40,14 @@ def inspect_node_inputs(node_type: str, inputs: dict, connected: list) -> dict:
             inputs.pop(name, None)
     if op is not None:
         body, _ = _payload_template(op)
+        hints = op.get("parameter_hints") or {}
+        canonical_model = (op.get("model_aliases") or {}).get(model, model)
         for name, value in body.items():
-            if any(alias in deferred for alias, _, _ in _media_aliases(name, value)):
+            if any(alias in deferred for alias, _, _ in _media_aliases(name, value, (hints.get(name) or {}).get("maxItems"), model=canonical_model)):
                 deferred.add(name)
-        for name, hint in (op.get("parameter_hints") or {}).items():
-            if any(alias in deferred for alias, _, _ in _media_aliases(name, [] if hint.get("type") == "array" else None)):
+        for name, hint in hints.items():
+            aliases = _media_aliases(name, [] if hint.get("type") == "array" else None, hint.get("maxItems"), model=canonical_model)
+            if any(alias in deferred for alias, _, _ in aliases):
                 deferred.add(name)
         try:
             return preflight_model_inputs(op, model, inputs, deferred_fields=deferred)

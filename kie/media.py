@@ -11,7 +11,7 @@ from urllib.parse import urlparse
 
 import numpy as np
 import torch
-from PIL import Image
+from PIL import Image, ImageSequence
 
 from .client import KIEClient, KIEAPIError
 
@@ -101,6 +101,41 @@ def download_image_tensor(client: KIEClient, url: str) -> torch.Tensor:
     content = client.download_bytes(url)
     persist_result_bytes(content, url, kind="images", fallback_suffix=".png")
     return bytes_to_image_tensor(content)
+
+
+def download_image_asset(
+    client: KIEClient, url: str, *, output_format: str = ""
+) -> tuple[torch.Tensor | None, torch.Tensor | None, list[int], str]:
+    """Keep the original image file alongside its ComfyUI RGB and transparency outputs."""
+    content = client.download_bytes(url)
+    if output_format.lower() == "svg" or _result_suffix(url, "") == ".svg":
+        # A vector asset is a file output. Do not execute or rasterize remote SVG.
+        image, mask, durations, suffix = None, None, [], ".svg"
+    else:
+        with Image.open(io.BytesIO(content)) as pil:
+            suffix = {
+                "JPEG": ".jpg", "PNG": ".png", "GIF": ".gif", "WEBP": ".webp",
+            }.get(pil.format, _result_suffix(url, ".png"))
+            frames = pil.n_frames if pil.format == "GIF" else 1
+            pixels = torch.empty((frames, pil.height, pil.width, 3), dtype=torch.float32)
+            mask = torch.empty((frames, pil.height, pil.width), dtype=torch.float32)
+            durations = []
+            for index, frame in enumerate(ImageSequence.Iterator(pil)):
+                rgba = torch.from_numpy(np.array(frame.convert("RGBA"), dtype=np.uint8))
+                pixels[index].copy_(rgba[..., :3]).div_(255.0)
+                mask[index].copy_(rgba[..., 3]).div_(255.0).neg_().add_(1.0)
+                if pil.format == "GIF":
+                    durations.append(int(frame.info.get("duration", 0)))
+                if index + 1 == frames:
+                    break
+            image = pixels
+
+    # Use the decoded (or requested vector) format even for extensionless URLs.
+    path = persist_result_bytes(content, "", kind="images", fallback_suffix=suffix)
+    if path is None:
+        path = os.path.join(_comfy_temp_dir(), f"kie_image_{uuid.uuid4().hex}{suffix}")
+        Path(path).write_bytes(content)
+    return image, mask, durations, path
 
 
 def _comfy_temp_dir() -> str:

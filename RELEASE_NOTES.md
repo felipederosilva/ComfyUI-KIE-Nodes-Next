@@ -1,3 +1,12 @@
+# v0.6.4 — November Model Refresh
+
+- Reconciles 265 live KIE Market entries and 280 official English API pages. The combined catalog has 291 IDs and 307 operations. Gemini 3.8 Flash TTS retains its documented definition because the Market schema is unavailable.
+- Registers 388 generated nodes, including all 337 previous generated node IDs. Existing output positions are preserved. Restart ComfyUI after updating and review saved values on nodes whose input widgets changed.
+- Adds Kling 4.0 Flash reference and keyframe video nodes, Kling Image 4.0 series and long-image controls, Seedance 2.5 Flash reference modes, Gemini Omni 1.2 Flash and Extend, OmniHuman 2.0, LTX 2.5, MiniMax H3 Image, and updated chat models.
+- Adds GPT Image 2.6 GIF frames and timing, SVG files and transparency masks where supported. Seedream 5.5 adds raster alpha and a layer stack for compatible decomposition results. Kling Image 4.0 series exposes ordered output URLs.
+- Exposes returned Seedance and Gemini Omni still frames, Omni voice and character IDs, and Nemotron transcript timing and speaker data. Optional result sockets depend on the returned data.
+- Uses model-specific chat reasoning and Gemini thinking controls, including GPT 6.2 structured JSON replies. Reads the documented Gemini 4 Carbon endpoints when the Market schema points to Argon. Reassembles streamed replies and reports usage.
+
 # v0.6.3 — Model-specific Inputs & Market Schemas
 
 - Audits 240 KIE documentation pages and all 230 live Market entries. 229 Market schemas are available; Gemini 3.8 Flash TTS returns null and retains its last documented definition. The combined inventory contains 250 IDs (including legacy IDs/provider versions) and 266 operations.

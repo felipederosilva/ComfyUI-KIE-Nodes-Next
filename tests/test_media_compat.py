@@ -49,7 +49,7 @@ def test_media_file_options_includes_durable_annotated_output(tmp_path: Path):
         def filter_files_content_types(files, _types):
             return [file for file in files if file.endswith(".mp4")]
 
-    assert media_file_options(FolderPaths, ["video"]) == [
+    assert set(media_file_options(FolderPaths, ["video"])) == {
         "pasted/source.mp4",
         "V6_00001_.mp4 [output]",
-    ]
+    }

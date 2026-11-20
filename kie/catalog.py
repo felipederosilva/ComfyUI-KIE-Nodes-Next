@@ -284,12 +284,13 @@ def model_options() -> list[str]:
 def operation_options() -> list[str]:
     ops = load_catalog().get("operations") or []
     labels = [str(op.get("label") or "").strip() for op in ops if str(op.get("label") or "").strip()]
-    return labels or ["Custom endpoint"]
+    return list(dict.fromkeys(labels)) or ["Custom endpoint"]
 
 
-def operation_by_label(label: str) -> dict[str, Any] | None:
+def operation_by_label(label: str, *, docs_url: str = "") -> dict[str, Any] | None:
     for op in load_catalog().get("operations") or []:
-        if op.get("label") == label:
+        matches = op.get("docs_url") == docs_url if docs_url else op.get("label") == label
+        if matches:
             return op
     return None
 
@@ -505,7 +506,10 @@ def _openapi_request_definition(text: str, endpoint: str, method: str) -> dict[s
         return {}
     try:
         from .market_catalog import request_definition
-        document = yaml.safe_load(text[text.find("openapi:"):].split("```", 1)[0])
+        # Examples inside OpenAPI descriptions can contain their own indented
+        # Markdown fences. Only the outer, unindented fence ends the document.
+        source = re.split(r"(?m)^```[ \t]*$", text[text.find("openapi:"):], maxsplit=1)[0]
+        document = yaml.safe_load(source)
         return request_definition(document, endpoint, method) if isinstance(document, dict) else {}
     except (ValueError, TypeError, AttributeError, yaml.YAMLError):
         return {}
@@ -659,6 +663,7 @@ def _fetch_doc(session: requests.Session, entry: dict[str, str]) -> dict[str, An
         "endpoint": endpoint,
         "models": _authoritative_models(entry, schema_models or _extract_models(text)),
         "market_model": definition.get("market_model") or "",
+        "input_schema": definition.get("schema") or {},
         "example_body": sample_body,
         "example_query": _extract_example_query(text, endpoint_query),
         "path_params": _extract_path_params(endpoint),
@@ -697,6 +702,9 @@ def _enrich_operation(op: dict[str, Any], doc: dict[str, Any]) -> dict[str, Any]
         updated["market_model"] = doc["market_model"]
     if doc.get("parameter_hints"):
         updated["parameter_hints"] = doc.get("parameter_hints")
+    if doc.get("input_schema"):
+        updated["input_schema"] = doc["input_schema"]
+        updated["schema_source"] = "KIE documentation OpenAPI"
     if doc.get("summary"):
         updated["summary"] = doc.get("summary")
     if doc.get("method") and doc.get("endpoint"):
@@ -713,9 +721,9 @@ def _enrich_operation(op: dict[str, Any], doc: dict[str, Any]) -> dict[str, Any]
     return updated
 
 
-def resolve_operation(label: str) -> dict[str, Any] | None:
+def resolve_operation(label: str, *, docs_url: str = "") -> dict[str, Any] | None:
     """Resolve a selected operation on-demand if its docs failed during catalog sync."""
-    op = operation_by_label(label)
+    op = operation_by_label(label, docs_url=docs_url)
     if not op:
         return None
     if op.get("method") and op.get("endpoint"):
@@ -735,7 +743,7 @@ def resolve_operation(label: str) -> dict[str, Any] | None:
     catalog = load_catalog()
     operations = []
     for existing in catalog.get("operations") or []:
-        operations.append(updated if existing.get("label") == label else existing)
+        operations.append(updated if _operation_key(existing) == _operation_key(op) else existing)
 
     # Opportunistically remember every explicit model/version, not only Market
     # createTask IDs. Direct APIs such as Suno/Veo/LLMs also deserve individual
