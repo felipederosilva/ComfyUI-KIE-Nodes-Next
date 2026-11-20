@@ -1,16 +1,24 @@
 # KIE.ai Nodes Next for ComfyUI
 
-**Current version: 0.6.3 — Model-specific Inputs & Market Schemas.** This release reconciles KIE's live Market catalog with its documentation, recovers missing model IDs and alternative input modes, and preserves existing workflow node IDs. It does not complete all 22 [roadmap commitments](ROADMAP.md). Paid provider workflows still require model-specific validation.
+**Current version: 0.6.4 — November Model Refresh.** The bundled catalog combines KIE's official endpoint schemas with model-specific controls and result sockets for video, image, audio, and chat.
 
-- Latest package: [`ComfyUI-KIE-Nodes-Next-v0.6.3.zip`](dist/ComfyUI-KIE-Nodes-Next-v0.6.3.zip)
+- Latest package: [`ComfyUI-KIE-Nodes-Next-v0.6.4.zip`](https://github.com/felipederosilva/ComfyUI-KIE-Nodes-Next/releases/download/v0.6.4/ComfyUI-KIE-Nodes-Next-v0.6.4.zip)
 - Release history: [`RELEASE_NOTES.md`](RELEASE_NOTES.md)
 - Model controls audit and next improvements: [`MODEL_CONTROLS_REVIEW.md`](MODEL_CONTROLS_REVIEW.md)
 
-The October 22 catalog checks 230 live Market entries. KIE supplies usable OpenAPI documents for 229; Gemini 3.8 Flash TTS currently returns a null schema, so its last documented definition is retained. The combined inventory has 250 IDs including legacy IDs and provider versions, and 266 operations. These numbers are different views of the catalog, not 250 newly released models.
+The November 20 refresh checked 265 live Market entries and 280 English API pages. KIE supplies 264 Market schemas. Gemini 3.8 Flash TTS retains its documented fallback. The combined inventory includes 291 IDs, including legacy IDs and provider variants, across 307 operations.
 
 Model nodes use each schema's own required inputs, reference counts, enums and numeric limits. Kling 4 keyframes accept a native IMAGE batch; alternative request formats expose an `input_variant` selector and are validated before upload. Live catalog refresh now also checks the Market API using your saved KIE key, with discovery requests rate limited and verified schemas cached for seven days. Catalog discovery does not generate media or spend generation credits.
 
 ### Input checks and model controls
+
+- **Kling 4.0 Flash** has distinct keyframe and reference-video nodes. **Kling Image 4.0** exposes style and subject image sockets and an ordered list of result URLs for image series. The long-image node includes e-commerce and webpage controls.
+- **GPT Image 2.6** supports the documented format controls for each variant. Use the file-path socket for SVG. GIF-capable variants return an IMAGE batch and a JSON list of frame durations. Raster variants expose transparency as a ComfyUI MASK.
+- **Seedream 5.5** exposes transparency on image generation and editing. Layer decomposition returns the base alpha mask, a LAYERS stack when the provider supplies compatible layer metadata, and the source layer JSON.
+- **Seedance 2.5 Flash** exposes reference modes and the requested last frame when KIE returns it. **Gemini Omni 1.2 Flash** exposes source video and returned first and last frames. Gemini Omni asset creation returns voice or character IDs.
+- **Nemotron 3.5 Transcribe** returns text, duration, word timings and speaker turns when present in KIE's result. **GPT 6.2** and **Gemini 4** expose their documented reasoning controls.
+
+After upgrading, restart ComfyUI and review saved widget values on affected nodes. Existing generated node IDs and output positions are preserved. Optional media outputs can be empty when the selected format or provider response supplies no matching asset.
 
 Right-click a generation or Studio node and choose **KIE Next · Check inputs & model controls** to inspect cached documented fields, limits, and camera-control support without uploading media or submitting a generation. Unknown capabilities are labeled rather than inferred as supported. Connected values are checked during execution, not evaluated by this menu.
 
